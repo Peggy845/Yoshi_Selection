@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8" />
+  <title>Yoshi Selection</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    .category-block { display: inline-block; text-align: center; margin: 20px; cursor: pointer; }
+    .category-img { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; }
+    .product { border: 1px solid #ccc; padding: 10px; margin: 10px 0; }
+    select { margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Yoshi Selection</h1>
+  <div id="categories"></div>
+  <div id="products"></div>
+
+  <script>
+    const scriptBase = "https://script.google.com/macros/s/AKfycbxE6hUZYOdW-ZL_1urAMAb674xVnnPUaWolwqbJIqSH/dev"; // ⬅ 替換這個網址
+
+    async function fetchCategories() {
+      const res = await fetch(`${scriptBase}?action=categories`);
+      return await res.json();
+    }
+
+    async function fetchProducts(topCat, subCat = "全部") {
+      const res = await fetch(`${scriptBase}?action=products&cat=${encodeURIComponent(topCat)}&sub=${encodeURIComponent(subCat)}`);
+      return await res.json();
+    }
+
+    function createCategoryBlock(category) {
+      const div = document.createElement("div");
+      div.className = "category-block";
+
+      const img = document.createElement("img");
+      img.src = category.image;
+      img.className = "category-img";
+
+      const name = document.createElement("div");
+      name.innerText = category.name;
+
+      const select = document.createElement("select");
+      select.style.display = "none";
+
+      const allOpt = document.createElement("option");
+      allOpt.value = "全部";
+      allOpt.innerText = "全部";
+      select.appendChild(allOpt);
+
+      category.subCategories.forEach(sub => {
+        const opt = document.createElement("option");
+        opt.value = sub.name;
+        opt.innerText = sub.name;
+        select.appendChild(opt);
+      });
+
+      select.addEventListener("change", () => {
+        renderProducts(category.name, select.value);
+      });
+
+      div.addEventListener("click", () => {
+        select.style.display = "block";
+      });
+
+      div.appendChild(img);
+      div.appendChild(name);
+      div.appendChild(select);
+
+      return div;
+    }
+
+    async function renderCategories() {
+      const container = document.getElementById("categories");
+      const data = await fetchCategories();
+
+      data.forEach(cat => {
+        const block = createCategoryBlock(cat);
+        container.appendChild(block);
+      });
+    }
+
+    async function renderProducts(topCat, subCat) {
+      const container = document.getElementById("products");
+      container.innerHTML = "";
+
+      const data = await fetchProducts(topCat, subCat);
+      data.forEach(p => {
+        const div = document.createElement("div");
+        div.className = "product";
+        div.innerHTML = `<strong>${p["商品名稱"]}</strong><br>
+          價格：${p["價格"]} / 狀態：${p["販售狀態"]}<br>
+          配達時間：${p["預計配達時間"]}<br>
+          ${p.images.map(img => `<img src="${img}" width="80">`).join(" ")}`;
+        container.appendChild(div);
+      });
+    }
+
+    renderCategories();
+  </script>
+</body>
+</html>

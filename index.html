@@ -259,8 +259,169 @@
 
   <script>
     const scriptBase = "https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec";
+       let openCategory = null;
+
+    async function fetchCategories() {
+      const res = await fetch(`${scriptBase}?action=categories`);
+      return await res.json();
+    }
+
+    async function fetchProducts(topCat, subCat = "全部") {
+      const res = await fetch(`${scriptBase}?action=products&cat=${encodeURIComponent(topCat)}&sub=${encodeURIComponent(subCat)}`);
+      return await res.json();
+    }
+
+    function createCategoryBlock(category) {
+      const div = document.createElement("div");
+      div.className = "category-block";
+
+      const img = document.createElement("img");
+      img.src = category.image;
+      img.className = "category-img";
+
+      const name = document.createElement("div");
+      name.className = "category-name";
+      name.innerText = category.name;
+
+      const select = document.createElement("select");
+      select.style.display = "none";
+
+      select.innerHTML = `<option value="全部">全部</option>` +
+        category.subCategories.map(sub => `<option value="${sub.name}">${sub.name}</option>`).join("");
+
+      select.addEventListener("change", () => {
+        renderProducts(category.name, select.value);
+      });
+
+      div.addEventListener("click", () => {
+        document.querySelectorAll("select").forEach(s => s.style.display = "none");
+        select.style.display = "block";
+      });
+
+      div.appendChild(img);
+      div.appendChild(name);
+      div.appendChild(select);
+
+      return div;
+    }
+
+    async function renderCategories() {
+      const container = document.getElementById("categories");
+      const data = await fetchCategories();
+      data.forEach(cat => {
+        const block = createCategoryBlock(cat);
+        container.appendChild(block);
+      });
+    }
+
+    function renderProducts(topCat, subCat) {
+      fetchProducts(topCat, subCat).then(data => {
+        const container = document.getElementById("products");
+        container.innerHTML = "";
+
+        data.forEach(product => {
+          const card = document.createElement("div");
+          card.className = "product-card";
+
+          // 圖片區塊
+          const imgContainer = document.createElement("div");
+          imgContainer.className = "product-images";
+          let imgIndex = 0;
+          const img = document.createElement("img");
+          img.src = product.images[0] || "";
+          imgContainer.appendChild(img);
+
+          if (product.images.length > 1) {
+            const left = document.createElement("button");
+            left.className = "arrow left";
+            left.innerText = "<";
+            left.onclick = () => {
+              imgIndex = (imgIndex - 1 + product.images.length) % product.images.length;
+              img.src = product.images[imgIndex];
+            };
+            const right = document.createElement("button");
+            right.className = "arrow right";
+            right.innerText = ">";
+            right.onclick = () => {
+              imgIndex = (imgIndex + 1) % product.images.length;
+              img.src = product.images[imgIndex];
+            };
+            imgContainer.appendChild(left);
+            imgContainer.appendChild(right);
+          }
+
+          // 資訊區塊
+          const info = document.createElement("div");
+          info.className = "product-info";
+          info.innerHTML = `
+            <h2>${product["商品名稱"]}</h2>
+            <div class="info-row">💰 價格：$${product["價格"]}</div>
+            <div class="info-row">📦 狀態：${product["販售狀態"]}　📅 配達：${product["預計配達時間"]}</div>
+            <div class="info-row">${product["詳細資訊"] || ""}</div>
+          `;
+
+          // 選項
+          const options = (product["選項"] || "").split(/[、,，\s]/).filter(e => e);
+          if (options.length) {
+            const optWrap = document.createElement("div");
+            optWrap.className = "options";
+            let selected = null;
+            options.forEach(opt => {
+              const btn = document.createElement("button");
+              btn.className = "option-btn";
+              btn.innerText = opt;
+              btn.onclick = () => {
+                optWrap.querySelectorAll("button").forEach(b => b.classList.remove("selected"));
+                btn.classList.add("selected");
+                selected = opt;
+              };
+              optWrap.appendChild(btn);
+            });
+            info.appendChild(optWrap);
+          }
+
+          // 數量與庫存
+          const qtyWrap = document.createElement("div");
+          qtyWrap.className = "qty-container";
+          const qty = document.createElement("span");
+          let count = 1;
+          const stock = parseInt(product["庫存"]) || 0;
+          qty.innerText = count;
+          const minus = document.createElement("button");
+          minus.className = "qty-btn";
+          minus.innerText = "−";
+          minus.onclick = () => {
+            if (count > 1) qty.innerText = --count;
+          };
+          const plus = document.createElement("button");
+          plus.className = "qty-btn";
+          plus.innerText = "+";
+          plus.onclick = () => {
+            if (count < stock) qty.innerText = ++count;
+          };
+          qtyWrap.innerHTML = `數量：`;
+          qtyWrap.appendChild(minus);
+          qtyWrap.appendChild(qty);
+          qtyWrap.appendChild(plus);
+          qtyWrap.innerHTML += `　庫存：還剩 ${stock} 件`;
+          info.appendChild(qtyWrap);
+
+          const cartBtn = document.createElement("button");
+          cartBtn.className = "add-cart";
+          cartBtn.innerText = "🛒 加入購物車";
+          info.appendChild(cartBtn);
+
+          card.appendChild(imgContainer);
+          card.appendChild(info);
+          container.appendChild(card);
+        });
+      });
+    }
+
+    renderCategories();
 
     // 以下略，會補上完整 JavaScript 與購物車邏輯...
   </script>
 </body>
 </html>
+

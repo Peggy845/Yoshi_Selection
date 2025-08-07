@@ -1,6 +1,6 @@
-
 // === 全域變數 ===
 const cart = [];
+const scriptBase = "https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec";
 
 // === 加入購物車 ===
 function addToCart(product) {
@@ -118,9 +118,9 @@ function renderCartItems() {
     const info = document.createElement("div");
     info.style.flex = "1";
     info.innerHTML = `
-      <div><strong>${item.name}</strong></div>
-      ${item.option ? `<div>選項：${item.option}</div>` : ""}
-      <div>單價：\$ ${item.price}</div>
+      <div><strong>\${item.name}</strong></div>
+      \${item.option ? `<div>選項：\${item.option}</div>` : ""}
+      <div>單價：\$ \${item.price}</div>
     `;
 
     const qtyBox = document.createElement("div");
@@ -180,7 +180,7 @@ function updateCartTotal() {
     total += item.price * item.qty;
     count += item.qty;
   });
-  document.getElementById("cartTotal").innerText = `共 ${count} 件 / \$ ${total}`;
+  document.getElementById("cartTotal").innerText = `共 \${count} 件 / \$ \${total}`;
 }
 
 // === 結帳 ===
@@ -192,4 +192,5 @@ function goCheckout() {
 window.addEventListener("DOMContentLoaded", () => {
   createFloatingCartButton();
   createCartView();
+  fetchCategories(); // <== 加上這行！載入頂層分類
 });

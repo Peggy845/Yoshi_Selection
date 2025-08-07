@@ -348,5 +348,33 @@
 
     renderCategories();
   </script>
+
+    <!-- 浮動購物車按鈕 -->
+  <button id="cart-fab" class="cart-fab" onclick="toggleCart()">
+    🛒
+  </button>
+  
+  <!-- 購物車彈出視窗 -->
+  <div id="cart-popup" class="cart-popup hidden">
+    <div class="cart-content">
+      <!-- 購物清單 -->
+      <div class="cart-items" id="cart-items-container">
+        <!-- JS 產生商品項目 -->
+      </div>
+  
+      <!-- 底部總額區塊 -->
+      <div class="cart-footer">
+        <label><input type="checkbox" id="cart-select-all" onchange="toggleSelectAll(this)"> 全選</label>
+        <div class="cart-summary">
+          <span>總金額 (<span id="cart-total-count">0</span> 個商品)</span>
+          <span class="cart-total-price">💰$<span id="cart-total-price">0</span></span>
+        </div>
+        <div class="cart-footer-buttons">
+          <button onclick="toggleCart()">繼續購物</button>
+          <button onclick="goToCheckout()">結帳</button>
+        </div>
+      </div>
+    </div>
+  </div>
 </body>
 </html>

@@ -3,33 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <title>Yoshi Selection</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1 class="title">Yoshi Selection</h1>
-  <div id="categories"></div>
-  <div id="products"></div>
+  <h1>Yoshi Selection</h1>
 
-  <div id="cart-icon" onclick="toggleCart()">
-    🛒
-  </div>
+  <!-- 顶层分类区块 -->
+  <div id="categories" class="category-container"></div>
 
+  <!-- 商品列表 -->
+  <div id="products" class="product-container"></div>
+
+  <!-- 購物車浮動按鈕 -->
+  <div id="cart-button" onclick="toggleCart()">🛒</div>
+
+  <!-- 購物車彈出視窗 -->
   <div id="cart-modal" class="hidden">
-    <div class="cart-content">
-      <div id="cart-items"></div>
-      <div class="cart-footer">
-        <label><input type="checkbox" id="select-all" onchange="toggleSelectAll(this)"> 全選</label>
-        <div class="cart-summary">
-          <span id="cart-count">0</span> 個商品
-          <span id="cart-total">$0</span>
-        </div>
-        <button onclick="closeCart()">繼續購物</button>
-        <button onclick="checkout()">結帳</button>
-      </div>
+    <div id="cart-items"></div>
+    <div id="cart-footer">
+      <label><input type="checkbox" id="select-all"> 全選</label>
+      <div id="cart-summary"></div>
+      <button onclick="closeCart()">繼續購物</button>
+      <button onclick="checkout()">結帳</button>
     </div>
   </div>
-
-  <div id="toast" class="hidden">商品已加入購物車</div>
 
   <script src="script.js"></script>
 </body>

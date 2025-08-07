@@ -347,6 +347,120 @@
     }
 
     renderCategories();
+
+    let cartItems = []; // 所有加入購物車的商品
+    let selectedItemIds = new Set();
+    
+    function toggleCart() {
+      const popup = document.getElementById("cart-popup");
+      popup.classList.toggle("hidden");
+      renderCart();
+    }
+    
+    function goToCheckout() {
+      alert("結帳頁面尚未設計");
+    }
+    
+    function renderCart() {
+      const container = document.getElementById("cart-items-container");
+      container.innerHTML = "";
+    
+      cartItems.forEach((item, index) => {
+        const isSelected = selectedItemIds.has(index);
+        const total = item.price * item.quantity;
+    
+        const optionHtml = item.option && item.option !== "無"
+          ? `<div>選項：${item.option}</div>`
+          : "";
+    
+        container.innerHTML += `
+          <div class="cart-item" style="display:flex;align-items:center;margin-bottom:1rem;border-bottom:1px solid #ccc;padding-bottom:1rem;">
+            <input type="checkbox" onchange="toggleItem(${index})" ${isSelected ? 'checked' : ''}>
+            <img src="${item.image}" alt="${item.name}" style="width:80px;height:80px;object-fit:cover;margin:0 1rem;">
+            <div style="flex:1;">
+              <div>${item.name}</div>
+              ${optionHtml}
+            </div>
+            <div style="width:80px;">$${item.price}</div>
+            <div style="width:120px;">
+              <button onclick="changeQty(${index}, -1)">－</button>
+              <span style="margin: 0 0.5rem;">${item.quantity}</span>
+              <button onclick="changeQty(${index}, 1)">＋</button>
+            </div>
+            <div style="width:80px;">$${total}</div>
+            <div style="width:60px;"><button onclick="removeFromCart(${index})">刪除</button></div>
+          </div>
+        `;
+      });
+    
+      updateCartSummary();
+    }
+    
+    function toggleItem(index) {
+      if (selectedItemIds.has(index)) {
+        selectedItemIds.delete(index);
+      } else {
+        selectedItemIds.add(index);
+      }
+      updateCartSummary();
+    }
+    
+    function toggleSelectAll(checkbox) {
+      selectedItemIds = new Set();
+      if (checkbox.checked) {
+        cartItems.forEach((_, idx) => selectedItemIds.add(idx));
+      }
+      renderCart();
+    }
+    
+    function updateCartSummary() {
+      let totalQty = 0;
+      let totalPrice = 0;
+      selectedItemIds.forEach(idx => {
+        const item = cartItems[idx];
+        totalQty += item.quantity;
+        totalPrice += item.price * item.quantity;
+      });
+    
+      document.getElementById("cart-total-count").textContent = totalQty;
+      document.getElementById("cart-total-price").textContent = totalPrice;
+    }
+    
+    function changeQty(index, delta) {
+      const item = cartItems[index];
+      const newQty = item.quantity + delta;
+      if (newQty >= 1 && newQty <= item.stock) {
+        item.quantity = newQty;
+        renderCart();
+      }
+    }
+    
+    function removeFromCart(index) {
+      cartItems.splice(index, 1);
+      selectedItemIds.delete(index);
+      renderCart();
+    }
+    
+    // 🔔 當商品按下「加入購物車」時使用這個方法加入
+    function addToCart(itemData) {
+      cartItems.push(itemData);
+      selectedItemIds.add(cartItems.length - 1);
+    
+      // 彈出提示
+      const tip = document.createElement("div");
+      tip.textContent = "商品已加入購物車";
+      tip.style.position = "fixed";
+      tip.style.top = "10px";
+      tip.style.right = "10px";
+      tip.style.background = "#ff8a65";
+      tip.style.color = "white";
+      tip.style.padding = "10px 20px";
+      tip.style.borderRadius = "8px";
+      tip.style.zIndex = 1001;
+      document.body.appendChild(tip);
+      setTimeout(() => document.body.removeChild(tip), 5000);
+    }
+
   </script>
 
     <!-- 浮動購物車按鈕 -->

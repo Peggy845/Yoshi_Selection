@@ -5,162 +5,154 @@
   <title>Yoshi Selection</title>
   <style>
     body {
-      font-family: 'Microsoft JhengHei', Calibri, sans-serif;
-      background-color: #f6f7fa;
+      font-family: "Microsoft JhengHei", Calibri, sans-serif;
+      background-color: #f7f7fb;
+      padding: 20px;
       margin: 0;
-      padding: 20px;
-      text-align: center;
     }
-
     h1 {
-      font-size: 2.2rem;
-      margin-bottom: 40px;
+      text-align: center;
+      font-size: 2rem;
     }
-
-    .category-container {
-      display: flex;
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 20px;
-    }
-
     .category-block {
-      width: 180px;
-      padding: 20px;
-      background: #fff;
-      border-radius: 20px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.08);
+      display: inline-block;
+      text-align: center;
+      margin: 20px;
       cursor: pointer;
-      transition: all 0.3s;
     }
-
-    .category-block:hover {
-      transform: translateY(-5px);
-    }
-
     .category-img {
       width: 120px;
       height: 120px;
       border-radius: 50%;
       object-fit: cover;
-      margin-bottom: 10px;
+      border: 2px solid #ccc;
     }
-
-    .category-name {
-      font-weight: bold;
-      margin-bottom: 10px;
-    }
-
-    select {
-      padding: 6px;
-      font-size: 14px;
-    }
-
-    .product-container {
-      margin-top: 40px;
+    .product {
       display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 30px;
+      flex-direction: row;
+      margin: 20px auto;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      background-color: #fff;
+      max-width: 900px;
+      overflow: hidden;
     }
-
-    .product-card {
-      display: flex;
-      gap: 20px;
-      width: 90%;
-      max-width: 1000px;
-      background: white;
-      padding: 20px;
-      border-radius: 16px;
-      box-shadow: 0 0 15px rgba(0,0,0,0.06);
-    }
-
     .product-images {
-      flex: 1;
       position: relative;
+      width: 45%;
     }
-
     .product-images img {
       width: 100%;
-      max-height: 300px;
-      object-fit: contain;
-      border-radius: 10px;
+      height: auto;
+      display: block;
     }
-
     .arrow {
       position: absolute;
       top: 50%;
       transform: translateY(-50%);
-      background: rgba(0,0,0,0.05);
-      border: none;
-      font-size: 20px;
-      padding: 10px;
+      font-size: 2rem;
+      background: rgba(0,0,0,0.1);
+      padding: 0 10px;
       cursor: pointer;
     }
-
-    .arrow.left { left: 0; }
-    .arrow.right { right: 0; }
-
+    .arrow.left {
+      left: 10px;
+    }
+    .arrow.right {
+      right: 10px;
+    }
     .product-info {
-      flex: 2;
-      text-align: left;
+      width: 55%;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
     }
-
-    .product-info h2 {
-      margin: 0 0 10px;
+    .product-name {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
     }
-
-    .info-row {
+    .price, .status, .delivery {
       margin: 5px 0;
     }
-
+    .detail {
+      margin: 10px 0;
+    }
     .options {
-      margin: 10px 0;
+      margin-top: 10px;
     }
-
     .option-btn {
-      border: 1px solid #ccc;
-      padding: 6px 12px;
-      margin-right: 8px;
-      background: white;
+      display: inline-block;
+      padding: 5px 12px;
+      border: 1px solid #aaa;
+      border-radius: 4px;
+      margin-right: 5px;
       cursor: pointer;
+      background-color: #fff;
     }
-
     .option-btn.selected {
-      background-color: #ffe7d6;
-      border-color: #f68b1e;
+      background-color: #ffd8b5;
     }
-
-    .qty-container {
-      margin: 10px 0;
+    .quantity-container {
+      margin-top: 10px;
       display: flex;
       align-items: center;
-      gap: 10px;
     }
-
-    .qty-btn {
-      padding: 4px 10px;
-      cursor: pointer;
-      background: #eee;
-      border: none;
+    .quantity-controls {
+      display: flex;
+      align-items: center;
+      margin-left: 10px;
     }
-
-    .add-cart {
-      background: #f68b1e;
+    .quantity-controls button {
+      width: 30px;
+      height: 30px;
+      font-size: 16px;
+    }
+    .quantity-controls span {
+      padding: 0 10px;
+      font-size: 16px;
+    }
+    .stock {
+      margin-left: 20px;
+    }
+    .add-to-cart {
+      background-color: #ff6a00;
       color: white;
+      padding: 8px 16px;
       border: none;
-      padding: 10px 20px;
-      font-weight: bold;
+      border-radius: 6px;
       cursor: pointer;
-      border-radius: 5px;
+      margin-left: auto;
+    }
+    select {
       margin-top: 10px;
+    }
+    #products {
+      margin-top: 40px;
+    }
+    .toast {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background-color: #222;
+      color: white;
+      padding: 10px 20px;
+      border-radius: 6px;
+      opacity: 0;
+      transition: opacity 0.5s;
+      z-index: 1000;
+    }
+    .toast.show {
+      opacity: 1;
     }
   </style>
 </head>
 <body>
   <h1>Yoshi Selection</h1>
-  <div class="category-container" id="categories"></div>
-  <div class="product-container" id="products"></div>
+  <div id="categories"></div>
+  <div id="products"></div>
+  <div id="toast" class="toast">商品已加入購物車</div>
 
   <script>
     const scriptBase = "https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec";
@@ -185,14 +177,22 @@
       img.className = "category-img";
 
       const name = document.createElement("div");
-      name.className = "category-name";
       name.innerText = category.name;
 
       const select = document.createElement("select");
       select.style.display = "none";
 
-      select.innerHTML = `<option value="全部">全部</option>` +
-        category.subCategories.map(sub => `<option value="${sub.name}">${sub.name}</option>`).join("");
+      const allOpt = document.createElement("option");
+      allOpt.value = "全部";
+      allOpt.innerText = "全部";
+      select.appendChild(allOpt);
+
+      category.subCategories.forEach(sub => {
+        const opt = document.createElement("option");
+        opt.value = sub.name;
+        opt.innerText = sub.name;
+        select.appendChild(opt);
+      });
 
       select.addEventListener("change", () => {
         renderProducts(category.name, select.value);
@@ -206,120 +206,143 @@
       div.appendChild(img);
       div.appendChild(name);
       div.appendChild(select);
-
       return div;
+    }
+
+    function showToast() {
+      const toast = document.getElementById("toast");
+      toast.classList.add("show");
+      setTimeout(() => toast.classList.remove("show"), 5000);
+    }
+
+    function createProductBlock(p) {
+      let currentImg = 0;
+      const images = p.images || [];
+
+      const wrapper = document.createElement("div");
+      wrapper.className = "product";
+
+      const imgDiv = document.createElement("div");
+      imgDiv.className = "product-images";
+
+      const img = document.createElement("img");
+      img.src = images[0] || "";
+      imgDiv.appendChild(img);
+
+      if (images.length > 1) {
+        const leftArrow = document.createElement("div");
+        leftArrow.className = "arrow left";
+        leftArrow.innerText = "<";
+        leftArrow.onclick = () => {
+          currentImg = (currentImg - 1 + images.length) % images.length;
+          img.src = images[currentImg];
+        };
+        imgDiv.appendChild(leftArrow);
+
+        const rightArrow = document.createElement("div");
+        rightArrow.className = "arrow right";
+        rightArrow.innerText = ">";
+        rightArrow.onclick = () => {
+          currentImg = (currentImg + 1) % images.length;
+          img.src = images[currentImg];
+        };
+        imgDiv.appendChild(rightArrow);
+      }
+
+      const info = document.createElement("div");
+      info.className = "product-info";
+      info.innerHTML = `
+        <div class="product-name">${p["商品名稱"]}</div>
+        <div class="price">💰 $${p["價格"]}</div>
+        <div class="status">🚚 ${p["販售狀態"]}（${p["預計配達時間"]}）</div>
+        <div class="detail">${p["詳細資訊"]}</div>
+      `;
+
+      // Options
+      if (p["選項"] && p["選項"] !== "無") {
+        const options = p["選項"].split("、");
+        const optDiv = document.createElement("div");
+        optDiv.className = "options";
+        optDiv.innerHTML = "選項：";
+        options.forEach(opt => {
+          const btn = document.createElement("div");
+          btn.className = "option-btn";
+          btn.innerText = opt;
+          btn.onclick = () => {
+            optDiv.querySelectorAll(".option-btn").forEach(b => b.classList.remove("selected"));
+            btn.classList.add("selected");
+          };
+          optDiv.appendChild(btn);
+        });
+        info.appendChild(optDiv);
+      }
+
+      const quantity = document.createElement("div");
+      quantity.className = "quantity-container";
+
+      const controls = document.createElement("div");
+      controls.className = "quantity-controls";
+      const minus = document.createElement("button");
+      const plus = document.createElement("button");
+      const count = document.createElement("span");
+      minus.innerText = "−";
+      plus.innerText = "+";
+      count.innerText = "1";
+      let value = 1;
+      const max = parseInt(p["庫存"]) || 1;
+
+      minus.onclick = () => {
+        if (value > 1) {
+          value--;
+          count.innerText = value;
+        }
+      };
+      plus.onclick = () => {
+        if (value < max) {
+          value++;
+          count.innerText = value;
+        }
+      };
+
+      controls.appendChild(minus);
+      controls.appendChild(count);
+      controls.appendChild(plus);
+      quantity.innerHTML = `還剩 ${p["庫存"]} 件`;
+      quantity.appendChild(controls);
+
+      const cartBtn = document.createElement("button");
+      cartBtn.className = "add-to-cart";
+      cartBtn.innerText = "🛒 加入購物車";
+      cartBtn.onclick = () => showToast();
+
+      const finalRow = document.createElement("div");
+      finalRow.style.display = "flex";
+      finalRow.appendChild(quantity);
+      finalRow.appendChild(cartBtn);
+      info.appendChild(finalRow);
+
+      wrapper.appendChild(imgDiv);
+      wrapper.appendChild(info);
+      return wrapper;
     }
 
     async function renderCategories() {
       const container = document.getElementById("categories");
       const data = await fetchCategories();
+      container.innerHTML = "";
       data.forEach(cat => {
         const block = createCategoryBlock(cat);
         container.appendChild(block);
       });
     }
 
-    function renderProducts(topCat, subCat) {
-      fetchProducts(topCat, subCat).then(data => {
-        const container = document.getElementById("products");
-        container.innerHTML = "";
-
-        data.forEach(product => {
-          const card = document.createElement("div");
-          card.className = "product-card";
-
-          // 圖片區塊
-          const imgContainer = document.createElement("div");
-          imgContainer.className = "product-images";
-          let imgIndex = 0;
-          const img = document.createElement("img");
-          img.src = product.images[0] || "";
-          imgContainer.appendChild(img);
-
-          if (product.images.length > 1) {
-            const left = document.createElement("button");
-            left.className = "arrow left";
-            left.innerText = "<";
-            left.onclick = () => {
-              imgIndex = (imgIndex - 1 + product.images.length) % product.images.length;
-              img.src = product.images[imgIndex];
-            };
-            const right = document.createElement("button");
-            right.className = "arrow right";
-            right.innerText = ">";
-            right.onclick = () => {
-              imgIndex = (imgIndex + 1) % product.images.length;
-              img.src = product.images[imgIndex];
-            };
-            imgContainer.appendChild(left);
-            imgContainer.appendChild(right);
-          }
-
-          // 資訊區塊
-          const info = document.createElement("div");
-          info.className = "product-info";
-          info.innerHTML = `
-            <h2>${product["商品名稱"]}</h2>
-            <div class="info-row">💰 價格：$${product["價格"]}</div>
-            <div class="info-row">📦 狀態：${product["販售狀態"]}　📅 配達：${product["預計配達時間"]}</div>
-            <div class="info-row">${product["詳細資訊"] || ""}</div>
-          `;
-
-          // 選項
-          const options = (product["選項"] || "").split(/[、,，\s]/).filter(e => e);
-          if (options.length) {
-            const optWrap = document.createElement("div");
-            optWrap.className = "options";
-            let selected = null;
-            options.forEach(opt => {
-              const btn = document.createElement("button");
-              btn.className = "option-btn";
-              btn.innerText = opt;
-              btn.onclick = () => {
-                optWrap.querySelectorAll("button").forEach(b => b.classList.remove("selected"));
-                btn.classList.add("selected");
-                selected = opt;
-              };
-              optWrap.appendChild(btn);
-            });
-            info.appendChild(optWrap);
-          }
-
-          // 數量與庫存
-          const qtyWrap = document.createElement("div");
-          qtyWrap.className = "qty-container";
-          const qty = document.createElement("span");
-          let count = 1;
-          const stock = parseInt(product["庫存"]) || 0;
-          qty.innerText = count;
-          const minus = document.createElement("button");
-          minus.className = "qty-btn";
-          minus.innerText = "−";
-          minus.onclick = () => {
-            if (count > 1) qty.innerText = --count;
-          };
-          const plus = document.createElement("button");
-          plus.className = "qty-btn";
-          plus.innerText = "+";
-          plus.onclick = () => {
-            if (count < stock) qty.innerText = ++count;
-          };
-          qtyWrap.innerHTML = `數量：`;
-          qtyWrap.appendChild(minus);
-          qtyWrap.appendChild(qty);
-          qtyWrap.appendChild(plus);
-          qtyWrap.innerHTML += `　庫存：還剩 ${stock} 件`;
-          info.appendChild(qtyWrap);
-
-          const cartBtn = document.createElement("button");
-          cartBtn.className = "add-cart";
-          cartBtn.innerText = "🛒 加入購物車";
-          info.appendChild(cartBtn);
-
-          card.appendChild(imgContainer);
-          card.appendChild(info);
-          container.appendChild(card);
-        });
+    async function renderProducts(topCat, subCat) {
+      const container = document.getElementById("products");
+      container.innerHTML = "";
+      const data = await fetchProducts(topCat, subCat);
+      data.forEach(p => {
+        const block = createProductBlock(p);
+        container.appendChild(block);
       });
     }
 

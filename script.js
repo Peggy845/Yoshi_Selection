@@ -1,3 +1,4 @@
+
 // === 全域變數 ===
 const cart = [];
 
@@ -117,9 +118,9 @@ function renderCartItems() {
     const info = document.createElement("div");
     info.style.flex = "1";
     info.innerHTML = `
-      <div><strong>\${item.name}</strong></div>
-      \${item.option ? `<div>選項：\${item.option}</div>` : ""}
-      <div>單價：\$ \${item.price}</div>
+      <div><strong>${item.name}</strong></div>
+      ${item.option ? `<div>選項：${item.option}</div>` : ""}
+      <div>單價：\$ ${item.price}</div>
     `;
 
     const qtyBox = document.createElement("div");
@@ -179,7 +180,7 @@ function updateCartTotal() {
     total += item.price * item.qty;
     count += item.qty;
   });
-  document.getElementById("cartTotal").innerText = `共 \${count} 件 / \$ \${total}`;
+  document.getElementById("cartTotal").innerText = `共 ${count} 件 / \$ ${total}`;
 }
 
 // === 結帳 ===

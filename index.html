@@ -3,131 +3,168 @@
 <head>
   <meta charset="UTF-8" />
   <title>Yoshi Selection</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
     body {
-      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      font-family: 'Microsoft JhengHei', Calibri, sans-serif;
+      background-color: #f6f7fa;
       margin: 0;
-      padding: 0;
-      background-color: #f8f8f8;
-    }
-
-    header {
-      background-color: #ff6b81;
-      color: white;
-      padding: 1rem;
+      padding: 20px;
       text-align: center;
-      font-size: 1.8rem;
-      font-weight: bold;
     }
 
-    .container {
-      padding: 1rem;
-      max-width: 1000px;
-      margin: auto;
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 40px;
     }
 
-    .category-grid {
+    .category-container {
       display: flex;
       flex-wrap: wrap;
       justify-content: center;
       gap: 20px;
     }
 
-    .category-card {
-      background: white;
-      border-radius: 16px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-      text-align: center;
-      padding: 1rem;
+    .category-block {
       width: 180px;
-      transition: transform 0.2s;
+      padding: 20px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.08);
       cursor: pointer;
+      transition: all 0.3s;
     }
 
-    .category-card:hover {
-      transform: scale(1.05);
+    .category-block:hover {
+      transform: translateY(-5px);
     }
 
     .category-img {
-      width: 100px;
-      height: 100px;
-      object-fit: cover;
+      width: 120px;
+      height: 120px;
       border-radius: 50%;
-      margin-bottom: 0.5rem;
+      object-fit: cover;
+      margin-bottom: 10px;
+    }
+
+    .category-name {
+      font-weight: bold;
+      margin-bottom: 10px;
     }
 
     select {
-      margin-top: 0.5rem;
-      padding: 5px;
-      width: 100%;
+      padding: 6px;
+      font-size: 14px;
     }
 
-    .products {
-      margin-top: 2rem;
+    .product-container {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 30px;
     }
 
     .product-card {
-      background: white;
-      border-radius: 12px;
-      box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
-      margin-bottom: 1rem;
-      padding: 1rem;
       display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
+      gap: 20px;
+      width: 90%;
+      max-width: 1000px;
+      background: white;
+      padding: 20px;
+      border-radius: 16px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.06);
     }
 
     .product-images {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 0.5rem;
+      flex: 1;
+      position: relative;
     }
 
     .product-images img {
-      width: 80px;
-      height: 80px;
-      object-fit: cover;
-      border-radius: 6px;
+      width: 100%;
+      max-height: 300px;
+      object-fit: contain;
+      border-radius: 10px;
     }
 
-    .loader {
-      border: 6px solid #f3f3f3;
-      border-top: 6px solid #ff6b81;
-      border-radius: 50%;
-      width: 40px;
-      height: 40px;
-      animation: spin 1s linear infinite;
-      margin: 2rem auto;
+    .arrow {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      background: rgba(0,0,0,0.05);
+      border: none;
+      font-size: 20px;
+      padding: 10px;
+      cursor: pointer;
     }
 
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
+    .arrow.left { left: 0; }
+    .arrow.right { right: 0; }
+
+    .product-info {
+      flex: 2;
+      text-align: left;
     }
 
-    @media (max-width: 600px) {
-      .category-card {
-        width: 45%;
-      }
+    .product-info h2 {
+      margin: 0 0 10px;
+    }
 
-      .product-images img {
-        width: 60px;
-        height: 60px;
-      }
+    .info-row {
+      margin: 5px 0;
+    }
+
+    .options {
+      margin: 10px 0;
+    }
+
+    .option-btn {
+      border: 1px solid #ccc;
+      padding: 6px 12px;
+      margin-right: 8px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .option-btn.selected {
+      background-color: #ffe7d6;
+      border-color: #f68b1e;
+    }
+
+    .qty-container {
+      margin: 10px 0;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .qty-btn {
+      padding: 4px 10px;
+      cursor: pointer;
+      background: #eee;
+      border: none;
+    }
+
+    .add-cart {
+      background: #f68b1e;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-weight: bold;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 10px;
     }
   </style>
 </head>
 <body>
-  <header>Yoshi Selection</header>
-  <div class="container">
-    <div class="category-grid" id="categories"></div>
-    <div id="products" class="products"></div>
-  </div>
+  <h1>Yoshi Selection</h1>
+  <div class="category-container" id="categories"></div>
+  <div class="product-container" id="products"></div>
 
   <script>
     const scriptBase = "https://script.google.com/macros/s/AKfycbzGkKMCNgNotGdiH3O70ZF0Xl4-0rrmE4t_QRgzONVajkc5CYWCGH6ez_BCxIekHWfWbA/exec";
+    let openCategory = null;
 
     async function fetchCategories() {
       const res = await fetch(`${scriptBase}?action=categories`);
@@ -139,89 +176,150 @@
       return await res.json();
     }
 
-    function createCategoryCard(category) {
-      const card = document.createElement("div");
-      card.className = "category-card";
+    function createCategoryBlock(category) {
+      const div = document.createElement("div");
+      div.className = "category-block";
 
       const img = document.createElement("img");
       img.src = category.image;
-      img.alt = category.name;
       img.className = "category-img";
 
       const name = document.createElement("div");
+      name.className = "category-name";
       name.innerText = category.name;
 
       const select = document.createElement("select");
       select.style.display = "none";
 
-      const allOpt = document.createElement("option");
-      allOpt.value = "全部";
-      allOpt.innerText = "全部";
-      select.appendChild(allOpt);
-
-      category.subCategories.forEach(sub => {
-        const opt = document.createElement("option");
-        opt.value = sub.name;
-        opt.innerText = sub.name;
-        select.appendChild(opt);
-      });
+      select.innerHTML = `<option value="全部">全部</option>` +
+        category.subCategories.map(sub => `<option value="${sub.name}">${sub.name}</option>`).join("");
 
       select.addEventListener("change", () => {
         renderProducts(category.name, select.value);
       });
 
-      card.addEventListener("click", () => {
+      div.addEventListener("click", () => {
+        document.querySelectorAll("select").forEach(s => s.style.display = "none");
         select.style.display = "block";
       });
 
-      card.appendChild(img);
-      card.appendChild(name);
-      card.appendChild(select);
-      return card;
+      div.appendChild(img);
+      div.appendChild(name);
+      div.appendChild(select);
+
+      return div;
     }
 
     async function renderCategories() {
       const container = document.getElementById("categories");
       const data = await fetchCategories();
       data.forEach(cat => {
-        const card = createCategoryCard(cat);
-        container.appendChild(card);
+        const block = createCategoryBlock(cat);
+        container.appendChild(block);
       });
     }
 
-    async function renderProducts(topCat, subCat) {
-      const container = document.getElementById("products");
-      container.innerHTML = '<div class="loader"></div>';
+    function renderProducts(topCat, subCat) {
+      fetchProducts(topCat, subCat).then(data => {
+        const container = document.getElementById("products");
+        container.innerHTML = "";
 
-      const data = await fetchProducts(topCat, subCat);
-      container.innerHTML = '';
+        data.forEach(product => {
+          const card = document.createElement("div");
+          card.className = "product-card";
 
-      if (data.length === 0) {
-        container.innerHTML = '<p>目前沒有商品。</p>';
-        return;
-      }
+          // 圖片區塊
+          const imgContainer = document.createElement("div");
+          imgContainer.className = "product-images";
+          let imgIndex = 0;
+          const img = document.createElement("img");
+          img.src = product.images[0] || "";
+          imgContainer.appendChild(img);
 
-      data.forEach(p => {
-        const div = document.createElement("div");
-        div.className = "product-card";
-        div.innerHTML = `
-          <strong>${p["商品名稱"]}</strong>
-          價格：${p["價格"]} / 狀態：${p["販售狀態"]}<br>
-          配達時間：${p["預計配達時間"]}<br>
-        `;
+          if (product.images.length > 1) {
+            const left = document.createElement("button");
+            left.className = "arrow left";
+            left.innerText = "<";
+            left.onclick = () => {
+              imgIndex = (imgIndex - 1 + product.images.length) % product.images.length;
+              img.src = product.images[imgIndex];
+            };
+            const right = document.createElement("button");
+            right.className = "arrow right";
+            right.innerText = ">";
+            right.onclick = () => {
+              imgIndex = (imgIndex + 1) % product.images.length;
+              img.src = product.images[imgIndex];
+            };
+            imgContainer.appendChild(left);
+            imgContainer.appendChild(right);
+          }
 
-        if (p.images.length > 0) {
-          const imgDiv = document.createElement("div");
-          imgDiv.className = "product-images";
-          p.images.forEach(src => {
-            const img = document.createElement("img");
-            img.src = src;
-            imgDiv.appendChild(img);
-          });
-          div.appendChild(imgDiv);
-        }
+          // 資訊區塊
+          const info = document.createElement("div");
+          info.className = "product-info";
+          info.innerHTML = `
+            <h2>${product["商品名稱"]}</h2>
+            <div class="info-row">💰 價格：$${product["價格"]}</div>
+            <div class="info-row">📦 狀態：${product["販售狀態"]}　📅 配達：${product["預計配達時間"]}</div>
+            <div class="info-row">${product["詳細資訊"] || ""}</div>
+          `;
 
-        container.appendChild(div);
+          // 選項
+          const options = (product["選項"] || "").split(/[、,，\s]/).filter(e => e);
+          if (options.length) {
+            const optWrap = document.createElement("div");
+            optWrap.className = "options";
+            let selected = null;
+            options.forEach(opt => {
+              const btn = document.createElement("button");
+              btn.className = "option-btn";
+              btn.innerText = opt;
+              btn.onclick = () => {
+                optWrap.querySelectorAll("button").forEach(b => b.classList.remove("selected"));
+                btn.classList.add("selected");
+                selected = opt;
+              };
+              optWrap.appendChild(btn);
+            });
+            info.appendChild(optWrap);
+          }
+
+          // 數量與庫存
+          const qtyWrap = document.createElement("div");
+          qtyWrap.className = "qty-container";
+          const qty = document.createElement("span");
+          let count = 1;
+          const stock = parseInt(product["庫存"]) || 0;
+          qty.innerText = count;
+          const minus = document.createElement("button");
+          minus.className = "qty-btn";
+          minus.innerText = "−";
+          minus.onclick = () => {
+            if (count > 1) qty.innerText = --count;
+          };
+          const plus = document.createElement("button");
+          plus.className = "qty-btn";
+          plus.innerText = "+";
+          plus.onclick = () => {
+            if (count < stock) qty.innerText = ++count;
+          };
+          qtyWrap.innerHTML = `數量：`;
+          qtyWrap.appendChild(minus);
+          qtyWrap.appendChild(qty);
+          qtyWrap.appendChild(plus);
+          qtyWrap.innerHTML += `　庫存：還剩 ${stock} 件`;
+          info.appendChild(qtyWrap);
+
+          const cartBtn = document.createElement("button");
+          cartBtn.className = "add-cart";
+          cartBtn.innerText = "🛒 加入購物車";
+          info.appendChild(cartBtn);
+
+          card.appendChild(imgContainer);
+          card.appendChild(info);
+          container.appendChild(card);
+        });
       });
     }
 

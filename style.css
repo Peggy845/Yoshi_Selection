@@ -117,3 +117,33 @@ body {
   border-radius: 10px;
   text-align: center;
 }
+
+/* 懸浮購物車按鈕 */
+.floating-cart-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: #ffa94d; /* 深橘色 */
+  color: white;
+  width: 60px;
+  height: 60px;
+  font-size: 1.5rem;
+  text-align: center;
+  line-height: 60px;
+  border-radius: 50%;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  text-decoration: none;
+  z-index: 999;
+}
+
+.cart-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  margin: 0.5rem;
+  background-color: #ffa94d;
+  color: white;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}

@@ -1,3 +1,4 @@
+
 // === 全域變數 ===
 const cart = [];
 const scriptBase = "https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec";
@@ -20,11 +21,11 @@ function addToCart(product) {
 function showToast(text) {
   const toast = document.createElement("div");
   toast.innerText = text;
-  toast.style.cssText = `
+  toast.style.cssText = \`
     position: fixed; bottom: 100px; left: 50%; transform: translateX(-50%);
     background: #333; color: #fff; padding: 10px 20px; border-radius: 20px;
     z-index: 10000; font-family: 'Microsoft JhengHei', Calibri;
-  `;
+  \`;
   document.body.appendChild(toast);
   setTimeout(() => toast.remove(), 5000);
 }
@@ -34,12 +35,12 @@ function createFloatingCartButton() {
   const btn = document.createElement("div");
   btn.id = "floatingCartBtn";
   btn.innerHTML = "🛒";
-  btn.style.cssText = `
+  btn.style.cssText = \`
     position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
     background: #f90; color: white; font-size: 30px; border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     box-shadow: 0 0 10px rgba(0,0,0,0.3); cursor: pointer; z-index: 9999;
-  `;
+  \`;
   btn.onclick = () => toggleCartView(true);
   document.body.appendChild(btn);
 }
@@ -59,33 +60,33 @@ function toggleCartView(show) {
 function createCartView() {
   const cartView = document.createElement("div");
   cartView.id = "cartView";
-  cartView.style.cssText = `
+  cartView.style.cssText = \`
     position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white;
     display: none; flex-direction: column; z-index: 9998;
     font-family: 'Microsoft JhengHei', Calibri;
-  `;
+  \`;
 
   const cartList = document.createElement("div");
   cartList.id = "cartList";
-  cartList.style.cssText = `
+  cartList.style.cssText = \`
     flex: 1; overflow-y: auto; padding: 20px;
-  `;
+  \`;
 
   const cartSummary = document.createElement("div");
   cartSummary.id = "cartSummary";
-  cartSummary.style.cssText = `
+  cartSummary.style.cssText = \`
     background: #d6f5d6; padding: 10px 20px; border-top: 1px solid #ccc;
     display: flex; justify-content: space-between; align-items: center;
     position: sticky; bottom: 0;
-  `;
-  cartSummary.innerHTML = `
+  \`;
+  cartSummary.innerHTML = \`
     <label><input type="checkbox" id="selectAll"> 全選</label>
     <span id="cartTotal"></span>
     <div>
       <button onclick="toggleCartView(false)">繼續購物</button>
       <button onclick="goCheckout()">結帳</button>
     </div>
-  `;
+  \`;
 
   cartView.appendChild(cartList);
   cartView.appendChild(cartSummary);
@@ -117,11 +118,11 @@ function renderCartItems() {
 
     const info = document.createElement("div");
     info.style.flex = "1";
-    info.innerHTML = `
-      <div><strong>${item.name}</strong></div>
-      ${item.option ? `<div>選項：${item.option}</div>` : ""}
-      <div>單價：$ ${item.price}</div>
-    `;
+    info.innerHTML = \`
+      <div><strong>\${item.name}</strong></div>
+      \${item.option ? `<div>選項：\${item.option}</div>` : ""}
+      <div>單價：\$ \${item.price}</div>
+    \`;
 
     const qtyBox = document.createElement("div");
     qtyBox.style.cssText = "display: flex; align-items: center; gap: 4px;";
@@ -180,7 +181,7 @@ function updateCartTotal() {
     total += item.price * item.qty;
     count += item.qty;
   });
-  document.getElementById("cartTotal").innerText = `共 ${count} 件 / $ ${total}`;
+  document.getElementById("cartTotal").innerText = \`共 \${count} 件 / \$ \${total}\`;
 }
 
 // === 結帳 ===
@@ -192,5 +193,5 @@ function goCheckout() {
 window.addEventListener("DOMContentLoaded", () => {
   createFloatingCartButton();
   createCartView();
-  fetchCategories(); // <== 加上這行！載入頂層分類
+  fetchCategories();
 });

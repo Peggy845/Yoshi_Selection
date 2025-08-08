@@ -1,94 +1,119 @@
-
 body {
-  font-family: "Microsoft JhengHei", Calibri, sans-serif;
+  font-family: Calibri, "微軟正黑體", sans-serif;
   margin: 0;
-  padding: 0 10px 100px;
+  padding: 0;
+  background-color: #fff;
 }
-.title {
+
+/* 標題 */
+.header {
+  background-color: #ffe5b4;
+  color: #333;
   text-align: center;
-  font-size: 28px;
-  margin-top: 20px;
+  font-size: 2rem;
+  padding: 1rem;
 }
-#categories {
+
+/* 商品分類區塊 */
+.category-section {
+  padding: 1rem;
+}
+
+.category-container {
   display: flex;
   flex-wrap: wrap;
-  gap: 20px;
+  gap: 1rem;
   justify-content: center;
-  margin-top: 30px;
 }
+
 .category-block {
-  text-align: center;
-  cursor: pointer;
-}
-.category-block img {
   width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  object-fit: cover;
-  display: block;
-  margin: 0 auto 10px;
-}
-.category-title {
-  font-weight: bold;
-}
-.select-wrapper {
-  margin-top: 10px;
-}
-#products {
-  max-width: 1000px;
-  margin: 30px auto;
-  display: flex;
-  flex-direction: column;
-  gap: 30px;
-}
-.product-card {
-  display: flex;
-  gap: 20px;
-}
-.product-card img {
-  width: 250px;
-  height: 250px;
-  object-fit: cover;
-  border-radius: 10px;
-}
-.product-info {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.option-buttons {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.option-buttons button {
-  padding: 5px 10px;
-  border: 1px solid #ccc;
-  background: white;
+  text-align: center;
   cursor: pointer;
 }
-.option-buttons button.active {
-  background: #ffe5cc;
+
+.circle-image {
+  width: 100px;
+  height: 100px;
+  margin: 0 auto;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #ccc;
 }
-.quantity-control {
+
+.circle-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.category-name {
+  margin-top: 0.5rem;
+  font-weight: bold;
+}
+
+/* 第二層分類選單 */
+#sub-category-container {
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.sub-category-button {
+  margin: 0.25rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #aaa;
+  background-color: #f5f5f5;
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+/* 商品細分區塊 */
+.product-section {
+  padding: 1rem;
+  border-top: 1px solid #ddd;
+}
+
+.product-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.sub-category-blocks {
   display: flex;
-  align-items: center;
-  gap: 10px;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start;
 }
-.quantity-control button {
-  width: 30px;
-  height: 30px;
-}
-.quantity-control input {
-  width: 50px;
+
+.sub-category-block {
+  width: 150px;
   text-align: center;
 }
-button.add-to-cart {
-  background: #f90;
-  color: white;
-  border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  font-weight: bold;
+
+.sub-category-block img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.sub-category-block .name {
+  margin-top: 0.5rem;
+}
+
+/* 關於我彈窗 */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+  background: #fff;
+  padding: 2rem;
+  margin: 10% auto;
+  width: 300px;
+  border-radius: 10px;
+  text-align: center;
 }

@@ -1,17 +1,41 @@
-
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Yoshi Selection</title>
   <link rel="stylesheet" href="style.css" />
+  <script defer src="script.js"></script>
 </head>
 <body>
-  <h1 class="title">Yoshi Selection</h1>
-  <div id="categories"></div>
-  <div id="products"></div>
+  <!-- 標題區塊 -->
+  <header class="header">Yoshi Selection</header>
 
-  <script src="script.js"></script>
+  <!-- 商品分類區塊 -->
+  <section class="category-section">
+    <div class="category-container" id="main-category-container">
+      <!-- 固定「關於我」 -->
+      <div class="category-block" onclick="showAboutModal()">
+        <div class="circle-image">
+          <img src="images/Yoshi_Selection_logo.jpg" alt="關於我" />
+        </div>
+        <div class="category-name">關於我</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 第二層分類選單容器 -->
+  <div id="sub-category-container"></div>
+
+  <!-- 商品細分區塊 -->
+  <section id="product-sections"></section>
+
+  <!-- 關於我彈窗 -->
+  <div id="about-modal" class="modal">
+    <div class="modal-content">
+      <p>這個之後會補充。</p>
+      <button onclick="closeAboutModal()">確認</button>
+    </div>
+  </div>
 </body>
 </html>

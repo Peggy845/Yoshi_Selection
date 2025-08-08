@@ -1,162 +1,208 @@
-// ===== 共用常數 =====
 const SHEET_API = 'https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec';
 
-// ===== 初始載入 =====
 document.addEventListener('DOMContentLoaded', () => {
   loadCategories();
+  setupCartButton();
 });
 
-// ===== 載入頂層分類 =====
-async function loadCategories() {
-  const res = await fetch(SHEET_API + '?action=getCategories');
-  const data = await res.json();
-  const section = document.getElementById('category-section');
-
-  data.forEach(cat => {
-    const block = document.createElement('div');
-    block.className = 'category-block';
-    block.innerHTML = `
-      <div class="category-img-circle">
-        <img src="images/${cat.image}" alt="${cat.name}" />
-      </div>
-      <div class="category-text">${cat.name}</div>
-    `;
-    block.addEventListener('click', () => {
-      if (cat.name === '範例商品變體') {
-        loadVariantProducts();
-      } else {
-        alert('尚未設定跳轉功能');
-      }
+function setupCartButton() {
+  const cartBtn = document.getElementById('floating-cart-btn');
+  if (cartBtn) {
+    cartBtn.addEventListener('click', () => {
+      window.location.href = 'cart.html'; // 尚未建立，可先跳轉用
     });
-    section.appendChild(block);
-  });
-}
-
-// ===== 顯示 About 我彈窗 =====
-function showAboutModal() {
-  document.getElementById('about-modal').classList.remove('hidden');
-}
-
-function hideAboutModal(event) {
-  if (event.target.id === 'about-modal' || event.target.tagName === 'BUTTON') {
-    document.getElementById('about-modal').classList.add('hidden');
   }
 }
 
-function goToCartPage() {
-  window.location.href = 'cart.html';
+function loadCategories() {
+  fetch(`${SHEET_API}?action=getCategories`)
+    .then(res => res.json())
+    .then(data => {
+      const container = document.getElementById('category-container');
+      container.innerHTML = ''; // 清空舊內容
+
+      // 加入「關於我」分類區塊
+      const aboutBlock = createCategoryBlock('關於我', 'Yoshi_Selection_logo.jpg', true);
+      container.appendChild(aboutBlock);
+
+      data.forEach(cat => {
+        const block = createCategoryBlock(cat.name, cat.image);
+        container.appendChild(block);
+      });
+    });
 }
 
-// ===== 載入變體商品 =====
-async function loadVariantProducts() {
-  document.getElementById('category-section').classList.add('hidden');
-  const page = document.getElementById('product-selection-page');
-  page.classList.remove('hidden');
+function createCategoryBlock(name, image, isAbout = false) {
+  const block = document.createElement('div');
+  block.className = 'category-block';
 
-  const res = await fetch(SHEET_API + '?action=getVariantProducts');
-  const products = await res.json();
+  const imgDiv = document.createElement('div');
+  imgDiv.className = 'category-image';
+  const img = document.createElement('img');
+  img.src = `images/${image}`;
+  img.alt = name;
+  imgDiv.appendChild(img);
 
-  page.innerHTML = '';
+  const textDiv = document.createElement('div');
+  textDiv.className = 'category-text';
+  textDiv.innerText = name;
 
-  products.forEach((item, index) => {
-    const container = document.createElement('div');
-    container.className = 'product-card';
+  block.appendChild(imgDiv);
+  block.appendChild(textDiv);
 
-    // 圖片區（切換圖片）
-    const images = item.image.split('、');
-    let current = 0;
-    const imgBox = document.createElement('div');
-    imgBox.className = 'product-image-container';
-	const images = (product.image || '').split('、').map(img => img.trim()).filter(img => img);
-
-	if (images.length > 0) {
-	  let currentIndex = 0;
-	  const imgEl = document.createElement('img');
-	  imgEl.src = `images/${images[currentIndex]}`;
-	  imgEl.classList.add('product-image');
-	  imageContainer.appendChild(imgEl);
-
-	  if (images.length > 1) {
-		const leftArrow = document.createElement('div');
-		leftArrow.innerHTML = '◀';
-		leftArrow.className = 'image-arrow left-arrow';
-		leftArrow.addEventListener('click', () => {
-		  currentIndex = (currentIndex - 1 + images.length) % images.length;
-		  imgEl.src = `images/${images[currentIndex]}`;
-		});
-
-		const rightArrow = document.createElement('div');
-		rightArrow.innerHTML = '▶';
-		rightArrow.className = 'image-arrow right-arrow';
-		rightArrow.addEventListener('click', () => {
-		  currentIndex = (currentIndex + 1) % images.length;
-		  imgEl.src = `images/${images[currentIndex]}`;
-		});
-
-		imageContainer.appendChild(leftArrow);
-		imageContainer.appendChild(rightArrow);
-	  }
-	}
-    imgBox.appendChild(img);
-
-    const status = document.createElement('div');
-    status.className = 'product-status';
-    status.innerText = `狀態: ${item.status}`;
-
-    const infoBox = document.createElement('div');
-    infoBox.className = 'product-info';
-    infoBox.innerHTML = `
-      <div class="product-name">${item.name}</div>
-      <div class="product-price">$ ${item.price}</div>
-      <div class="product-description">${item.desc || ''}</div>
-    `;
-
-    // 選項區塊
-    ['variant1', 'variant2', 'variant3'].forEach((key, vi) => {
-      if (item[key + 'Name']) {
-        const group = document.createElement('div');
-        group.className = 'option-group';
-
-        const label = document.createElement('div');
-        label.className = 'option-label';
-        label.textContent = item[key + 'Name'];
-
-        const buttonBox = document.createElement('div');
-        buttonBox.className = 'option-buttons';
-
-        const unique = [...new Set(item.allVariants.map(v => v[key]))];
-        unique.forEach(opt => {
-          const btn = document.createElement('button');
-          btn.className = 'option-button';
-          btn.textContent = opt;
-          btn.onclick = () => {
-            [...buttonBox.children].forEach(b => b.classList.remove('selected'));
-            btn.classList.add('selected');
-          };
-          buttonBox.appendChild(btn);
-        });
-        group.appendChild(label);
-        group.appendChild(buttonBox);
-        infoBox.appendChild(group);
-      }
+  if (isAbout) {
+    block.addEventListener('click', () => {
+      document.getElementById('about-modal').style.display = 'block';
     });
+  } else if (name === '範例商品變體') {
+    block.addEventListener('click', () => {
+      document.getElementById('main-content').innerHTML = ''; // 清空分類區塊等畫面
+      loadVariantProducts();
+    });
+  }
 
-    const purchaseRow = document.createElement('div');
-    purchaseRow.className = 'purchase-row';
-    purchaseRow.innerHTML = `
-      <div class="quantity-selector">
-        數量 <button onclick="this.nextElementSibling.stepDown()">-</button>
-        <input type="number" value="1" min="1" max="${item.stock}" />
-        <button onclick="this.previousElementSibling.stepUp()">+</button>
-        <span>還剩 ${item.stock} 件</span>
-      </div>
-      <button class="add-to-cart-btn">加入購物車</button>
-    `;
+  return block;
+}
 
-    container.appendChild(imgBox);
-    container.appendChild(status);
-    container.appendChild(infoBox);
-    container.appendChild(purchaseRow);
-    page.appendChild(container);
-  });
+function loadVariantProducts() {
+  fetch(`${SHEET_API}?action=getVariantProducts`)
+    .then(res => res.json())
+    .then(products => {
+      const container = document.getElementById('main-content');
+      container.innerHTML = ''; // 清空畫面
+
+      products.forEach(product => {
+        const block = document.createElement('div');
+        block.className = 'product-block';
+
+        // 左邊圖片區塊
+        const imageContainer = document.createElement('div');
+        imageContainer.className = 'product-image-container';
+
+        const images = (product.image || '').split('、').map(img => img.trim()).filter(img => img);
+        let currentIndex = 0;
+        const imgEl = document.createElement('img');
+        imgEl.className = 'product-image';
+        imgEl.src = images.length > 0 ? `images/${images[currentIndex]}` : '';
+        imageContainer.appendChild(imgEl);
+
+        if (images.length > 1) {
+          const left = document.createElement('div');
+          left.className = 'image-arrow left-arrow';
+          left.textContent = '◀';
+          left.onclick = () => {
+            currentIndex = (currentIndex - 1 + images.length) % images.length;
+            imgEl.src = `images/${images[currentIndex]}`;
+          };
+
+          const right = document.createElement('div');
+          right.className = 'image-arrow right-arrow';
+          right.textContent = '▶';
+          right.onclick = () => {
+            currentIndex = (currentIndex + 1) % images.length;
+            imgEl.src = `images/${images[currentIndex]}`;
+          };
+
+          imageContainer.appendChild(left);
+          imageContainer.appendChild(right);
+        }
+
+        // 狀態小區
+        const status = document.createElement('div');
+        status.className = 'product-status';
+        status.textContent = `狀態: ${product.status}`;
+
+        const leftCol = document.createElement('div');
+        leftCol.className = 'product-left';
+        leftCol.appendChild(imageContainer);
+        leftCol.appendChild(status);
+
+        // 右邊文字區塊
+        const rightCol = document.createElement('div');
+        rightCol.className = 'product-right';
+
+        const title = document.createElement('div');
+        title.className = 'product-title';
+        title.textContent = product.name;
+
+        const price = document.createElement('div');
+        price.className = 'product-price';
+        price.textContent = `$ ${product.price}`;
+
+        const desc = document.createElement('div');
+        desc.className = 'product-desc';
+        desc.textContent = product.desc || '';
+
+        const options = document.createElement('div');
+        options.className = 'product-options';
+
+        const variantGroups = [
+          { title: product.variant1Name, values: [...new Set(product.allVariants.map(v => v.variant1))] },
+          { title: product.variant2Name, values: [...new Set(product.allVariants.map(v => v.variant2))] },
+          { title: product.variant3Name, values: [...new Set(product.allVariants.map(v => v.variant3))] },
+        ];
+
+        const selected = {};
+
+        variantGroups.forEach(group => {
+          const groupDiv = document.createElement('div');
+          group.values.forEach(val => {
+            const btn = document.createElement('button');
+            btn.className = 'option-button';
+            btn.textContent = val;
+            btn.addEventListener('click', () => {
+              // 同一組內互斥選擇
+              groupDiv.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+              btn.classList.add('active');
+              selected[group.title] = val;
+            });
+            groupDiv.appendChild(btn);
+          });
+          options.appendChild(groupDiv);
+        });
+
+        // 數量控制區
+        const quantityRow = document.createElement('div');
+        quantityRow.className = 'product-quantity-row';
+
+        const quantityLabel = document.createElement('span');
+        quantityLabel.textContent = '數量：';
+
+        const qtyInput = document.createElement('input');
+        qtyInput.type = 'number';
+        qtyInput.min = 1;
+        qtyInput.max = product.stock;
+        qtyInput.value = 1;
+
+        const stockText = document.createElement('span');
+        stockText.textContent = ` 還剩 ${product.stock} 件`;
+
+        quantityRow.appendChild(quantityLabel);
+        quantityRow.appendChild(qtyInput);
+        quantityRow.appendChild(stockText);
+
+        // 加入購物車按鈕
+        const addToCartBtn = document.createElement('button');
+        addToCartBtn.className = 'add-to-cart-btn';
+        addToCartBtn.textContent = '加入購物車';
+        addToCartBtn.addEventListener('click', () => {
+          alert('🛒 商品已加入購物車（尚未串接邏輯）');
+        });
+
+        rightCol.appendChild(title);
+        rightCol.appendChild(price);
+        rightCol.appendChild(desc);
+        rightCol.appendChild(options);
+        rightCol.appendChild(quantityRow);
+        rightCol.appendChild(addToCartBtn);
+
+        block.appendChild(leftCol);
+        block.appendChild(rightCol);
+        container.appendChild(block);
+      });
+    })
+    .catch(err => {
+      console.error('載入商品變體失敗：', err);
+      alert('商品載入失敗，請稍後再試');
+    });
 }

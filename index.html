@@ -5,43 +5,40 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Yoshi Selection</title>
   <link rel="stylesheet" href="style.css" />
-  <script defer src="script.js"></script>
 </head>
 <body>
   <!-- 標題區塊 -->
-  <header class="header">Yoshi Selection</header>
+  <header class="site-header">Yoshi Selection</header>
 
   <!-- 商品分類區塊 -->
-  <section class="category-section">
-    <div class="category-container" id="main-category-container">
-      <!-- 固定「關於我」 -->
-      <div class="category-block" onclick="showAboutModal()">
-        <div class="circle-image">
-          <img src="images/Yoshi_Selection_logo.jpg" alt="關於我" />
-        </div>
-        <div class="category-name">關於我</div>
+  <section id="category-section" class="category-section">
+    <div class="category-block" onclick="showAboutModal()">
+      <div class="category-img-circle">
+        <img src="images/Yoshi_Selection_logo.jpg" alt="關於我" />
       </div>
+      <div class="category-text">關於我</div>
     </div>
+    <!-- 其他分類區塊將由 JS 動態生成 -->
   </section>
 
-  <!-- 第二層分類選單容器 -->
-  <div id="sub-category-container"></div>
+  <!-- 商品選擇頁（初始為隱藏） -->
+  <section id="product-selection-page" class="product-selection-page hidden">
+    <!-- 單項商品大區塊將由 JS 動態生成 -->
+  </section>
 
-  <!-- 商品細分區塊 -->
-  <section id="product-sections"></section>
+  <!-- 購物車浮動按鈕 -->
+  <button id="cart-float-button" onclick="goToCartPage()">
+    <img src="images/cart-icon.png" alt="購物車" />
+  </button>
 
   <!-- 關於我彈窗 -->
-  <div id="about-modal" class="modal">
+  <div id="about-modal" class="modal hidden" onclick="hideAboutModal(event)">
     <div class="modal-content">
       <p>這個之後會補充。</p>
-      <button onclick="closeAboutModal()">確認</button>
+      <button onclick="hideAboutModal(event)">確認</button>
     </div>
   </div>
-  
-	<!-- 懸浮購物車按鈕 -->
-	<a href="cart.html" class="floating-cart-button">
-	  <img src="images/cart.png" alt="購物車" />
-	</a>
 
+  <script src="script.js"></script>
 </body>
 </html>

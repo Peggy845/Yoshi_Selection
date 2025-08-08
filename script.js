@@ -79,33 +79,48 @@ function loadVariantProducts() {
         const imageContainer = document.createElement('div');
         imageContainer.className = 'product-image-container';
 
-        const images = (product.image || '').split('、').map(img => img.trim()).filter(img => img);
+		const imageRaw = product.image || '';
+        const images = imageRaw.split('、').map(img => img.trim()).filter(img => img);
         let currentIndex = 0;
         const imgEl = document.createElement('img');
         imgEl.className = 'product-image';
         imgEl.src = images.length > 0 ? `images/${images[currentIndex]}` : '';
         imageContainer.appendChild(imgEl);
 
-        if (images.length > 1) {
-          const left = document.createElement('div');
-          left.className = 'image-arrow left-arrow';
-          left.textContent = '◀';
-          left.onclick = () => {
-            currentIndex = (currentIndex - 1 + images.length) % images.length;
-            imgEl.src = `images/${images[currentIndex]}`;
-          };
+		if (images.length > 0) {
+		  let currentIndex = 0;
+		  const imgEl = document.createElement('img');
+		  imgEl.className = 'product-image';
+		  imgEl.src = `images/${images[currentIndex]}`;
+		  imageContainer.appendChild(imgEl);
 
-          const right = document.createElement('div');
-          right.className = 'image-arrow right-arrow';
-          right.textContent = '▶';
-          right.onclick = () => {
-            currentIndex = (currentIndex + 1) % images.length;
-            imgEl.src = `images/${images[currentIndex]}`;
-          };
+		  if (images.length > 1) {
+			const left = document.createElement('div');
+			left.className = 'image-arrow left-arrow';
+			left.textContent = '◀';
+			left.onclick = () => {
+			  currentIndex = (currentIndex - 1 + images.length) % images.length;
+			  imgEl.src = `images/${images[currentIndex]}`;
+			};
 
-          imageContainer.appendChild(left);
-          imageContainer.appendChild(right);
-        }
+			const right = document.createElement('div');
+			right.className = 'image-arrow right-arrow';
+			right.textContent = '▶';
+			right.onclick = () => {
+			  currentIndex = (currentIndex + 1) % images.length;
+			  imgEl.src = `images/${images[currentIndex]}`;
+			};
+
+			imageContainer.appendChild(left);
+			imageContainer.appendChild(right);
+		  }
+		} else {
+		  // 沒圖片也補一個預設佔位圖（選填）
+		  const placeholder = document.createElement('div');
+		  placeholder.className = 'image-placeholder';
+		  placeholder.textContent = '無圖片';
+		  imageContainer.appendChild(placeholder);
+		}
 
         // 狀態小區
         const status = document.createElement('div');

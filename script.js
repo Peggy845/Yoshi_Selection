@@ -9,7 +9,7 @@ function setupCartButton() {
   const cartBtn = document.getElementById('floating-cart-btn');
   if (cartBtn) {
     cartBtn.addEventListener('click', () => {
-      window.location.href = 'cart.html'; // 尚未建立，可先跳轉用
+      window.location.href = 'cart.html';
     });
   }
 }
@@ -19,9 +19,8 @@ function loadCategories() {
     .then(res => res.json())
     .then(data => {
       const container = document.getElementById('category-container');
-      container.innerHTML = ''; // 清空舊內容
+      container.innerHTML = '';
 
-      // 加入「關於我」分類區塊
       const aboutBlock = createCategoryBlock('關於我', 'Yoshi_Selection_logo.jpg', true);
       container.appendChild(aboutBlock);
 
@@ -56,7 +55,7 @@ function createCategoryBlock(name, image, isAbout = false) {
     });
   } else if (name === '範例商品變體') {
     block.addEventListener('click', () => {
-      document.getElementById('main-content').innerHTML = ''; // 清空分類區塊等畫面
+      document.getElementById('main-content').innerHTML = '';
       loadVariantProducts();
     });
   }
@@ -69,60 +68,50 @@ function loadVariantProducts() {
     .then(res => res.json())
     .then(products => {
       const container = document.getElementById('main-content');
-      container.innerHTML = ''; // 清空畫面
+      container.innerHTML = '';
 
       products.forEach(product => {
         const block = document.createElement('div');
         block.className = 'product-block';
 
-        // 左邊圖片區塊
         const imageContainer = document.createElement('div');
         imageContainer.className = 'product-image-container';
 
-		const imageRaw = product.image || '';
-        const images = imageRaw.split('、').map(img => img.trim()).filter(img => img);
-        let currentIndex = 0;
-        const imgEl = document.createElement('img');
-        imgEl.className = 'product-image';
-        imgEl.src = images.length > 0 ? `images/${images[currentIndex]}` : '';
-        imageContainer.appendChild(imgEl);
+        const images = (product.image || '').split('、').map(img => img.trim()).filter(img => img);
+        if (images.length > 0) {
+          let currentIndex = 0;
+          const imgEl = document.createElement('img');
+          imgEl.className = 'product-image';
+          imgEl.src = `images/${images[currentIndex]}`;
+          imageContainer.appendChild(imgEl);
 
-		if (images.length > 0) {
-		  let currentIndex = 0;
-		  const imgEl = document.createElement('img');
-		  imgEl.className = 'product-image';
-		  imgEl.src = `images/${images[currentIndex]}`;
-		  imageContainer.appendChild(imgEl);
+          if (images.length > 1) {
+            const left = document.createElement('div');
+            left.className = 'image-arrow left-arrow';
+            left.textContent = '◀';
+            left.onclick = () => {
+              currentIndex = (currentIndex - 1 + images.length) % images.length;
+              imgEl.src = `images/${images[currentIndex]}`;
+            };
 
-		  if (images.length > 1) {
-			const left = document.createElement('div');
-			left.className = 'image-arrow left-arrow';
-			left.textContent = '◀';
-			left.onclick = () => {
-			  currentIndex = (currentIndex - 1 + images.length) % images.length;
-			  imgEl.src = `images/${images[currentIndex]}`;
-			};
+            const right = document.createElement('div');
+            right.className = 'image-arrow right-arrow';
+            right.textContent = '▶';
+            right.onclick = () => {
+              currentIndex = (currentIndex + 1) % images.length;
+              imgEl.src = `images/${images[currentIndex]}`;
+            };
 
-			const right = document.createElement('div');
-			right.className = 'image-arrow right-arrow';
-			right.textContent = '▶';
-			right.onclick = () => {
-			  currentIndex = (currentIndex + 1) % images.length;
-			  imgEl.src = `images/${images[currentIndex]}`;
-			};
+            imageContainer.appendChild(left);
+            imageContainer.appendChild(right);
+          }
+        } else {
+          const placeholder = document.createElement('div');
+          placeholder.className = 'image-placeholder';
+          placeholder.textContent = '無圖片';
+          imageContainer.appendChild(placeholder);
+        }
 
-			imageContainer.appendChild(left);
-			imageContainer.appendChild(right);
-		  }
-		} else {
-		  // 沒圖片也補一個預設佔位圖（選填）
-		  const placeholder = document.createElement('div');
-		  placeholder.className = 'image-placeholder';
-		  placeholder.textContent = '無圖片';
-		  imageContainer.appendChild(placeholder);
-		}
-
-        // 狀態小區
         const status = document.createElement('div');
         status.className = 'product-status';
         status.textContent = `狀態: ${product.status}`;
@@ -132,7 +121,6 @@ function loadVariantProducts() {
         leftCol.appendChild(imageContainer);
         leftCol.appendChild(status);
 
-        // 右邊文字區塊
         const rightCol = document.createElement('div');
         rightCol.className = 'product-right';
 
@@ -166,7 +154,6 @@ function loadVariantProducts() {
             btn.className = 'option-button';
             btn.textContent = val;
             btn.addEventListener('click', () => {
-              // 同一組內互斥選擇
               groupDiv.querySelectorAll('button').forEach(b => b.classList.remove('active'));
               btn.classList.add('active');
               selected[group.title] = val;
@@ -176,7 +163,6 @@ function loadVariantProducts() {
           options.appendChild(groupDiv);
         });
 
-        // 數量控制區
         const quantityRow = document.createElement('div');
         quantityRow.className = 'product-quantity-row';
 
@@ -196,7 +182,6 @@ function loadVariantProducts() {
         quantityRow.appendChild(qtyInput);
         quantityRow.appendChild(stockText);
 
-        // 加入購物車按鈕
         const addToCartBtn = document.createElement('button');
         addToCartBtn.className = 'add-to-cart-btn';
         addToCartBtn.textContent = '加入購物車';
@@ -204,20 +189,4 @@ function loadVariantProducts() {
           alert('🛒 商品已加入購物車（尚未串接邏輯）');
         });
 
-        rightCol.appendChild(title);
-        rightCol.appendChild(price);
-        rightCol.appendChild(desc);
-        rightCol.appendChild(options);
-        rightCol.appendChild(quantityRow);
-        rightCol.appendChild(addToCartBtn);
-
-        block.appendChild(leftCol);
-        block.appendChild(rightCol);
-        container.appendChild(block);
-      });
-    })
-    .catch(err => {
-      console.error('載入商品變體失敗：', err);
-      alert('商品載入失敗，請稍後再試');
-    });
-}
+        rightCol.appendChild

@@ -67,27 +67,36 @@ async function loadVariantProducts() {
     let current = 0;
     const imgBox = document.createElement('div');
     imgBox.className = 'product-image-container';
-    const img = document.createElement('img');
-    img.src = `images/${images[0]}`;
+	const images = (product.image || '').split('、').map(img => img.trim()).filter(img => img);
 
-    if (images.length > 1) {
-      const left = document.createElement('button');
-      left.className = 'image-arrow left';
-      left.innerHTML = '&#8592;';
-      left.onclick = () => {
-        current = (current - 1 + images.length) % images.length;
-        img.src = `images/${images[current]}`;
-      };
-      const right = document.createElement('button');
-      right.className = 'image-arrow right';
-      right.innerHTML = '&#8594;';
-      right.onclick = () => {
-        current = (current + 1) % images.length;
-        img.src = `images/${images[current]}`;
-      };
-      imgBox.appendChild(left);
-      imgBox.appendChild(right);
-    }
+	if (images.length > 0) {
+	  let currentIndex = 0;
+	  const imgEl = document.createElement('img');
+	  imgEl.src = `images/${images[currentIndex]}`;
+	  imgEl.classList.add('product-image');
+	  imageContainer.appendChild(imgEl);
+
+	  if (images.length > 1) {
+		const leftArrow = document.createElement('div');
+		leftArrow.innerHTML = '◀';
+		leftArrow.className = 'image-arrow left-arrow';
+		leftArrow.addEventListener('click', () => {
+		  currentIndex = (currentIndex - 1 + images.length) % images.length;
+		  imgEl.src = `images/${images[currentIndex]}`;
+		});
+
+		const rightArrow = document.createElement('div');
+		rightArrow.innerHTML = '▶';
+		rightArrow.className = 'image-arrow right-arrow';
+		rightArrow.addEventListener('click', () => {
+		  currentIndex = (currentIndex + 1) % images.length;
+		  imgEl.src = `images/${images[currentIndex]}`;
+		});
+
+		imageContainer.appendChild(leftArrow);
+		imageContainer.appendChild(rightArrow);
+	  }
+	}
     imgBox.appendChild(img);
 
     const status = document.createElement('div');

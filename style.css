@@ -123,17 +123,22 @@ body {
   position: fixed;
   bottom: 20px;
   right: 20px;
-  background-color: #ffa94d; /* 深橘色 */
-  color: white;
-  width: 60px;
-  height: 60px;
-  font-size: 1.5rem;
-  text-align: center;
-  line-height: 60px;
+  width: 100px;
+  height: 100px;
+  background-color: #ffe5b4; /* 淺橘色 */
   border-radius: 50%;
   box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
   text-decoration: none;
-  z-index: 999;
+}
+
+.floating-cart-button img {
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
 }
 
 .cart-button {

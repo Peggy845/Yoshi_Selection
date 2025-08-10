@@ -91,6 +91,57 @@ function createProductSection(mainCat, subData) {
   productSections.appendChild(section);
 }
 
+document.addEventListener("DOMContentLoaded", () => {
+    const categoryBlocks = document.querySelectorAll(".category-block");
+
+    categoryBlocks.forEach(block => {
+        block.addEventListener("click", async () => {
+            const categoryName = block.getAttribute("data-category-name");
+            // 點擊後取得該類別的子分類
+            const subCategories = await fetch(`${API_URL}?action=getSubCategories&sheet=${encodeURIComponent(categoryName)}`)
+                .then(res => res.json());
+
+            renderSubCategories(subCategories, categoryName);
+        });
+    });
+});
+
+function renderSubCategories(subCategories, categoryName) {
+    const subContainer = document.getElementById("sub-category-container");
+    subContainer.innerHTML = "";
+
+    subCategories.forEach(sub => {
+        const btn = document.createElement("div");
+        btn.className = "sub-category-button";
+        btn.textContent = sub;
+
+        btn.addEventListener("click", async () => {
+            const products = await fetch(`${API_URL}?action=getProducts&sheet=${encodeURIComponent(categoryName)}&series=${encodeURIComponent(sub)}`)
+                .then(res => res.json());
+            renderProducts(products);
+        });
+
+        subContainer.appendChild(btn);
+    });
+}
+
+function renderProducts(products) {
+    const container = document.getElementById("product-container");
+    container.innerHTML = "";
+
+    products.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "product-card";
+        card.innerHTML = `
+            <strong>${p.name}</strong><br>
+            價格：${p.price}<br>
+            庫存：${p.stock}<br>
+            詳細：${p.details}
+        `;
+        container.appendChild(card);
+    });
+}
+
 window.onload = async () => {
   const { categoryImages } = await fetchData();
 

@@ -1,68 +1,29 @@
-const SPREADSHEET_ID = '1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo'; // <- 確認為你的 sheet id
+// Code.gs (Google Apps Script)
+function doGet() {
+  const ss = SpreadsheetApp.openById('1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo');
+  const sheet = ss.getSheetByName('分類圖片');
+  const data = sheet.getDataRange().getValues();
+  
+  const mainCategories = [];
+  const subcategories = {};
 
-function doGet(e) {
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
-  const params = e.parameter || {};
+  for (let i = 1; i < data.length; i++) {
+    const mainCat = data[i][0];
+    const mainImg = data[i][1];
+    const subCat = data[i][2];
+    const subImg = data[i][3];
 
-  // 如果要求 categories（分類圖片分頁）
-  if (params.action === 'categories') {
-    // 讀取名為「分類圖片」的分頁（請確認名稱一致）
-    const sheet = ss.getSheetByName('分類圖片');
-    if (!sheet) {
-      return ContentService.createTextOutput(JSON.stringify({ error: '找不到分頁: 分類圖片' }))
-        .setMimeType(ContentService.MimeType.JSON);
+    if (!mainCategories.find(c => c.name === mainCat)) {
+      mainCategories.push({ name: mainCat, image: mainImg });
+      subcategories[mainCat] = [{ name: '全部', image: mainImg }];
     }
-    const raw = sheet.getDataRange().getValues();
-    if (raw.length <= 1) {
-      return ContentService.createTextOutput(JSON.stringify({ categories: [] }))
-        .setMimeType(ContentService.MimeType.JSON);
+
+    if (subCat && subImg) {
+      subcategories[mainCat].push({ name: subCat, image: subImg });
     }
-    const headers = raw[0];
-    const rows = raw.slice(1).map(r => {
-      const obj = {};
-      headers.forEach((h, i) => obj[h || `C${i}`] = r[i]);
-      // 我們也給常用 key 名稱（方便前端）
-      return {
-        mainCat: obj['頂層分類'] || obj['mainCat'] || obj['A'] || obj[headers[0]],
-        mainImg: obj['頂層分類圖片檔名'] || obj['mainImg'] || obj['B'] || obj[headers[1]],
-        subCat: obj['第二層分類'] || obj['subCat'] || obj['C'] || obj[headers[2]],
-        subImg: obj['第二層分類圖片檔名'] || obj['subImg'] || obj['D'] || obj[headers[3]],
-        raw: obj
-      };
-    });
-
-    // 同時回傳 sheet 名單（方便前端知道有哪些頂層分類分頁）
-    const sheets = ss.getSheets().map(s => s.getName());
-
-    return ContentService.createTextOutput(JSON.stringify({ categories: rows, sheets: sheets }))
-      .setMimeType(ContentService.MimeType.JSON);
   }
 
-  // 如果要求特定 sheet 內容（例如 ?sheet=範例商品變體）
-  if (params.sheet) {
-    const sheetName = params.sheet;
-    const sheet = ss.getSheetByName(sheetName);
-    if (!sheet) {
-      return ContentService.createTextOutput(JSON.stringify({ error: '找不到分頁: ' + sheetName }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-    const data = sheet.getDataRange().getValues();
-    if (data.length <= 1) {
-      return ContentService.createTextOutput(JSON.stringify([])).setMimeType(ContentService.MimeType.JSON);
-    }
-    const headers = data[0].map(h => h.toString());
-    const out = data.slice(1).map(row => {
-      const obj = {};
-      headers.forEach((h, i) => {
-        obj[h] = row[i];
-      });
-      return obj;
-    });
-    return ContentService.createTextOutput(JSON.stringify(out)).setMimeType(ContentService.MimeType.JSON);
-  }
-
-  // fallback: 告知使用方法
-  return ContentService.createTextOutput(JSON.stringify({
-    msg: 'Apps Script endpoint: use ?action=categories  or ?sheet=<sheetName>'
-  })).setMimeType(ContentService.MimeType.JSON);
+  return ContentService
+    .createTextOutput(JSON.stringify({ mainCategories, subcategories }))
+    .setMimeType(ContentService.MimeType.JSON);
 }

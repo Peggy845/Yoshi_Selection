@@ -1,156 +1,87 @@
-/* 基本字型與重設 */
-:root{
-  --primary-orange: #ffe5b4; /* 淺橘（title 背景）*/
-  --accent-orange: #ffa552;  /* 懸浮按鈕深些的橘 */
-  --muted: #f5f5f5;
-  --text: #222;
-  --radius: 8px;
+// style.css
+body {
+    font-family: Calibri, sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
-*{box-sizing:border-box}
-body{
-  margin:0;
-  font-family: "Calibri", "微軟正黑體", sans-serif;
-  color:var(--text);
-  background: #fff;
+.header {
+    background-color: #FFD8A8;
+    text-align: center;
+    padding: 20px;
+    font-size: 2em;
 }
 
-/* 標題區 */
-.header{
-  width:100%;
-  background:var(--primary-orange);
-  text-align:center;
-  padding:1.2rem 1rem;
-  font-size:1.9rem;
-  font-weight:700;
-  box-shadow: 0 1px 0 rgba(0,0,0,0.05);
+.category-section {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    padding: 20px;
 }
 
-/* 商品分類區塊 */
-.category-section{
-  padding:1rem;
-}
-.category-container{
-  display:flex;
-  flex-wrap:wrap;
-  gap:1rem;
-  justify-content:center;
-  align-items:flex-start;
+.category-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 10px;
+    cursor: pointer;
 }
 
-/* 單一頂層分類區塊（圓形圖片 + 文字） */
-.category-block{
-  width:120px;
-  text-align:center;
-  cursor:pointer;
-  user-select:none;
-}
-.circle-image{
-  width:100px;
-  height:100px;
-  border-radius:50%;
-  overflow:hidden;
-  margin:0 auto;
-  border:2px solid rgba(0,0,0,0.06);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  background:#fff;
-}
-.circle-image img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-.category-name{
-  margin-top:0.5rem;
-  font-weight:600;
+.category-image {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    overflow: hidden;
 }
 
-/* about-block 特別樣式（保持第一） */
-.about-block{ order: -1 } /* keep leftmost visually in flex wrap */
-
-/* 第二層分類容器（展開式按鈕列） */
-.sub-category-container{
-  margin-top:1rem;
-  text-align:center;
-  min-height:0;
-  transition:all 0.18s ease;
-}
-.sub-category-row{
-  display:inline-flex;
-  flex-wrap:wrap;
-  gap:0.4rem;
-  justify-content:center;
-}
-.sub-category-button{
-  padding:0.45rem 0.8rem;
-  border-radius:6px;
-  border:1px solid #ddd;
-  background:var(--muted);
-  cursor:pointer;
-  font-size:0.95rem;
+.category-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-/* 頂層商品細分區塊 */
-#product-sections{
-  padding:1rem;
-}
-.product-section{
-  border-top:1px solid #eee;
-  padding:1rem 0;
-}
-.product-section h2{
-  margin:0 0 0.6rem 0;
-  font-size:1.2rem;
+.category-text {
+    margin-top: 5px;
+    text-align: center;
 }
 
-/* 第二層分類小區塊集合（水平排列） */
-.sub-category-blocks{
-  display:flex;
-  gap:1rem;
-  flex-wrap:wrap;
-  align-items:flex-start;
-}
-.sub-category-block{
-  width:150px;
-  text-align:center;
-}
-.sub-category-block img{
-  width:100%;
-  border-radius:6px;
-  height:110px;
-  object-fit:cover;
-}
-.sub-category-block .name{ margin-top:0.4rem; }
-
-/* 懸浮購物車按鈕（固定於 viewport 右下） */
-.floating-cart-button{
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  width: 100px; /* same size as about circle */
-  height: 100px;
-  border-radius: 50%;
-  background: var(--primary-orange);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.15);
-  z-index: 1000;
-  text-decoration:none;
-  border: none;
-}
-.floating-cart-button img{
-  width:60%;
-  height:60%;
-  object-fit:contain;
+.subcategory-section {
+    padding: 20px;
 }
 
-/* 小螢幕微調 */
-@media (max-width:720px){
-  .category-container{ gap:0.6rem; padding:0 0.4rem }
-  .category-block{ width:92px }
-  .circle-image{ width:76px; height:76px }
-  .floating-cart-button{ width:72px; height:72px; bottom:16px; right:16px }
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-content {
+    background-color: white;
+    margin: 15% auto;
+    padding: 20px;
+    width: 300px;
+    border-radius: 10px;
+}
+
+.cart-button {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 60px;
+    height: 60px;
+    background-color: #FFA94D;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.cart-button img {
+    width: 60%;
 }

@@ -1,40 +1,48 @@
+<!-- index.html -->
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Yoshi Selection</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yoshi Selection</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <!-- 標題區塊 -->
-  <header class="header">Yoshi Selection</header>
+    <!-- 標題區塊 -->
+    <header class="header">
+        Yoshi Selection
+    </header>
 
-  <!-- 商品分類區塊 -->
-  <section class="category-section">
-    <div class="category-container" id="main-category-container">
-      <!-- 固定關於我（左側第一個） -->
-      <div class="category-block about-block" id="about-block" role="button" tabindex="0">
-        <div class="circle-image">
-          <img src="images/Yoshi_Selection_logo.jpg" alt="關於我" />
+    <!-- 商品分類區塊 -->
+    <section id="category-section" class="category-section">
+        <!-- 關於我區塊固定在最左 -->
+        <div class="category-block about-me" onclick="openAboutMe()">
+            <div class="category-image">
+                <img src="images/Yoshi_Selection_logo.jpg" alt="關於我">
+            </div>
+            <div class="category-text">關於我</div>
         </div>
-        <div class="category-name">關於我</div>
-      </div>
-      <!-- 其餘分類會由 script.js 動態加入 -->
+        <!-- 其他分類由 script.js 動態載入 -->
+    </section>
+
+    <!-- 頂層商品細分區塊 -->
+    <section id="subcategory-section" class="subcategory-section">
+        <!-- 動態生成 -->
+    </section>
+
+    <!-- 關於我彈窗 -->
+    <div id="aboutMeModal" class="modal">
+        <div class="modal-content">
+            <p>這個之後會補充。</p>
+            <button onclick="closeAboutMe()">確認</button>
+        </div>
     </div>
 
-    <!-- 第二層分類選單區（點擊某個頂層分類會在這裡展開） -->
-    <div id="sub-category-container" class="sub-category-container"></div>
-  </section>
+    <!-- 懸浮購物車按鈕 -->
+    <div id="cart-button" class="cart-button" onclick="goToCart()">
+        <img src="images/cart_icon.png" alt="購物車">
+    </div>
 
-  <!-- 頂層商品細分區塊（各頂層分類對應的第二層圖文） -->
-  <main id="product-sections"></main>
-
-  <!-- 懸浮購物車按鈕（固定在畫面右下） -->
-  <a id="floating-cart" class="floating-cart-button" href="cart.html" aria-label="購物車">
-    <img src="images/cart.png" alt="購物車" />
-  </a>
-
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

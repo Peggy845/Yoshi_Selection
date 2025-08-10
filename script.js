@@ -1,192 +1,140 @@
-const SHEET_API = 'https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec';
+/* ---------- 設定：請改成你自己的 Apps Script exec URL（部署後） ---------- */
+const GS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec';
+/* --------------------------------------------------------------------------- */
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadCategories();
-  setupCartButton();
-});
+const mainContainer = document.getElementById('main-category-container');
+const subCategoryContainer = document.getElementById('sub-category-container');
+const productSections = document.getElementById('product-sections');
 
-function setupCartButton() {
-  const cartBtn = document.getElementById('floating-cart-btn');
-  if (cartBtn) {
-    cartBtn.addEventListener('click', () => {
-      window.location.href = 'cart.html';
-    });
+let currentExpanded = null; // which main category is expanded
+
+// 叫後端拿分類圖片表（分類圖片分頁） + sheets list（後端會回傳）
+async function loadCategories() {
+  try {
+    const res = await fetch(`${GS_SCRIPT_URL}?action=categories`);
+    const json = await res.json();
+    // json: { categories: [ {mainCat, mainImg, subCat, subImg} ... ], sheets: [...] }
+    const categories = json.categories || [];
+    renderCategoryBlocks(categories);
+    renderProductSections(categories);
+  } catch (err) {
+    console.error('fetch categories failed', err);
   }
 }
 
-function loadCategories() {
-  fetch(`${SHEET_API}?action=getCategories`)
-    .then(res => res.json())
-    .then(data => {
-      const container = document.getElementById('category-container');
-      container.innerHTML = '';
+/* render 顯示頂層分類（依 'mainCat' 分組） */
+function renderCategoryBlocks(rows) {
+  // group by mainCat and pick mainImg
+  const grouped = {};
+  rows.forEach(r => {
+    const key = r.mainCat || r['頂層分類'] || r['A'] || '';
+    if (!key) return;
+    grouped[key] = grouped[key] || { mainImg: r.mainImg || r.mainImgFile || r['mainImg'] || r['B'], subCats: [] };
+    const sub = r.subCat || r['第二層分類'] || r['C'];
+    const subImg = r.subImg || r['D'];
+    if (sub) grouped[key].subCats.push({ name: sub, img: subImg });
+  });
 
-      const aboutBlock = createCategoryBlock('關於我', 'Yoshi_Selection_logo.jpg', true);
-      container.appendChild(aboutBlock);
+  // build UI
+  Object.keys(grouped).forEach(mainCat => {
+    const meta = grouped[mainCat];
+    const block = document.createElement('div');
+    block.className = 'category-block';
+    block.innerHTML = `
+      <div class="circle-image"><img src="images/${meta.mainImg || 'placeholder.jpg'}" alt="${mainCat}"></div>
+      <div class="category-name">${mainCat}</div>
+    `;
+    block.addEventListener('click', () => {
+      // expand or collapse
+      if (currentExpanded === mainCat) {
+        subCategoryContainer.innerHTML = '';
+        currentExpanded = null;
+      } else {
+        showSubCategoryMenu(mainCat, meta.subCats);
+        currentExpanded = mainCat;
+      }
+    });
+    mainContainer.appendChild(block);
+  });
+}
 
-      data.forEach(cat => {
-        const block = createCategoryBlock(cat.name, cat.image);
-        container.appendChild(block);
+/* show subcategories as buttons. clicking a subcategory navigates to product.html */
+function showSubCategoryMenu(mainCat, subCats) {
+  subCategoryContainer.innerHTML = '';
+  const row = document.createElement('div');
+  row.className = 'sub-category-row';
+
+  // "全部" 第一個
+  const btnAll = document.createElement('button');
+  btnAll.className = 'sub-category-button';
+  btnAll.textContent = '全部';
+  btnAll.addEventListener('click', () => {
+    // 導向商品選擇頁，帶 mainCat（你可以在 product.html 用 ?category=）
+    location.href = `product.html?category=${encodeURIComponent(mainCat)}`;
+  });
+  row.appendChild(btnAll);
+
+  subCats.forEach(s => {
+    const btn = document.createElement('button');
+    btn.className = 'sub-category-button';
+    btn.textContent = s.name;
+    btn.addEventListener('click', () => {
+      // 導向 product.html 並帶 mainCat 與 subCat（query string）
+      const url = `product.html?category=${encodeURIComponent(mainCat)}&sub=${encodeURIComponent(s.name)}`;
+      location.href = url;
+    });
+    row.appendChild(btn);
+  });
+
+  subCategoryContainer.appendChild(row);
+}
+
+/* Render product sections under each main category (show the sub categories as small tiles) */
+function renderProductSections(rows) {
+  productSections.innerHTML = '';
+  // group by mainCat again, build small tiles from subCats
+  const grouped = {};
+  rows.forEach(r => {
+    const key = r.mainCat || r['頂層分類'] || r['A'] || '';
+    if (!key) return;
+    grouped[key] = grouped[key] || { subCats: [] };
+    const sub = r.subCat || r['第二層分類'] || r['C'];
+    const subImg = r.subImg || r['D'];
+    if (sub) grouped[key].subCats.push({ name: sub, img: subImg });
+  });
+
+  Object.keys(grouped).forEach(mainCat => {
+    const section = document.createElement('section');
+    section.className = 'product-section';
+    section.innerHTML = `<h2>${mainCat}</h2>`;
+    const blocks = document.createElement('div');
+    blocks.className = 'sub-category-blocks';
+
+    // create tiles
+    grouped[mainCat].subCats.forEach(s => {
+      const tile = document.createElement('div');
+      tile.className = 'sub-category-block';
+      tile.innerHTML = `
+        <img src="images/${s.img || 'placeholder.jpg'}" alt="${s.name}" />
+        <div class="name">${s.name}</div>
+      `;
+      tile.addEventListener('click', () => {
+        location.href = `product.html?category=${encodeURIComponent(mainCat)}&sub=${encodeURIComponent(s.name)}`;
       });
+      blocks.appendChild(tile);
     });
+
+    section.appendChild(blocks);
+    productSections.appendChild(section);
+  });
 }
 
-function createCategoryBlock(name, image, isAbout = false) {
-  const block = document.createElement('div');
-  block.className = 'category-block';
+/* 初始化 */
+document.addEventListener('DOMContentLoaded', () => {
+  // About 跳轉到 about.html（你可以改成 modal 或 about.html）
+  const aboutBlock = document.getElementById('about-block');
+  aboutBlock.addEventListener('click', () => location.href = 'about.html');
 
-  const imgDiv = document.createElement('div');
-  imgDiv.className = 'category-image';
-  const img = document.createElement('img');
-  img.src = `images/${image}`;
-  img.alt = name;
-  imgDiv.appendChild(img);
-
-  const textDiv = document.createElement('div');
-  textDiv.className = 'category-text';
-  textDiv.innerText = name;
-
-  block.appendChild(imgDiv);
-  block.appendChild(textDiv);
-
-  if (isAbout) {
-    block.addEventListener('click', () => {
-      document.getElementById('about-modal').style.display = 'block';
-    });
-  } else if (name === '範例商品變體') {
-    block.addEventListener('click', () => {
-      document.getElementById('main-content').innerHTML = '';
-      loadVariantProducts();
-    });
-  }
-
-  return block;
-}
-
-function loadVariantProducts() {
-  fetch(`${SHEET_API}?action=getVariantProducts`)
-    .then(res => res.json())
-    .then(products => {
-      const container = document.getElementById('main-content');
-      container.innerHTML = '';
-
-      products.forEach(product => {
-        const block = document.createElement('div');
-        block.className = 'product-block';
-
-        const imageContainer = document.createElement('div');
-        imageContainer.className = 'product-image-container';
-
-        const images = (product.image || '').split('、').map(img => img.trim()).filter(img => img);
-        if (images.length > 0) {
-          let currentIndex = 0;
-          const imgEl = document.createElement('img');
-          imgEl.className = 'product-image';
-          imgEl.src = `images/${images[currentIndex]}`;
-          imageContainer.appendChild(imgEl);
-
-          if (images.length > 1) {
-            const left = document.createElement('div');
-            left.className = 'image-arrow left-arrow';
-            left.textContent = '◀';
-            left.onclick = () => {
-              currentIndex = (currentIndex - 1 + images.length) % images.length;
-              imgEl.src = `images/${images[currentIndex]}`;
-            };
-
-            const right = document.createElement('div');
-            right.className = 'image-arrow right-arrow';
-            right.textContent = '▶';
-            right.onclick = () => {
-              currentIndex = (currentIndex + 1) % images.length;
-              imgEl.src = `images/${images[currentIndex]}`;
-            };
-
-            imageContainer.appendChild(left);
-            imageContainer.appendChild(right);
-          }
-        } else {
-          const placeholder = document.createElement('div');
-          placeholder.className = 'image-placeholder';
-          placeholder.textContent = '無圖片';
-          imageContainer.appendChild(placeholder);
-        }
-
-        const status = document.createElement('div');
-        status.className = 'product-status';
-        status.textContent = `狀態: ${product.status}`;
-
-        const leftCol = document.createElement('div');
-        leftCol.className = 'product-left';
-        leftCol.appendChild(imageContainer);
-        leftCol.appendChild(status);
-
-        const rightCol = document.createElement('div');
-        rightCol.className = 'product-right';
-
-        const title = document.createElement('div');
-        title.className = 'product-title';
-        title.textContent = product.name;
-
-        const price = document.createElement('div');
-        price.className = 'product-price';
-        price.textContent = `$ ${product.price}`;
-
-        const desc = document.createElement('div');
-        desc.className = 'product-desc';
-        desc.textContent = product.desc || '';
-
-        const options = document.createElement('div');
-        options.className = 'product-options';
-
-        const variantGroups = [
-          { title: product.variant1Name, values: [...new Set(product.allVariants.map(v => v.variant1))] },
-          { title: product.variant2Name, values: [...new Set(product.allVariants.map(v => v.variant2))] },
-          { title: product.variant3Name, values: [...new Set(product.allVariants.map(v => v.variant3))] },
-        ];
-
-        const selected = {};
-
-        variantGroups.forEach(group => {
-          const groupDiv = document.createElement('div');
-          group.values.forEach(val => {
-            const btn = document.createElement('button');
-            btn.className = 'option-button';
-            btn.textContent = val;
-            btn.addEventListener('click', () => {
-              groupDiv.querySelectorAll('button').forEach(b => b.classList.remove('active'));
-              btn.classList.add('active');
-              selected[group.title] = val;
-            });
-            groupDiv.appendChild(btn);
-          });
-          options.appendChild(groupDiv);
-        });
-
-        const quantityRow = document.createElement('div');
-        quantityRow.className = 'product-quantity-row';
-
-        const quantityLabel = document.createElement('span');
-        quantityLabel.textContent = '數量：';
-
-        const qtyInput = document.createElement('input');
-        qtyInput.type = 'number';
-        qtyInput.min = 1;
-        qtyInput.max = product.stock;
-        qtyInput.value = 1;
-
-        const stockText = document.createElement('span');
-        stockText.textContent = ` 還剩 ${product.stock} 件`;
-
-        quantityRow.appendChild(quantityLabel);
-        quantityRow.appendChild(qtyInput);
-        quantityRow.appendChild(stockText);
-
-        const addToCartBtn = document.createElement('button');
-        addToCartBtn.className = 'add-to-cart-btn';
-        addToCartBtn.textContent = '加入購物車';
-        addToCartBtn.addEventListener('click', () => {
-          alert('🛒 商品已加入購物車（尚未串接邏輯）');
-        });
-
-        rightCol.appendChild
+  // 載入分類
+  loadCategories();
+});

@@ -1,136 +1,154 @@
-/* style.css */
 body {
-  font-family: Calibri, system-ui, -apple-system, "Microsoft JhengHei", "Segoe UI", sans-serif;
+  font-family: Calibri, "微軟正黑體", sans-serif;
   margin: 0;
   padding: 0;
-  color: #222;
+  background-color: #fff;
 }
 
+/* 標題 */
 .header {
-  background-color: #FFD8A8; /* 淺橘 */
+  background-color: #ffe5b4;
+  color: #333;
   text-align: center;
-  padding: 20px 12px;
   font-size: 2rem;
-  font-weight: 600;
+  padding: 1rem;
 }
 
-/* 頂層分類區塊容器 */
+/* 商品分類區塊 */
 .category-section {
+  padding: 1rem;
+}
+
+.category-container {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
+  gap: 1rem;
   justify-content: center;
-  padding: 20px;
-  gap: 12px;
 }
 
-/* 單一頂層分類（包含關於我） */
 .category-block {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 120px; /* 包含圓圖與文字 */
+  width: 120px;
+  text-align: center;
   cursor: pointer;
-  user-select: none;
 }
 
-/* 圓形圖片小區（大小固定，與懸浮購物車一樣） */
-.category-image {
+.circle-image {
   width: 100px;
   height: 100px;
+  margin: 0 auto;
   border-radius: 50%;
   overflow: hidden;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  border: 2px solid #ccc;
 }
 
-.category-image img {
+.circle-image img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
 }
 
-.category-text {
-  margin-top: 8px;
+.category-name {
+  margin-top: 0.5rem;
+  font-weight: bold;
+}
+
+/* 第二層分類選單 */
+#sub-category-container {
   text-align: center;
-  font-size: 0.95rem;
+  margin: 1rem 0;
 }
 
-/* subcategory 區塊（點選後展開） */
-.subcategory-section {
-  padding: 10px 20px 40px 20px;
+.sub-category-button {
+  margin: 0.25rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #aaa;
+  background-color: #f5f5f5;
+  cursor: pointer;
+  border-radius: 5px;
 }
 
-/* 單一第二層分類卡片 */
-.subcategory-block {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  width: 120px;
-  margin: 8px;
+/* 商品細分區塊 */
+.product-section {
+  padding: 1rem;
+  border-top: 1px solid #ddd;
 }
 
-/* modal */
+.product-section h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.sub-category-blocks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: flex-start;
+}
+
+.sub-category-block {
+  width: 150px;
+  text-align: center;
+}
+
+.sub-category-block img {
+  width: 100%;
+  border-radius: 8px;
+}
+
+.sub-category-block .name {
+  margin-top: 0.5rem;
+}
+
+/* 關於我彈窗 */
 .modal {
   display: none;
   position: fixed;
-  z-index: 1200;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0,0,0,0.45);
-}
-
-.modal.show {
-  display: block;
+  z-index: 1000;
+  left: 0; top: 0;
+  width: 100%; height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
 }
 
 .modal-content {
   background: #fff;
-  width: 320px;
-  max-width: calc(100% - 40px);
-  margin: 12% auto;
-  padding: 20px;
+  padding: 2rem;
+  margin: 10% auto;
+  width: 300px;
   border-radius: 10px;
-  position: relative;
-}
-
-/* 按鈕 */
-.close-btn {
-  position: absolute;
-  right: 14px;
-  bottom: 14px;
-  padding: 6px 12px;
-  border: none;
-  background: #f0f0f0;
-  border-radius: 6px;
-  cursor: pointer;
+  text-align: center;
 }
 
 /* 懸浮購物車按鈕 */
-.cart-button {
-  position: fixed; /* 固定於 viewport */
-  right: 20px;     /* 永遠貼右邊 20px */
-  width: 100px;    /* 與 .category-image 相同大小 */
+.floating-cart-button {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 100px;
   height: 100px;
+  background-color: #ffe5b4; /* 淺橘色 */
   border-radius: 50%;
-  background-color: #FFD8A8;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1100;
-  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
-  cursor: pointer;
+  z-index: 1000;
+  text-decoration: none;
 }
 
-.cart-button img {
+.floating-cart-button img {
   width: 60%;
   height: 60%;
   object-fit: contain;
-  display: block;
+}
+
+.cart-button {
+  display: inline-block;
+  padding: 0.75rem 1.5rem;
+  margin: 0.5rem;
+  background-color: #ffa94d;
+  color: white;
+  border-radius: 5px;
+  text-decoration: none;
+  font-weight: bold;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }

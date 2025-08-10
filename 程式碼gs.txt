@@ -1,29 +1,58 @@
-// Code.gs (Google Apps Script)
-function doGet() {
-  const ss = SpreadsheetApp.openById('1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo');
-  const sheet = ss.getSheetByName('分類圖片');
-  const data = sheet.getDataRange().getValues();
-  
-  const mainCategories = [];
-  const subcategories = {};
+// Code.gs
+function doGet(e) {
+  const SPREADSHEET_ID = '1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo';
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
 
-  for (let i = 1; i < data.length; i++) {
-    const mainCat = data[i][0];
-    const mainImg = data[i][1];
-    const subCat = data[i][2];
-    const subImg = data[i][3];
+  // 先讀分類圖片分頁（若不存在，就用空陣列）
+  const picSheet = ss.getSheetByName('分類圖片');
+  const picData = picSheet ? picSheet.getDataRange().getValues() : [];
 
-    if (!mainCategories.find(c => c.name === mainCat)) {
-      mainCategories.push({ name: mainCat, image: mainImg });
-      subcategories[mainCat] = [{ name: '全部', image: mainImg }];
-    }
+  // 將分類圖片資料整理成 map: mainName -> { mainImg: 'x', subcats: [{name,image}, ...] }
+  const picMap = {};
+  if (picData.length > 0) {
+    // 假設第一列是標題，從 i=1 開始；若你的表沒有 header，請改 i=0
+    for (let i = 1; i < picData.length; i++) {
+      const row = picData[i];
+      const main = row[0] ? String(row[0]).trim() : '';
+      const mainImg = row[1] ? String(row[1]).trim() : '';
+      const sub = row[2] ? String(row[2]).trim() : '';
+      const subImg = row[3] ? String(row[3]).trim() : '';
 
-    if (subCat && subImg) {
-      subcategories[mainCat].push({ name: subCat, image: subImg });
+      if (!main) continue;
+      if (!picMap[main]) picMap[main] = { mainImg: mainImg || '', subcats: [] };
+      else if (!picMap[main].mainImg && mainImg) picMap[main].mainImg = mainImg;
+
+      if (sub) {
+        picMap[main].subcats.push({ name: sub, image: subImg || mainImg || '' });
+      }
     }
   }
 
+  // 讀取所有分頁，把非分類圖片的分頁當成頂層分類
+  const sheets = ss.getSheets();
+  const mainCategories = [];
+  const subcategories = {};
+
+  for (let s = 0; s < sheets.length; s++) {
+    const sh = sheets[s];
+    const name = sh.getName();
+    if (name === '分類圖片') continue;
+
+    // main image 從 picMap 找；若沒有就空字串（前端會使用 placeholder）
+    const mainImg = (picMap[name] && picMap[name].mainImg) ? picMap[name].mainImg : '';
+
+    mainCategories.push({ name: name, image: mainImg });
+
+    // 第二層分類：第一項固定是「全部」，之後如果分類圖片有資料就塞入
+    const subs = [{ name: '全部', image: mainImg }];
+    if (picMap[name] && picMap[name].subcats && picMap[name].subcats.length > 0) {
+      picMap[name].subcats.forEach(sc => subs.push(sc));
+    }
+    subcategories[name] = subs;
+  }
+
+  const output = { mainCategories: mainCategories, subcategories: subcategories };
   return ContentService
-    .createTextOutput(JSON.stringify({ mainCategories, subcategories }))
+    .createTextOutput(JSON.stringify(output))
     .setMimeType(ContentService.MimeType.JSON);
 }

@@ -1,48 +1,43 @@
-<!-- index.html -->
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Yoshi Selection</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Yoshi Selection</title>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-    <!-- 標題區塊 -->
-    <header class="header">
-        Yoshi Selection
-    </header>
+  <!-- 標題區塊 -->
+  <header class="header">Yoshi Selection</header>
 
-    <!-- 商品分類區塊 -->
-    <section id="category-section" class="category-section">
-        <!-- 關於我區塊固定在最左 -->
-        <div class="category-block about-me" onclick="openAboutMe()">
-            <div class="category-image">
-                <img src="images/Yoshi_Selection_logo.jpg" alt="關於我">
-            </div>
-            <div class="category-text">關於我</div>
-        </div>
-        <!-- 其他分類由 script.js 動態載入 -->
-    </section>
-
-    <!-- 頂層商品細分區塊 -->
-    <section id="subcategory-section" class="subcategory-section">
-        <!-- 動態生成 -->
-    </section>
-
-    <!-- 關於我彈窗 -->
-    <div id="aboutMeModal" class="modal">
-        <div class="modal-content">
-            <p>這個之後會補充。</p>
-            <button onclick="closeAboutMe()">確認</button>
-        </div>
+  <!-- 商品分類區塊 -->
+  <section id="category-section" class="category-section">
+    <!-- 固定左邊：關於我 -->
+    <div class="category-block about-me" id="about-me-block" onclick="openAboutMe()">
+      <div class="category-image">
+        <img src="images/Yoshi_Selection_logo.jpg" alt="關於我" />
+      </div>
+      <div class="category-text">關於我</div>
     </div>
+    <!-- 其他頂層分類會由 script.js 動態插入在這之後 -->
+  </section>
 
-    <!-- 懸浮購物車按鈕 -->
-    <div id="cart-button" class="cart-button" onclick="goToCart()">
-        <img src="images/cart_icon.png" alt="購物車">
+  <!-- 頂層商品細分區塊（點選某頂層分類後展開） -->
+  <section id="subcategory-section" class="subcategory-section"></section>
+
+  <!-- 關於我彈窗（預設隱藏） -->
+  <div id="aboutMeModal" class="modal" aria-hidden="true">
+    <div class="modal-content">
+      <p>這個之後會補充。</p>
+      <button class="close-btn" onclick="closeAboutMe()">確認</button>
     </div>
+  </div>
 
-    <script src="script.js"></script>
+  <!-- 懸浮購物車按鈕（圓形） -->
+  <div id="cart-button" class="cart-button" onclick="goToCart()" title="購物車">
+    <img src="images/cart_icon.png" alt="購物車" />
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>

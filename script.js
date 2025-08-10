@@ -1,84 +1,154 @@
-// script.js
-const SHEET_API_URL = 'https://script.google.com/macros/s/你的AppsScript部署網址/exec';
+// ====== IMPORTANT: 把下面的 URL 換成你部署後 Apps Script 的公開網址（doGet） ======
+const SHEET_API_URL = 'https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec';
+
+let openedCategory = null; // 目前展開的頂層分類（名稱），點第二次會收合
 
 async function loadCategories() {
-    try {
-        const res = await fetch(SHEET_API_URL);
-        const data = await res.json();
+  try {
+    const res = await fetch(SHEET_API_URL);
+    if (!res.ok) throw new Error(`Fetch failed: ${res.status}`);
+    const data = await res.json();
 
-        const categorySection = document.getElementById('category-section');
+    // data: { mainCategories: [{name,image},...], subcategories: { "<name>": [{name,image},...] } }
+    const categorySection = document.getElementById('category-section');
 
-        data.mainCategories.forEach(cat => {
-            const block = document.createElement('div');
-            block.className = 'category-block';
+    // 把 mainCategories 裡的每一個加到關於我後面（關於我已在 index.html）
+    data.mainCategories.forEach(cat => {
+      // 如果分頁名稱就是「關於我」，跳過（避免重複）
+      if (!cat || cat.name === '關於我') return;
 
-            const imgDiv = document.createElement('div');
-            imgDiv.className = 'category-image';
-            const img = document.createElement('img');
-            img.src = `images/${cat.image}`;
-            imgDiv.appendChild(img);
+      const block = document.createElement('div');
+      block.className = 'category-block';
+      block.setAttribute('data-cat-name', cat.name);
 
-            const textDiv = document.createElement('div');
-            textDiv.className = 'category-text';
-            textDiv.textContent = cat.name;
+      const imgDiv = document.createElement('div');
+      imgDiv.className = 'category-image';
+      const img = document.createElement('img');
+      // 若沒有圖片檔名，放 placeholder 或空白（請確保 images/ 裡有 placeholder.png 可選）
+      img.src = cat.image ? `images/${cat.image}` : `images/placeholder.png`;
+      img.alt = cat.name;
+      imgDiv.appendChild(img);
 
-            block.appendChild(imgDiv);
-            block.appendChild(textDiv);
-            block.addEventListener('click', () => toggleSubcategories(cat.name, data.subcategories[cat.name]));
+      const textDiv = document.createElement('div');
+      textDiv.className = 'category-text';
+      textDiv.textContent = cat.name;
 
-            categorySection.appendChild(block);
-        });
-    } catch (e) {
-        console.error('讀取分類失敗', e);
-    }
-}
+      block.appendChild(imgDiv);
+      block.appendChild(textDiv);
 
-function toggleSubcategories(categoryName, subcats) {
-    const subcategorySection = document.getElementById('subcategory-section');
-    subcategorySection.innerHTML = '';
+      block.addEventListener('click', () => {
+        // 點擊同一個會 toggle 收合
+        if (openedCategory === cat.name) {
+          // 收合
+          closeSubcategories();
+          openedCategory = null;
+        } else {
+          // 展開這個
+          showSubcategories(cat.name, data.subcategories && data.subcategories[cat.name] ? data.subcategories[cat.name] : []);
+          openedCategory = cat.name;
+        }
+      });
 
-    const title = document.createElement('h2');
-    title.textContent = categoryName;
-    subcategorySection.appendChild(title);
-
-    subcats.forEach(sc => {
-        const scBlock = document.createElement('div');
-        scBlock.className = 'subcategory-block';
-
-        const imgDiv = document.createElement('div');
-        imgDiv.className = 'category-image';
-        const img = document.createElement('img');
-        img.src = `images/${sc.image}`;
-        imgDiv.appendChild(img);
-
-        const textDiv = document.createElement('div');
-        textDiv.className = 'category-text';
-        textDiv.textContent = sc.name;
-
-        scBlock.appendChild(imgDiv);
-        scBlock.appendChild(textDiv);
-
-        subcategorySection.appendChild(scBlock);
+      categorySection.appendChild(block);
     });
+  } catch (err) {
+    console.error('載入分類資料失敗：', err);
+    // 可視化錯誤提示（開發時方便）
+    const categorySection = document.getElementById('category-section');
+    const errDiv = document.createElement('div');
+    errDiv.style.color = 'red';
+    errDiv.textContent = '無法讀取分類，請檢查 Apps Script 是否已部署並允許公開讀取（Console 會有錯誤訊息）。';
+    categorySection.appendChild(errDiv);
+  }
 }
 
+function showSubcategories(categoryName, subcats) {
+  const sec = document.getElementById('subcategory-section');
+  sec.innerHTML = ''; // 清掉舊的
+
+  const title = document.createElement('h2');
+  title.textContent = categoryName;
+  sec.appendChild(title);
+
+  const wrapper = document.createElement('div');
+  wrapper.style.display = 'flex';
+  wrapper.style.flexWrap = 'wrap';
+  wrapper.style.alignItems = 'flex-start';
+  wrapper.style.padding = '8px 0';
+
+  // 第一個為全部（如果 subcats 沒有，仍建立一個全部）
+  if (!subcats || subcats.length === 0) {
+    subcats = [{ name: '全部', image: '' }];
+  }
+
+  subcats.forEach(sc => {
+    const scBlock = document.createElement('div');
+    scBlock.className = 'subcategory-block';
+
+    const imgDiv = document.createElement('div');
+    imgDiv.className = 'category-image';
+    const img = document.createElement('img');
+    img.src = sc.image ? `images/${sc.image}` : `images/placeholder.png`;
+    img.alt = sc.name;
+    imgDiv.appendChild(img);
+
+    const textDiv = document.createElement('div');
+    textDiv.className = 'category-text';
+    textDiv.textContent = sc.name;
+
+    scBlock.appendChild(imgDiv);
+    scBlock.appendChild(textDiv);
+    wrapper.appendChild(scBlock);
+  });
+
+  sec.appendChild(wrapper);
+}
+
+function closeSubcategories() {
+  const sec = document.getElementById('subcategory-section');
+  sec.innerHTML = '';
+}
+
+// about me modal
 function openAboutMe() {
-    document.getElementById('aboutMeModal').style.display = 'block';
+  const modal = document.getElementById('aboutMeModal');
+  modal.classList.add('show');
+  modal.setAttribute('aria-hidden', 'false');
 }
 
 function closeAboutMe() {
-    document.getElementById('aboutMeModal').style.display = 'none';
+  const modal = document.getElementById('aboutMeModal');
+  modal.classList.remove('show');
+  modal.setAttribute('aria-hidden', 'true');
 }
+
+// 點擊 modal 背景關閉
+window.addEventListener('click', (e) => {
+  const modal = document.getElementById('aboutMeModal');
+  if (e.target === modal) closeAboutMe();
+});
 
 function goToCart() {
-    window.location.href = 'cart.html';
+  // 先導到一個簡單的 cart.html（你之後會做）
+  window.location.href = 'cart.html';
 }
 
-window.onclick = function(event) {
-    const modal = document.getElementById('aboutMeModal');
-    if (event.target === modal) {
-        modal.style.display = 'none';
-    }
-};
+/* 懸浮購物車位置更新
+   我採取的邏輯：購物車使用 fixed，在 viewport 的右邊（right:20px），
+   並且動態設定 bottom = 20% of viewport height（即視窗高度的 20%）
+   這樣不論捲動，按鈕都會保持在視窗的對應位置，並且會在 resize/scroll 時修正。
+*/
+function updateCartButtonPosition() {
+  const cartBtn = document.getElementById('cart-button');
+  if (!cartBtn) return;
+  const visibleH = window.innerHeight;
+  cartBtn.style.bottom = Math.round(visibleH * 0.20) + 'px';
+}
 
-window.onload = loadCategories;
+window.addEventListener('scroll', updateCartButtonPosition);
+window.addEventListener('resize', updateCartButtonPosition);
+
+window.addEventListener('load', () => {
+  loadCategories();
+  updateCartButtonPosition();
+});

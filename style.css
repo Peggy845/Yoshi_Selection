@@ -1,87 +1,136 @@
-// style.css
+/* style.css */
 body {
-    font-family: Calibri, sans-serif;
-    margin: 0;
-    padding: 0;
+  font-family: Calibri, system-ui, -apple-system, "Microsoft JhengHei", "Segoe UI", sans-serif;
+  margin: 0;
+  padding: 0;
+  color: #222;
 }
 
 .header {
-    background-color: #FFD8A8;
-    text-align: center;
-    padding: 20px;
-    font-size: 2em;
+  background-color: #FFD8A8; /* 淺橘 */
+  text-align: center;
+  padding: 20px 12px;
+  font-size: 2rem;
+  font-weight: 600;
 }
 
+/* 頂層分類區塊容器 */
 .category-section {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    padding: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 20px;
+  gap: 12px;
 }
 
+/* 單一頂層分類（包含關於我） */
 .category-block {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin: 10px;
-    cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120px; /* 包含圓圖與文字 */
+  cursor: pointer;
+  user-select: none;
 }
 
+/* 圓形圖片小區（大小固定，與懸浮購物車一樣） */
 .category-image {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    overflow: hidden;
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  overflow: hidden;
+  background: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
 .category-image img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 .category-text {
-    margin-top: 5px;
-    text-align: center;
+  margin-top: 8px;
+  text-align: center;
+  font-size: 0.95rem;
 }
 
+/* subcategory 區塊（點選後展開） */
 .subcategory-section {
-    padding: 20px;
+  padding: 10px 20px 40px 20px;
 }
 
+/* 單一第二層分類卡片 */
+.subcategory-block {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  width: 120px;
+  margin: 8px;
+}
+
+/* modal */
 .modal {
-    display: none;
-    position: fixed;
-    z-index: 1;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+  display: none;
+  position: fixed;
+  z-index: 1200;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.45);
+}
+
+.modal.show {
+  display: block;
 }
 
 .modal-content {
-    background-color: white;
-    margin: 15% auto;
-    padding: 20px;
-    width: 300px;
-    border-radius: 10px;
+  background: #fff;
+  width: 320px;
+  max-width: calc(100% - 40px);
+  margin: 12% auto;
+  padding: 20px;
+  border-radius: 10px;
+  position: relative;
 }
 
+/* 按鈕 */
+.close-btn {
+  position: absolute;
+  right: 14px;
+  bottom: 14px;
+  padding: 6px 12px;
+  border: none;
+  background: #f0f0f0;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* 懸浮購物車按鈕 */
 .cart-button {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    width: 60px;
-    height: 60px;
-    background-color: #FFA94D;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
+  position: fixed; /* 固定於 viewport */
+  right: 20px;     /* 永遠貼右邊 20px */
+  width: 100px;    /* 與 .category-image 相同大小 */
+  height: 100px;
+  border-radius: 50%;
+  background-color: #FFD8A8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.18);
+  cursor: pointer;
 }
 
 .cart-button img {
-    width: 60%;
+  width: 60%;
+  height: 60%;
+  object-fit: contain;
+  display: block;
 }

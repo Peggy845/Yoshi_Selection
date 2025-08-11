@@ -1,18 +1,31 @@
+/*  JavaScript 使網頁從靜態的文字和圖片，轉變為動態、互動的數位體驗 */
+
+/* getElementById: 當要與網頁上的特定元素互動，需要一種方式來「選取」它。getElementById允許
+直接通過 HTML 元素的 id 屬性來選取該元素 */
+
 const sheetAPI = 'https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec';
+
+/* categoryContainer = 選取頂層分類區塊 */
 const categoryContainer = document.getElementById('main-category-container');
 
-/* subCategoryContainer = 第二層分類選單容器*/
+/* subCategoryContainer = 選取第二層分類選單容器 */
 const subCategoryContainer = document.getElementById('sub-category-container');
+
+/* subCategoryContainer = 頂層商品細分區塊 */
 const productSections = document.getElementById('product-sections');
 
 let currentExpanded = null;
 
-async function fetchData() {
+
+/* fetch() : 會依照參數裡指定的url去取得資料 */
+async function fetchData() 
+{
   const res = await fetch(sheetAPI);
   const data = await res.json();
   return data;
 }
 
+/* *************************** 頂層分類區塊 ******************************** */
 function createCategoryBlock(name, imgFile) 
 {
   const block = document.createElement('div');
@@ -70,6 +83,12 @@ function createSubCategoryMenu(mainCat, subCategories)
     const btn = document.createElement('button');
     btn.textContent = name;
     btn.className = 'sub-category-button';
+	
+	/*  綁定點擊事件 */
+	btn.addEventListener('click', () => 
+	{
+		goToProductList(mainCat, subCat.name);
+	});
     menu.appendChild(btn);
   });
   subCategoryContainer.appendChild(menu);
@@ -92,6 +111,12 @@ function createProductSection(mainCat, subData)
   {
     const block = document.createElement('div');
     block.className = 'sub-category-block';
+	
+	/*  綁定點擊事件 */
+    block.addEventListener('click', () => 
+	{
+        goToProductList(mainCat, subCat.name);
+    });
 
     const img = document.createElement('img');
     img.src = `images/${subImg}`;
@@ -110,15 +135,19 @@ function createProductSection(mainCat, subData)
   productSections.appendChild(section);
 }
 
-window.onload = async () => {
+/* *************************** 圖片等等的加載 ******************************** */
+window.onload = async () => 
+{
   const { categoryImages } = await fetchData();
 
   const mainCats = [...new Set(categoryImages.map(row => row.mainCat))];
 
-  mainCats.forEach(mainCat => {
+  mainCats.forEach(mainCat => 
+  {
     const mainRow = categoryImages.find(row => row.mainCat === mainCat);
     const block = createCategoryBlock(mainCat, mainRow.mainImg);
-    block.onclick = () => {
+    block.onclick = () => 
+	{
       if (currentExpanded === mainCat) {
         subCategoryContainer.innerHTML = '';
         currentExpanded = null;
@@ -138,3 +167,10 @@ window.onload = async () => {
     createProductSection(mainCat, subData);
   });
 };
+
+// 跳轉到商品列表頁面
+function goToProductList(mainCat, subCat) 
+{
+    const url = `product_list.html?main=${encodeURIComponent(mainCat)}&sub=${encodeURIComponent(subCat)}`;
+    window.location.href = url;
+}

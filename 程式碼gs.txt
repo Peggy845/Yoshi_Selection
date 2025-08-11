@@ -1,69 +1,62 @@
-//const SPREADSHEET_ID = '1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo';
 function doGet(e) {
-  const action = e.parameter.action;
-  if (action === 'getCategories') {
-    return ContentService.createTextOutput(JSON.stringify(getCategories()))
-      .setMimeType(ContentService.MimeType.JSON);
+  const ss = SpreadsheetApp.openById("1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo");
+  const sheet = ss.getSheetByName("分類圖片");
+
+  if (e.parameter.type === "categories") {
+    const values = sheet.getDataRange().getValues();
+    const headers = values.shift();
+    const mainCatIndex = headers.indexOf("頂層分類");
+    const mainImgIndex = headers.indexOf("頂層分類圖片檔名");
+    const subCatIndex = headers.indexOf("第二層分類");
+    const subImgIndex = headers.indexOf("第二層分類圖片檔名");
+
+    const cats = {};
+    values.forEach(row => {
+      const main = row[mainCatIndex];
+      const mainImg = getDriveImageUrl(row[mainImgIndex]);
+      const sub = row[subCatIndex];
+      const subImg = getDriveImageUrl(row[subImgIndex]);
+
+      if (!cats[main]) {
+        cats[main] = { mainCat: main, mainImage: mainImg, subCategories: [] };
+      }
+      cats[main].subCategories.push({ subCat: sub, subImage: subImg });
+    });
+
+    return ContentService.createTextOutput(JSON.stringify(Object.values(cats))).setMimeType(ContentService.MimeType.JSON);
   }
-  if (action === 'getProducts') {
-    const mainCat = e.parameter.main || '';
-    const subCat = e.parameter.sub || '';
-    return ContentService.createTextOutput(JSON.stringify(getProducts(mainCat, subCat)))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
-  return ContentService.createTextOutput(JSON.stringify({error: 'Invalid action'}))
-    .setMimeType(ContentService.MimeType.JSON);
-}
 
-function getCategories() {
-  const ss = SpreadsheetApp.openById('1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo');
-  const sheet = ss.getSheetByName('分類圖片');
-  const data = sheet.getDataRange().getValues();
-  const result = [];
-  const header = data.shift();
-
-  data.forEach(row => {
-    let mainCat = row[0];
-    let mainImg = row[1];
-    let subCat = row[2];
-    let subImg = row[3];
-
-    let existing = result.find(r => r.mainCat === mainCat);
-    if (!existing) {
-      existing = { mainCat, mainImg, subCategories: [] };
-      result.push(existing);
+  if (e.parameter.type === "products") {
+    const mainCat = e.parameter.main;
+    const subCat = e.parameter.sub;
+    const productSheet = ss.getSheetByName(mainCat);
+    if (!productSheet) {
+      return ContentService.createTextOutput("[]").setMimeType(ContentService.MimeType.JSON);
     }
-    existing.subCategories.push(subCat);
-  });
 
-  return result;
+    const data = productSheet.getDataRange().getValues();
+    const headers = data.shift();
+    const nameIndex = headers.indexOf("商品名稱");
+    const priceIndex = headers.indexOf("價格");
+    const imageIndex = headers.indexOf("商品圖片");
+    const categoryIndex = headers.indexOf("商品系列");
+
+    const products = data
+      .filter(row => !subCat || row[categoryIndex] === subCat)
+      .map(row => ({
+        name: row[nameIndex],
+        price: row[priceIndex],
+        image: getDriveImageUrl(row[imageIndex])
+      }));
+
+    return ContentService.createTextOutput(JSON.stringify(products)).setMimeType(ContentService.MimeType.JSON);
+  }
 }
 
-function getProducts(mainCat, subCat) {
-  const ss = SpreadsheetApp.openById('1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo');
-  const sheet = ss.getSheetByName(mainCat);
-  const data = sheet.getDataRange().getValues();
-  const header = data.shift();
-
-  let products = data.map(row => {
-    return {
-      series: row[0],
-      name: row[1],
-      price: row[2],
-      stock: row[3],
-      type: row[4],
-      option: row[5],
-      detail: row[6],
-      status: row[7],
-      eta: row[8],
-      img: row[9],
-      extraImgs: row[10]
-    };
-  });
-
-  if (subCat && subCat !== '全部') {
-    products = products.filter(p => p.series === subCat);
+function getDriveImageUrl(filename) {
+  const files = DriveApp.getFilesByName(filename);
+  if (files.hasNext()) {
+    return `https://drive.google.com/uc?id=${files.next().getId()}`;
   }
-
-  return products;
+  return "";
 }

@@ -1,45 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>商品列表</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <header>
-    <h1 id="pageTitle"></h1>
-  </header>
-
-  <div id="productList"></div>
-
-  <script>
-    const params = new URLSearchParams(window.location.search);
-    const mainCat = params.get('main');
-    const subCat = params.get('sub') || '全部';
-    document.getElementById('pageTitle').textContent = `${mainCat} - ${subCat}`;
-
-    fetch(`https://script.google.com/macros/s/KfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec?action=getProducts&main=${encodeURIComponent(mainCat)}&sub=${encodeURIComponent(subCat)}`)
-      .then(res => res.json())
-      .then(products => {
-        const container = document.getElementById('productList');
-        if (products.length === 0) {
-          container.innerHTML = '<p>沒有找到商品。</p>';
-          return;
-        }
-        products.forEach(p => {
-          const div = document.createElement('div');
-          div.className = 'product-item';
-          div.innerHTML = `
-            <img src="images/${p.img}" alt="${p.name}">
-            <h3>${p.name}</h3>
-            <p>價格：${p.price}</p>
-            <p>庫存：${p.stock}</p>
-          `;
-          container.appendChild(div);
-        });
-      })
-      .catch(err => console.error(err));
-  </script>
+  <div id="product-list" class="product-list"></div>
+  
+  <script src="product_list.js"></script>
 </body>
 </html>

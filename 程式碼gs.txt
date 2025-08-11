@@ -1,43 +1,34 @@
-/**
- * doGet()
- * 當有人以 GET 方法存取此 Apps Script Web App 連結時會自動執行
- * 主要功能：從 Google 試算表讀取「分類圖片」工作表的內容，轉換成 JSON 回傳
- */
-function doGet() 
-{
-  
-  // 1. 透過試算表 ID 開啟 Google 試算表
-  // 注意：這個 ID 來自試算表網址中間的那一段(如果要換excel就是換這個id)
-  const ss = SpreadsheetApp.openById('1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo');
+function doGet(e) {
+  var category = e.parameter.category || '';
+  var subcategory = e.parameter.subcategory || '';
+  var sheetNames = SpreadsheetApp.getActiveSpreadsheet().getSheets().map(s => s.getName());
 
-  // 2. 取得名稱為「分類圖片」的工作表
-  // 請確保試算表內確實存在這個分頁，否則會報錯
-  const sheet = ss.getSheetByName('分類圖片');
+  var allData = [];
 
-  // 3. 取得整張工作表的所有資料（含標題列）
-  // getDataRange() 會自動抓到所有有內容的儲存格範圍。
-  // getDataRange().getValues() 會一次取整張表，資料多時可能造成效能下降。
-  //若資料量變大，可以用 getRange(row, col, numRows, numCols) 取特定範圍。
-  const data = sheet.getDataRange().getValues();
+  sheetNames.forEach(function(sheetName) {
+    if (sheetName === '分類圖片') return; // 跳過分類圖片分頁
+    
+    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+    var data = sheet.getDataRange().getValues();
+    var headers = data.shift();
 
-  // 4. 建立一個陣列，用來存放整理好的分類資料
-  const categoryImages = [];
+    data.forEach(function(row) {
+      var item = {};
+      headers.forEach(function(h, i) {
+        item[h] = row[i];
+      });
 
-  // 5. 從第 2 列開始讀取（i=1，因為 i=0 是標題列）
-  for (let i = 1; i < data.length; i++) 
-  {
-    categoryImages.push(
-	{
-      mainCat: data[i][0], // 第一欄：主分類名稱
-      mainImg: data[i][1], // 第二欄：主分類圖片 URL
-      subCat: data[i][2],  // 第三欄：子分類名稱
-      subImg: data[i][3]   // 第四欄：子分類圖片 URL
+      // 過濾條件
+      if ((category && item['主分類'] !== category) || 
+          (subcategory && item['子分類'] !== subcategory)) {
+        return;
+      }
+      
+      allData.push(item);
     });
-  }
+  });
 
-  // 6. 將整理好的陣列轉成 JSON 字串，並回傳給前端
-  // setMimeType 設定回傳格式為 JSON（否則會是純文字）
-  return ContentService.createTextOutput(
-    JSON.stringify({ categoryImages }) // 包成物件是為了前端更容易擴充資料
-  ).setMimeType(ContentService.MimeType.JSON);
+  return ContentService
+    .createTextOutput(JSON.stringify(allData))
+    .setMimeType(ContentService.MimeType.JSON);
 }

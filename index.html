@@ -1,3 +1,7 @@
+<!-- ID 就像幫標籤取一個「專屬的名字」，只能用一次 -->
+<!-- class 就像是幫標籤貼上一個「分類」，可以重複使用 -->
+<!-- section 「段落」或「章節」 -->
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
@@ -15,7 +19,7 @@
   <section class="category-section">
     <div class="category-container" id="main-category-container">
       <!-- 固定「關於我」 -->
-      <div class="category-block" onclick="showAboutModal()">
+      <div class="category-block" onclick="showAboutMe()">
         <div class="circle-image">
           <img src="images/Yoshi_Selection_logo.jpg" alt="關於我" />
         </div>
@@ -27,14 +31,14 @@
   <!-- 第二層分類選單容器 -->
   <div id="sub-category-container"></div>
 
-  <!-- 商品細分區塊 -->
+  <!-- 頂層商品細分區塊 -->
   <section id="product-sections"></section>
 
   <!-- 關於我彈窗 -->
-  <div id="about-modal" class="modal">
+  <div id="about-me" class="modal">
     <div class="modal-content">
       <p>這個之後會補充。</p>
-      <button onclick="closeAboutModal()">確認</button>
+      <button onclick="closeAboutMe()">確認</button>
     </div>
   </div>
   

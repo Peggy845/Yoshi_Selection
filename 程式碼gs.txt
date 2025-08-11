@@ -9,9 +9,11 @@ function doGet(e) {
 
   // 將分類圖片資料整理成 map: mainName -> { mainImg: 'x', subcats: [{name,image}, ...] }
   const picMap = {};
-  if (picData.length > 0) {
+  if (picData.length > 0) 
+  {
     // 假設第一列是標題，從 i=1 開始；若你的表沒有 header，請改 i=0
-    for (let i = 1; i < picData.length; i++) {
+    for (let i = 1; i < picData.length; i++) 
+	{
       const row = picData[i];
       const main = row[0] ? String(row[0]).trim() : '';
       const mainImg = row[1] ? String(row[1]).trim() : '';
@@ -19,8 +21,10 @@ function doGet(e) {
       const subImg = row[3] ? String(row[3]).trim() : '';
 
       if (!main) continue;
-      if (!picMap[main]) picMap[main] = { mainImg: mainImg || '', subcats: [] };
-      else if (!picMap[main].mainImg && mainImg) picMap[main].mainImg = mainImg;
+      if (!picMap[main]) 
+		picMap[main] = { mainImg: mainImg || '', subcats: [] };
+      else if (!picMap[main].mainImg && mainImg) 
+		picMap[main].mainImg = mainImg;
 
       if (sub) {
         picMap[main].subcats.push({ name: sub, image: subImg || mainImg || '' });
@@ -33,7 +37,8 @@ function doGet(e) {
   const mainCategories = [];
   const subcategories = {};
 
-  for (let s = 0; s < sheets.length; s++) {
+  for (let s = 0; s < sheets.length; s++) 
+  {
     const sh = sheets[s];
     const name = sh.getName();
     if (name === '分類圖片') continue;

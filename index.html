@@ -1,23 +1,26 @@
 <!DOCTYPE html>
-<html lang="zh-Hant">
+<html lang="zh-TW">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>代購首頁</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>代購網站首頁</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header>
-    <h1>Yoshi 代購</h1>
-  </header>
+    <!-- 頂層分類 -->
+    <div id="mainCategories" class="categories"></div>
 
-  <main id="category-container"></main>
+    <!-- 關於我 -->
+    <section id="about" class="about-section">
+        <h2>關於我</h2>
+        <p>這裡放你的關於我內容。</p>
+    </section>
 
-  <!-- 懸浮購物車 -->
-  <div id="floating-cart" onclick="window.location.href='cart.html'">
-    🛒
-  </div>
+    <!-- 懸浮購物車 -->
+    <div id="floatingCart" class="floating-cart" onclick="goToCart()">
+        🛒 購物車
+    </div>
 
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>

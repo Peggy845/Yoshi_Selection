@@ -1,34 +1,67 @@
+/**
+ * doGet()
+ * 支援兩種模式：
+ * 1. ?type=category → 讀取「分類圖片」分頁
+ * 2. ?type=product&sheet=分頁名稱 → 讀取該分頁的商品資料
+ */
 function doGet(e) {
-  var category = e.parameter.category || '';
-  var subcategory = e.parameter.subcategory || '';
-  var sheetNames = SpreadsheetApp.getActiveSpreadsheet().getSheets().map(s => s.getName());
+  const ss = SpreadsheetApp.openById('1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo');
 
-  var allData = [];
+  const type = e && e.parameter && e.parameter.type ? e.parameter.type : 'category';
 
-  sheetNames.forEach(function(sheetName) {
-    if (sheetName === '分類圖片') return; // 跳過分類圖片分頁
-    
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-    var data = sheet.getDataRange().getValues();
-    var headers = data.shift();
+  if (type === 'category') {
+    // 讀取分類圖片
+    const sheet = ss.getSheetByName('分類圖片');
+    const data = sheet.getDataRange().getValues();
+    const categoryImages = [];
 
-    data.forEach(function(row) {
-      var item = {};
-      headers.forEach(function(h, i) {
-        item[h] = row[i];
+    for (let i = 1; i < data.length; i++) {
+      categoryImages.push({
+        mainCat: data[i][0],
+        mainImg: data[i][1],
+        subCat: data[i][2],
+        subImg: data[i][3]
       });
+    }
 
-      // 過濾條件
-      if ((category && item['主分類'] !== category) || 
-          (subcategory && item['子分類'] !== subcategory)) {
-        return;
-      }
-      
-      allData.push(item);
-    });
-  });
+    return ContentService.createTextOutput(
+      JSON.stringify({ categoryImages })
+    ).setMimeType(ContentService.MimeType.JSON);
 
-  return ContentService
-    .createTextOutput(JSON.stringify(allData))
-    .setMimeType(ContentService.MimeType.JSON);
+  } else if (type === 'product') {
+    // 確認有提供 sheet 參數
+    if (!e.parameter.sheet) {
+      return ContentService.createTextOutput(
+        JSON.stringify({ error: '缺少 sheet 參數' })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    const sheetName = e.parameter.sheet;
+    const sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      return ContentService.createTextOutput(
+        JSON.stringify({ error: '找不到分頁: ' + sheetName })
+      ).setMimeType(ContentService.MimeType.JSON);
+    }
+
+    const data = sheet.getDataRange().getValues();
+    const headers = data[0];
+    const products = [];
+
+    for (let i = 1; i < data.length; i++) {
+      const row = {};
+      headers.forEach((h, idx) => {
+        row[h] = data[i][idx];
+      });
+      products.push(row);
+    }
+
+    return ContentService.createTextOutput(
+      JSON.stringify({ products })
+    ).setMimeType(ContentService.MimeType.JSON);
+  }
+
+  return ContentService.createTextOutput(
+    JSON.stringify({ error: '未知的 type 參數' })
+  ).setMimeType(ContentService.MimeType.JSON);
 }

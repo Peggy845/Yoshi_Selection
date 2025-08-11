@@ -317,3 +317,57 @@ window.onload = async () => {
     list.appendChild(createProductCard(p));
   });
 };
+
+window.onload = () => {
+  const apiBase = 'https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec''; // 改成你的部署網址
+  const page = window.location.pathname;
+
+  if (page.includes('product_list.html')) {
+    // 商品列表頁
+    const urlParams = new URLSearchParams(window.location.search);
+    const sheetName = urlParams.get('sheet');
+
+    if (!sheetName) {
+      console.error('缺少 sheet 參數，無法載入商品資料');
+      return;
+    }
+
+    const apiUrl = `${apiBase}?type=product&sheet=${encodeURIComponent(sheetName)}`;
+    console.log('請求 API:', apiUrl);
+
+    fetch(apiUrl)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.products || !Array.isArray(data.products)) {
+          console.error('API 回傳格式錯誤:', data);
+          return;
+        }
+
+        data.products.forEach(product => {
+          // TODO: 這裡渲染你的商品 UI
+          console.log('商品:', product);
+        });
+      })
+      .catch(err => console.error('API 請求失敗:', err));
+
+  } else {
+    // 首頁（分類頁）
+    const apiUrl = `${apiBase}?type=category`;
+    console.log('請求 API:', apiUrl);
+
+    fetch(apiUrl)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.categoryImages || !Array.isArray(data.categoryImages)) {
+          console.error('API 回傳格式錯誤:', data);
+          return;
+        }
+
+        data.categoryImages.forEach(cat => {
+          // TODO: 這裡渲染你的分類 UI
+          console.log('分類:', cat);
+        });
+      })
+      .catch(err => console.error('API 請求失敗:', err));
+  }
+};

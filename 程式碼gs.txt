@@ -1,59 +1,43 @@
-// Code.gs
-function doGet(e) {
-  const SPREADSHEET_ID = '1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo';
-  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+/**
+ * doGet()
+ * 當有人以 GET 方法存取此 Apps Script Web App 連結時會自動執行
+ * 主要功能：從 Google 試算表讀取「分類圖片」工作表的內容，轉換成 JSON 回傳
+ */
+function doGet() 
+{
+  
+  // 1. 透過試算表 ID 開啟 Google 試算表
+  // 注意：這個 ID 來自試算表網址中間的那一段(如果要換excel就是換這個id)
+  const ss = SpreadsheetApp.openById('1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo');
 
-  // 先讀分類圖片分頁（若不存在，就用空陣列）
-  const picSheet = ss.getSheetByName('分類圖片');
-  const picData = picSheet ? picSheet.getDataRange().getValues() : [];
+  // 2. 取得名稱為「分類圖片」的工作表
+  // 請確保試算表內確實存在這個分頁，否則會報錯
+  const sheet = ss.getSheetByName('分類圖片');
 
-  // 將分類圖片資料整理成 map: mainName -> { mainImg: 'x', subcats: [{name,image}, ...] }
-  const picMap = {};
-  if (picData.length > 0) {
-    // 假設第一列是標題，從 i=1 開始；若你的表沒有 header，請改 i=0
-    for (let i = 1; i < picData.length; i++) {
-      const row = picData[i];
-      const main = row[0] ? String(row[0]).trim() : '';
-      const mainImg = row[1] ? String(row[1]).trim() : '';
-      const sub = row[2] ? String(row[2]).trim() : '';
-      const subImg = row[3] ? String(row[3]).trim() : '';
+  // 3. 取得整張工作表的所有資料（含標題列）
+  // getDataRange() 會自動抓到所有有內容的儲存格範圍。
+  // getDataRange().getValues() 會一次取整張表，資料多時可能造成效能下降。
+  //若資料量變大，可以用 getRange(row, col, numRows, numCols) 取特定範圍。
+  const data = sheet.getDataRange().getValues();
 
-      if (!main) continue;
-      if (!picMap[main]) picMap[main] = { mainImg: mainImg || '', subcats: [] };
-      else if (!picMap[main].mainImg && mainImg) picMap[main].mainImg = mainImg;
+  // 4. 建立一個陣列，用來存放整理好的分類資料
+  const categoryImages = [];
 
-      if (sub) {
-        picMap[main].subcats.push({ name: sub, image: subImg || mainImg || '' });
-      }
-    }
+  // 5. 從第 2 列開始讀取（i=1，因為 i=0 是標題列）
+  for (let i = 1; i < data.length; i++) 
+  {
+    categoryImages.push(
+	{
+      mainCat: data[i][0], // 第一欄：主分類名稱
+      mainImg: data[i][1], // 第二欄：主分類圖片 URL
+      subCat: data[i][2],  // 第三欄：子分類名稱
+      subImg: data[i][3]   // 第四欄：子分類圖片 URL
+    });
   }
 
-  // 讀取所有分頁，把非分類圖片的分頁當成頂層分類
-  const sheets = ss.getSheets();
-  const mainCategories = [];
-  const subcategories = {};
-
-  for (let s = 0; s < sheets.length; s++) {
-    const sh = sheets[s];
-    const name = sh.getName();
-    if (name === '分類圖片') continue;
-
-    // main image 從 picMap 找；若沒有就空字串（前端會使用 placeholder）
-    const mainImg = (picMap[name] && picMap[name].mainImg) ? picMap[name].mainImg : '';
-
-    mainCategories.push({ name: name, image: mainImg });
-
-    // 第二層分類：第一項固定是「全部」，之後如果分類圖片有資料就塞入
-    const subs = [{ name: '全部', image: mainImg }];
-    if (picMap[name] && picMap[name].subcats && picMap[name].subcats.length > 0) {
-      picMap[name].subcats.forEach(sc => subs.push(sc));
-    }
-    subcategories[name] = subs;
-  }
-
-	const output = JSON.stringify(getCategories());
-	  return ContentService
-		.createTextOutput(output)
-		.setMimeType(ContentService.MimeType.JSON)
-		.setHeader("Access-Control-Allow-Origin", "*"); // 允許所有來源
+  // 6. 將整理好的陣列轉成 JSON 字串，並回傳給前端
+  // setMimeType 設定回傳格式為 JSON（否則會是純文字）
+  return ContentService.createTextOutput(
+    JSON.stringify({ categoryImages }) // 包成物件是為了前端更容易擴充資料
+  ).setMimeType(ContentService.MimeType.JSON);
 }

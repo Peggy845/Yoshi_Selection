@@ -1,26 +1,51 @@
+<!-- ID 就像幫標籤取一個「專屬的名字」，只能用一次 -->
+<!-- class 就像是幫標籤貼上一個「分類」，可以重複使用 -->
+<!-- section 「段落」或「章節」 -->
+
 <!DOCTYPE html>
-<html lang="zh-TW">
+<html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>代購網站首頁</title>
-    <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Yoshi Selection</title>
+  <link rel="stylesheet" href="style.css" />
+  <script defer src="script.js"></script>
 </head>
 <body>
-    <!-- 頂層分類 -->
-    <div id="mainCategories" class="categories"></div>
+  <!-- 標題區塊 -->
+  <header class="header">Yoshi Selection</header>
 
-    <!-- 關於我 -->
-    <section id="about" class="about-section">
-        <h2>關於我</h2>
-        <p>這裡放你的關於我內容。</p>
-    </section>
-
-    <!-- 懸浮購物車 -->
-    <div id="floatingCart" class="floating-cart" onclick="goToCart()">
-        🛒 購物車
+  <!-- 商品分類區塊 -->
+  <section class="category-section">
+    <div class="category-container" id="mainCategoryContainer">
+      <!-- 固定「關於我」 -->
+      <div class="category-block" onclick="showAboutMe()">
+        <div class="circle-image">
+          <img src="images/Yoshi_Selection_logo.jpg" alt="關於我" />
+        </div>
+        <div class="category-name">關於我</div>
+      </div>
     </div>
+  </section>
 
-    <script src="script.js"></script>
+  <!-- 第二層分類選單容器 -->
+  <div id="subCategoryContainer"></div>
+
+  <!-- 頂層商品細分區塊 -->
+  <section id="productSections"></section>
+
+  <!-- 關於我彈窗 -->
+  <div id="about-me" class="modal">
+    <div class="modal-content">
+      <p>這個之後會補充。</p>
+      <button onclick="closeAboutMe()">確認</button>
+    </div>
+  </div>
+  
+	<!-- 懸浮購物車按鈕 -->
+	<a href="cart.html" class="floating-cart-button">
+	  <img src="images/cart.png" alt="購物車" />
+	</a>
+
 </body>
 </html>

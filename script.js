@@ -87,7 +87,7 @@ function createSubCategoryMenu(mainCat, subCategories)
 	/*  綁定點擊事件 */
 	btn.addEventListener('click', () => 
 	{
-		goToProductList(mainCat, subCat.name);
+		goToProductList(mainCat, subCategories.name);
 	});
     menu.appendChild(btn);
   });

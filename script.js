@@ -187,3 +187,133 @@ window.onload = async () =>
     createProductSection(mainCat, subData);
   });
 };
+
+/* Product list page */
+async function fetchProducts() 
+{
+  const res = await fetch(sheetAPI);
+  return await res.json();
+}
+
+function createProductCard(product) {
+  const card = document.createElement('div');
+  card.className = 'product-card';
+
+  // 圖片處理
+  const images = [product['商品圖片'], ...(product['額外圖片們'] ? product['額外圖片們'].split('、') : [])];
+  let currentIndex = 0;
+
+  const imgContainer = document.createElement('div');
+  imgContainer.className = 'image-container';
+
+  const img = document.createElement('img');
+  img.src = `images/${images[currentIndex]}`;
+  imgContainer.appendChild(img);
+
+  if (images.length > 1) {
+    const leftArrow = document.createElement('div');
+    leftArrow.className = 'arrow left';
+    leftArrow.textContent = '<';
+    leftArrow.onclick = () => {
+      currentIndex = (currentIndex - 1 + images.length) % images.length;
+      img.src = `images/${images[currentIndex]}`;
+    };
+
+    const rightArrow = document.createElement('div');
+    rightArrow.className = 'arrow right';
+    rightArrow.textContent = '>';
+    rightArrow.onclick = () => {
+      currentIndex = (currentIndex + 1) % images.length;
+      img.src = `images/${images[currentIndex]}`;
+    };
+
+    imgContainer.appendChild(leftArrow);
+    imgContainer.appendChild(rightArrow);
+  }
+
+  const status = document.createElement('div');
+  status.textContent = `狀態: ${product['販售狀態']}`;
+  imgContainer.appendChild(status);
+
+  // 資訊區
+  const infoContainer = document.createElement('div');
+  infoContainer.className = 'info-container';
+
+  const name = document.createElement('div');
+  name.className = 'product-name';
+  name.textContent = product['商品名稱'];
+
+  const price = document.createElement('div');
+  price.className = 'price';
+  price.textContent = `$ ${product['價格']}`;
+
+  const details = document.createElement('div');
+  details.className = 'details';
+  details.textContent = product['詳細資訊'] || '';
+
+  // 選項處理
+  const optionsContainer = document.createElement('div');
+  optionsContainer.className = 'options';
+  Object.keys(product).forEach(key => {
+    if (key.startsWith('選項-') && product[key]) {
+      const values = product[key].split('、');
+      const group = document.createElement('div');
+      values.forEach(val => {
+        const btn = document.createElement('button');
+        btn.textContent = val;
+        btn.onclick = () => {
+          group.querySelectorAll('button').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        };
+        group.appendChild(btn);
+      });
+      optionsContainer.appendChild(group);
+    }
+  });
+
+  // 數量 & 購物車
+  const qtySection = document.createElement('div');
+  qtySection.className = 'quantity-section';
+  let qty = 1;
+  const qtyDisplay = document.createElement('span');
+  qtyDisplay.textContent = qty;
+
+  const btnMinus = document.createElement('button');
+  btnMinus.textContent = '-';
+  btnMinus.onclick = () => {
+    if (qty > 1) qtyDisplay.textContent = --qty;
+  };
+
+  const btnPlus = document.createElement('button');
+  btnPlus.textContent = '+';
+  btnPlus.onclick = () => {
+    if (qty < product['庫存']) qtyDisplay.textContent = ++qty;
+  };
+
+  const stockInfo = document.createElement('span');
+  stockInfo.textContent = `還剩${product['庫存']}件`;
+
+  qtySection.append('數量', btnMinus, qtyDisplay, btnPlus, stockInfo);
+
+  const cartSection = document.createElement('div');
+  cartSection.className = 'cart-section';
+  const cartBtn = document.createElement('button');
+  cartBtn.textContent = '加入購物車';
+  cartBtn.onclick = () => {
+    alert(`已加入 ${qty} 件 ${product['商品名稱']} 到購物車`);
+  };
+  cartSection.appendChild(cartBtn);
+
+  infoContainer.append(name, price, details, optionsContainer, qtySection, cartSection);
+
+  card.append(imgContainer, infoContainer);
+  return card;
+}
+
+window.onload = async () => {
+  const products = await fetchProducts();
+  const list = document.getElementById('productList');
+  products.forEach(p => {
+    list.appendChild(createProductCard(p));
+  });
+};

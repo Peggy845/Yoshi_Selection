@@ -1,63 +1,58 @@
-const API_URL = "https://script.google.com/macros/s/KfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec";
+document.addEventListener('DOMContentLoaded', init);
 
-document.addEventListener("DOMContentLoaded", () => {
-  const categoryContainer = document.getElementById("category-container");
-  if (categoryContainer) {
-    loadCategories();
-  }
-});
-
-async function loadCategories() {
-  const res = await fetch(API_URL + "?type=categories");
-  const data = await res.json();
-
-  const container = document.getElementById("category-container");
-  if (!container) return;
-
-  container.innerHTML = "";
-  data.forEach(cat => {
-    const div = document.createElement("div");
-    div.className = "category-block";
-    div.innerHTML = `<img src="${cat.mainImage}" alt="${cat.mainCat}" />
-                     <p>${cat.mainCat}</p>`;
-    div.onclick = () => showSubCategories(cat);
-    container.appendChild(div);
-  });
+async function init() {
+    try {
+        const data = await fetchData();
+        createMainCategories(data);
+    } catch (error) {
+        console.error('初始化失敗:', error);
+    }
 }
 
-function showSubCategories(cat) {
-  const subList = document.createElement("div");
-  subList.innerHTML = "";
-  const allBtn = document.createElement("button");
-  allBtn.innerText = "全部";
-  allBtn.onclick = () => window.location.href = `product_list.html?main=${cat.mainCat}`;
-  subList.appendChild(allBtn);
+async function fetchData() {
+    const url = 'https://script.google.com/macros/s/KfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec';
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`HTTP 錯誤! 狀態碼: ${response.status}`);
+    }
+    const result = await response.json();
 
-  cat.subCategories.forEach(sub => {
-    const btn = document.createElement("button");
-    btn.innerText = sub.subCat;
-    btn.onclick = () => window.location.href = `product_list.html?main=${cat.mainCat}&sub=${sub.subCat}`;
-    subList.appendChild(btn);
-  });
-
-  document.body.appendChild(subList);
+    // 如果 Apps Script 回傳格式是 { data: [...] }，取出 data
+    if (Array.isArray(result)) {
+        return result;
+    } else if (result && Array.isArray(result.data)) {
+        return result.data;
+    } else {
+        throw new Error('取得的資料格式錯誤');
+    }
 }
 
-async function loadProducts(mainCat, subCat) {
-  const url = `${API_URL}?type=products&main=${encodeURIComponent(mainCat)}${subCat ? "&sub=" + encodeURIComponent(subCat) : ""}`;
-  const res = await fetch(url);
-  const products = await res.json();
+function createMainCategories(data) {
+    const container = document.getElementById('main-category-container');
+    if (!container) {
+        console.warn('找不到 main-category-container');
+        return;
+    }
 
-  const list = document.getElementById("product-list");
-  if (!list) return;
-  list.innerHTML = "";
+    data.forEach(item => {
+        const block = document.createElement('div');
+        block.className = 'main-category-block';
 
-  products.forEach(p => {
-    const card = document.createElement("div");
-    card.className = "product-card";
-    card.innerHTML = `<img src="${p.image}" width="100%" />
-                      <h3>${p.name}</h3>
-                      <p>價格：${p.price}</p>`;
-    list.appendChild(card);
-  });
+        const img = document.createElement('img');
+        img.src = `images/${item.mainCategoryImg}`;
+        img.alt = item.mainCategory;
+
+        const name = document.createElement('div');
+        name.className = 'name';
+        name.textContent = item.mainCategory;
+
+        block.appendChild(img);
+        block.appendChild(name);
+        container.appendChild(block);
+
+        // 監聽點擊，跳到商品列表
+        block.addEventListener('click', () => {
+            window.location.href = `product_list.html?main=${encodeURIComponent(item.mainCategory)}`;
+        });
+    });
 }

@@ -1,105 +1,45 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>商品列表</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        /* 商品列表頁的額外樣式 */
-        .product-list-container {
-            padding: 20px;
-        }
-        .product-list-title {
-            font-size: 1.5em;
-            margin-bottom: 15px;
-            font-weight: bold;
-        }
-        .product-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 15px;
-        }
-        .product-card {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            padding: 10px;
-            text-align: center;
-            background-color: #fff;
-            box-shadow: 0px 1px 4px rgba(0,0,0,0.1);
-            cursor: pointer;
-            transition: transform 0.2s ease-in-out;
-        }
-        .product-card:hover {
-            transform: scale(1.03);
-        }
-        .product-card img {
-            max-width: 100%;
-            border-radius: 5px;
-        }
-        .product-name {
-            margin-top: 8px;
-            font-size: 1em;
-            font-weight: 500;
-        }
-        .product-price {
-            color: #d9534f;
-            font-weight: bold;
-            margin-top: 5px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>商品列表</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <header>
+    <h1 id="pageTitle"></h1>
+  </header>
 
-    <div class="product-list-container">
-        <div class="product-list-title" id="product-list-title">商品列表</div>
-        <div class="product-grid" id="product-grid">
-            <!-- 商品卡片會由 JS 生成 -->
-        </div>
-    </div>
+  <div id="productList"></div>
 
-    <script>
-        // 取得 URL 參數中的分類名稱
-        const urlParams = new URLSearchParams(window.location.search);
-        const category = urlParams.get('category');
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const mainCat = params.get('main');
+    const subCat = params.get('sub') || '全部';
+    document.getElementById('pageTitle').textContent = `${mainCat} - ${subCat}`;
 
-        // 更新標題
-        if (category) {
-            document.getElementById('product-list-title').textContent = `${category} - 商品列表`;
+    fetch(`https://script.google.com/macros/s/KfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec?action=getProducts&main=${encodeURIComponent(mainCat)}&sub=${encodeURIComponent(subCat)}`)
+      .then(res => res.json())
+      .then(products => {
+        const container = document.getElementById('productList');
+        if (products.length === 0) {
+          container.innerHTML = '<p>沒有找到商品。</p>';
+          return;
         }
-
-        // TODO: 之後這裡改成 fetch Google Apps Script API
-        // 先用假資料測試
-        const testProducts = [
-            { name: '測試商品1', price: 299, img: 'images/test1.jpg' },
-            { name: '測試商品2', price: 399, img: 'images/test2.jpg' },
-            { name: '測試商品3', price: 499, img: 'images/test3.jpg' }
-        ];
-
-        const productGrid = document.getElementById('product-grid');
-
-        testProducts.forEach(p => {
-            const card = document.createElement('div');
-            card.className = 'product-card';
-
-            const img = document.createElement('img');
-            img.src = p.img;
-            img.alt = p.name;
-
-            const name = document.createElement('div');
-            name.className = 'product-name';
-            name.textContent = p.name;
-
-            const price = document.createElement('div');
-            price.className = 'product-price';
-            price.textContent = `$${p.price}`;
-
-            card.appendChild(img);
-            card.appendChild(name);
-            card.appendChild(price);
-
-            productGrid.appendChild(card);
+        products.forEach(p => {
+          const div = document.createElement('div');
+          div.className = 'product-item';
+          div.innerHTML = `
+            <img src="images/${p.img}" alt="${p.name}">
+            <h3>${p.name}</h3>
+            <p>價格：${p.price}</p>
+            <p>庫存：${p.stock}</p>
+          `;
+          container.appendChild(div);
         });
-    </script>
+      })
+      .catch(err => console.error(err));
+  </script>
 </body>
 </html>

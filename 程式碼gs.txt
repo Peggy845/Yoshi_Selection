@@ -51,8 +51,9 @@ function doGet(e) {
     subcategories[name] = subs;
   }
 
-  const output = { mainCategories: mainCategories, subcategories: subcategories };
-  return ContentService
-    .createTextOutput(JSON.stringify(output))
-    .setMimeType(ContentService.MimeType.JSON);
+	const output = JSON.stringify(getCategories());
+	  return ContentService
+		.createTextOutput(output)
+		.setMimeType(ContentService.MimeType.JSON)
+		.setHeader("Access-Control-Allow-Origin", "*"); // 允許所有來源
 }

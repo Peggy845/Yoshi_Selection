@@ -78,19 +78,6 @@ body {
   margin-bottom: 1rem;
 }
 
-/*-- ADD - Start */
-#product-container {
-    padding: 10px;
-}
-
-.product-card {
-    border: 1px solid #ccc;
-    padding: 8px;
-    margin: 5px 0;
-    background: #fff;
-}
-/*-- ADD - End */
-
 .sub-category-blocks {
   display: flex;
   flex-wrap: wrap;

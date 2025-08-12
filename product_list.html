@@ -1,17 +1,21 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>商品列表</title>
-  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="product_list.css" />
 </head>
 <body>
-  <div id="product-list" class="product-list"></div>
-  
+
+  <!-- 子分類大標題（由 JS 設定） -->
+  <header class="page-header">
+    <h1 id="sub-category-title">載入中...</h1>
+  </header>
+
+  <!-- 商品列表容器（每個 .product-card 為單項商品大區塊） -->
+  <main id="product-list" class="product-list"></main>
+
   <script src="product_list.js"></script>
-  
-  <h2 id="sub-category-title"></h2>
-  <section id="product-sections"></section>
 </body>
 </html>

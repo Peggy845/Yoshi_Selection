@@ -11,9 +11,11 @@ function getQueryParam(name) {
 async function loadProducts() {
   const category = getQueryParam('category');
   const subcategory = getQueryParam('subcategory');
+	const titleEl = document.getElementById('subcategory-title');
+	if (titleEl) {
+	  titleEl.textContent = subcategory || '商品列表';
+	}
 
-  // 設定大標題（子分類）
-  document.getElementById('subcategory-title').textContent = subcategory || '商品列表';
 
   try {
     const res = await fetch(`${API_URL}?category=${encodeURIComponent(category)}&subcategory=${encodeURIComponent(subcategory)}`);

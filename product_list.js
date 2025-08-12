@@ -1,96 +1,88 @@
-// ====== 注意：把下面這個 URL 換成你自己部署的 Apps Script exec URL ======
-const API_URL = 'https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec';
-
-
-// 讀取網址參數
+// 取得網址參數
 function getQueryParam(name) {
   const urlParams = new URLSearchParams(window.location.search);
   return urlParams.get(name);
 }
 
-async function loadProducts() {
-  const category = getQueryParam('category');
-  const subcategory = getQueryParam('subcategory');
-	const titleEl = document.getElementById('subcategory-title');
-	if (titleEl) {
-	  titleEl.textContent = subcategory || '商品列表';
-	}
+// 讀取 Excel 資料（排除「分類圖片」分頁）
+async function fetchData() {
+  const response = await fetch('data.xlsx'); // 你的 Excel 路徑
+  const arrayBuffer = await response.arrayBuffer();
+  const workbook = XLSX.read(arrayBuffer, { type: 'array' });
 
+  let allProducts = [];
 
-  try {
-    const res = await fetch(`${API_URL}?category=${encodeURIComponent(category)}&subcategory=${encodeURIComponent(subcategory)}`);
-    const data = await res.json();
+  // 排除名稱為「分類圖片」的分頁
+  const sheetNames = workbook.SheetNames.filter(name => name !== '分類圖片');
 
-    /**
-     * 如果 API 回傳格式是：
-     * {
-     *   "分類圖片": [...],
-     *   "其他分頁1": [...],
-     *   "其他分頁2": [...]
-     * }
-     * 就先刪掉 "分類圖片"
-     */
-    if (data['分類圖片']) {
-      delete data['分類圖片'];
-    }
+  sheetNames.forEach(sheetName => {
+    const sheet = workbook.Sheets[sheetName];
+    const jsonData = XLSX.utils.sheet_to_json(sheet);
 
-    // 將剩下所有分頁的商品合併成一個陣列
-    let products = [];
-    if (typeof data === 'object' && !Array.isArray(data)) {
-      Object.values(data).forEach(sheetData => {
-        if (Array.isArray(sheetData)) {
-          products = products.concat(sheetData);
-        }
+    // 假設 Excel 欄位名稱是 mainCat / subCat / name / price / img
+    jsonData.forEach(row => {
+      allProducts.push({
+        mainCat: row.mainCat,
+        subCat: row.subCat,
+        name: row.name,
+        price: row.price,
+        img: row.img
       });
-    } else if (Array.isArray(data)) {
-      products = data;
-    }
-
-    if (!Array.isArray(products) || products.length === 0) {
-      console.warn('沒有符合的商品資料');
-      return;
-    }
-
-    // 篩選符合子分類的商品
-    products = products.filter(p => p['子分類'] === subcategory);
-
-    const list = document.getElementById('product-list');
-    list.innerHTML = '';
-
-    products.forEach(p => {
-      list.appendChild(renderProductCard(p));
     });
+  });
 
-  } catch (err) {
-    console.error('載入商品失敗', err);
+  return allProducts;
+}
+
+// 主程式
+async function loadProducts() {
+  const mainCat = getQueryParam('main');
+  const subCat = getQueryParam('sub');
+
+  // 設定子分類大標題
+  const subTitleEl = document.getElementById('subcategory-title');
+  if (subTitleEl) {
+    subTitleEl.textContent = subCat || '商品列表';
+  } else {
+    console.warn('找不到 #subcategory-title 元素');
   }
+
+  // 抓取資料
+  const allProducts = await fetchData();
+
+  // 篩選對應的商品
+  const filteredProducts = allProducts.filter(
+    p => p.mainCat === mainCat && p.subCat === subCat
+  );
+
+  const productContainer = document.getElementById('product-list');
+  if (!productContainer) {
+    console.error('找不到 #product-list 元素');
+    return;
+  }
+
+  // 清空容器
+  productContainer.innerHTML = '';
+
+  if (filteredProducts.length === 0) {
+    productContainer.innerHTML = '<p>目前沒有這個分類的商品</p>';
+    return;
+  }
+
+  // 渲染商品
+  filteredProducts.forEach(product => {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+
+    card.innerHTML = `
+      <img src="${product.img}" alt="${product.name}">
+      <h3>${product.name}</h3>
+      <p>${product.price ? '$' + product.price : ''}</p>
+    `;
+
+    productContainer.appendChild(card);
+  });
 }
 
-// 建立商品卡片
-function renderProductCard(product) {
-  const card = document.createElement('div');
-  card.className = 'product-card';
-
-  const img = document.createElement('img');
-  img.src = product['圖片'] || 'placeholder.jpg';
-  img.alt = product['商品名稱'] || '';
-
-  const name = document.createElement('h3');
-  name.textContent = product['商品名稱'] || '未命名商品';
-
-  const price = document.createElement('p');
-  price.textContent = product['價格'] ? `$${product['價格']}` : '';
-
-  const detail = document.createElement('p');
-  detail.className = 'product-detail';
-  detail.textContent = product['詳細資訊'] || '';
-
-  card.appendChild(img);
-  card.appendChild(name);
-  card.appendChild(price);
-  card.appendChild(detail);
-
-  return card;
-}
-
+// 頁面載入完成後執行
 window.onload = loadProducts;

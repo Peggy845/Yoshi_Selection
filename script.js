@@ -153,17 +153,19 @@ function createProductSection(mainCat, subData)
  * - 建立主分類按鈕
  * - 預先生成商品展示區
  */
-window.onload = async () => 
+document.addEventListener('DOMContentLoaded', async () => 
 {
+  if (!categoryContainer) {
+    console.warn('main-category-container 不存在，略過主分類載入');
+    return; // 提早結束
+  }
+  
   const { categoryImages } = await fetchData();
 
   // 從所有資料中取出唯一的主分類名稱
   const mainCats = [...new Set(categoryImages.map(row => row.mainCat))];
   
-  if (!categoryContainer) {
-    console.warn('main-category-container 不存在，略過主分類載入');
-    return; // 提早結束
-  }
+
 
   mainCats.forEach(mainCat => 
   {

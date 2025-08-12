@@ -77,6 +77,7 @@ function createSubCategoryMenu(mainCat, subCategories)
 {
   subCategoryContainer.innerHTML = ''; // 清空舊的選單
   const menu = document.createElement('div');
+  menu.className = 'sub-category-menu';
 
   // 「全部」按鈕（顯示所有子分類）
   const all = document.createElement('button');
@@ -84,7 +85,7 @@ function createSubCategoryMenu(mainCat, subCategories)
   all.className = 'sub-category-button';
   all.onclick = () => 
   {
-    window.location.href = `product_list.html?sub=全部`;
+    window.location.href = `product_list.html?main=${encodeURIComponent(mainCat)}&sub=全部`;
   };
   menu.appendChild(all);
 
@@ -97,7 +98,7 @@ function createSubCategoryMenu(mainCat, subCategories)
 	btn.onclick = () => 
 	{
       // 跳轉並在網址帶上子分類名稱
-      window.location.href = `product_list.html?sub=${encodeURIComponent(name)}`;
+      window.location.href = `window.location.href = `product_list.html?main=${encodeURIComponent(mainCat)}&sub=${encodeURIComponent(name)}`;
     };
     menu.appendChild(btn);
   });

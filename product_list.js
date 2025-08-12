@@ -4,7 +4,9 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6
 async function getSheetNames() {
   const res = await fetch(`${API_URL}?action=getSheetNames`);
   if (!res.ok) throw new Error("Failed to fetch sheet names");
-  return await res.json(); // 直接回傳陣列 string[]
+  const sheetNames = await res.json();
+  if (!Array.isArray(sheetNames)) throw new Error("Invalid sheet names format");
+  return sheetNames;
 }
 
 // 讀取單一分頁資料

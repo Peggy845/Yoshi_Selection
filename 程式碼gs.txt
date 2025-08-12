@@ -1,15 +1,15 @@
 function doGet(e) {
   const ss = SpreadsheetApp.openById('1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo');
-
-  const action = e.parameter.action || 'category'; // 新增 action 參數判斷
+  const type = e.parameter.type || 'category';
+  const action = e.parameter.action || '';
 
   if (action === 'getSheetNames') {
-    // 取得所有分頁名稱，排除「分類圖片」
     const sheets = ss.getSheets();
     const sheetNames = sheets
-      .map(sheet => sheet.getName())
+      .map(s => s.getName())
       .filter(name => name !== '分類圖片');
-    return ContentService.createTextOutput(JSON.stringify(sheetNames))
+    return ContentService
+      .createTextOutput(JSON.stringify(sheetNames))
       .setMimeType(ContentService.MimeType.JSON);
   }
 

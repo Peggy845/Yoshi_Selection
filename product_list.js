@@ -4,6 +4,18 @@ function getQueryParam(name) {
   const urlParams = new URLSearchParams(window.location.search);
   const subCategoryName = urlParams.get('sub') || '';
   
+  // DOMContentLoaded 確保 HTML 都載入完成
+	document.addEventListener('DOMContentLoaded', () => {
+	  // 設定標題
+	  const titleEl = document.getElementById('sub-category-title');
+	  titleEl.textContent = subCategoryName;
+	  
+	  // 額外：你可以加一點樣式
+	  titleEl.style.textAlign = 'center';
+	  titleEl.style.fontSize = '1.5em';
+	  titleEl.style.margin = '20px 0';
+	});
+
   return urlParams.get(name);
 }
 
@@ -47,24 +59,6 @@ function renderProductCard(product) {
   status.className = 'status';
   status.textContent = `狀態: ${product['販售狀態']}`;
 
-	// 如果要直接顯示在商品名稱前
-	document.addEventListener('DOMContentLoaded', () => {
-	  const productSections = document.getElementById('product-sections');
-	  
-	  // 假設你原本生成商品的程式碼是這樣：
-	  products.forEach(product => {
-		const info = document.createElement('div');
-		info.className = 'product-info';
-		info.innerHTML = `
-		  <div class="product-name">
-			${subCategoryName ? subCategoryName + ' - ' : ''}${product['商品名稱']}
-		  </div>
-		  <div class="product-price">$ ${product['價格']}</div>
-		  <div class="product-detail">${product['詳細資訊'] || ''}</div>
-		`;
-		productSections.appendChild(info);
-	  });
-	});
 
   // 右側資訊
   const info = document.createElement('div');

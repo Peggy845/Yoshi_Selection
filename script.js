@@ -155,7 +155,8 @@ function createProductSection(mainCat, subData)
  */
 document.addEventListener('DOMContentLoaded', async () => 
 {
-  if (!categoryContainer) {
+  if (!categoryContainer) 
+  {
     console.warn('main-category-container 不存在，略過主分類載入');
     return; // 提早結束
   }
@@ -201,5 +202,5 @@ document.addEventListener('DOMContentLoaded', async () =>
       .filter(row => row.mainCat === mainCat && row.subCat)
       .map(row => ({ subCat: row.subCat, subImg: row.subImg }));
     createProductSection(mainCat, subData);
-  }
-};
+  });
+});

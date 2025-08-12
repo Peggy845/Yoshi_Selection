@@ -3,9 +3,9 @@
 const sheetAPI = 'https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec';
 
 // 取得 HTML 頁面上的容器元素（第一層分類、第二層分類、商品區塊）
-const categoryContainer = document.getElementById('main-category-container');
-const subCategoryContainer = document.getElementById('sub-category-container');
-const productSections = document.getElementById('product-sections');
+//const categoryContainer = document.getElementById('main-category-container');
+//const subCategoryContainer = document.getElementById('sub-category-container');
+//const productSections = document.getElementById('product-sections');
 
 // 用來記錄目前展開的主分類名稱（避免同時開啟多個）
 let currentExpanded = null;
@@ -155,12 +155,15 @@ function createProductSection(mainCat, subData)
  */
 document.addEventListener('DOMContentLoaded', async () => 
 {
+	const categoryContainer = document.getElementById('main-category-container');
   if (!categoryContainer) 
   {
     console.warn('main-category-container 不存在，略過主分類載入');
     return; // 提早結束
   }
   
+  const subCategoryContainer = document.getElementById('sub-category-container');
+  const productSections = document.getElementById('product-sections');
   const { categoryImages } = await fetchData();
 
   // 從所有資料中取出唯一的主分類名稱

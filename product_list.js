@@ -1,117 +1,161 @@
-function getQueryParam(param) {
-  const urlParams = new URLSearchParams(window.location.search);
-  return urlParams.get(param);
+const SHEET_ID = "你的 Google Sheet ID";
+const API_KEY = "你的 API KEY";
+
+// 取得所有分頁名稱（排除「分類圖片」）
+async function getSheetNames() {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}?key=${API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    return data.sheets
+        .map(s => s.properties.title)
+        .filter(name => name !== "分類圖片");
 }
 
-// 從 Google Sheet 一次抓所有分頁資料
-async function fetchAllSheets() {
-  const sheetId = '1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo';
-  const baseUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
-
-  try {
-    const res = await fetch(baseUrl);
-    if (!res.ok) throw new Error('無法讀取 Google Sheet 資料');
-
-    const text = await res.text();
-    const json = JSON.parse(text.substring(47, text.length - 2));
-
-    // 處理每個分頁資料
-    const sheetsData = {};
-    json.table.cols.map; // 避免未使用警告
-
-    // 注意：這個方式只能抓第一個工作表，
-    // 要一次抓所有分頁，必須事先知道每個分頁名稱並各自請求
-    // 所以我們改成「批量請求所有已知分頁名稱」
-    return null; // 這裡先暫停，因為 Google Visualization API 沒有一次抓全部分頁的功能
-
-  } catch (err) {
-    console.error('抓取 Google Sheet 錯誤:', err);
-    return {};
-  }
-}
-
-// 從多個分頁名稱批量抓取
-async function fetchMultipleSheets(sheetNames) {
-  const sheetId = '1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo';
-
-  const allData = {};
-
-  for (const name of sheetNames) {
-    if (name === '分類圖片') continue; // 排除
-    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(name)}&tqx=out:json`;
-
-    try {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`無法讀取分頁：${name}`);
-
-      const text = await res.text();
-      const json = JSON.parse(text.substring(47, text.length - 2));
-      const cols = json.table.cols.map(col => col.label.trim());
-      const rows = json.table.rows.map(row => {
-        const obj = {};
-        row.c.forEach((cell, i) => {
-          obj[cols[i]] = cell ? cell.v : '';
-        });
+// 讀取單一分頁資料
+async function getSheetData(sheetName) {
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${SHEET_ID}/values/${encodeURIComponent(sheetName)}?key=${API_KEY}`;
+    const res = await fetch(url);
+    const data = await res.json();
+    const headers = data.values[0];
+    return data.values.slice(1).map(row => {
+        let obj = {};
+        headers.forEach((h, i) => obj[h] = row[i] || "");
         return obj;
-      });
-
-      allData[name] = rows;
-    } catch (e) {
-      console.warn(`分頁 ${name} 抓取失敗:`, e);
-      allData[name] = [];
-    }
-  }
-
-  return allData;
+    });
 }
 
+// 主流程
 async function loadProducts() {
-  const category = getQueryParam('main');
-  const subcategory = getQueryParam('sub');
+    const sheetNames = await getSheetNames();
+    let allProducts = [];
 
-  // 設定標題
-  const titleElement = document.getElementById('subcategory-title');
-  if (titleElement) {
-    titleElement.textContent = subcategory || '商品列表';
-  }
+    for (const name of sheetNames) {
+        const products = await getSheetData(name);
+        allProducts = allProducts.concat(products);
+    }
 
-  // 先定義你 Google Sheet 裡所有的分頁名稱
-  const sheetNames = [
-    '日本寶可夢',
-    '台灣寶可夢',
-    '美國寶可夢'
-    // 這裡要列出你所有的第一層分類分頁名稱
-  ];
+    renderProducts(allProducts);
+}
 
-  const allSheetsData = await fetchMultipleSheets(sheetNames);
+// 渲染商品卡片
+function renderProducts(products) {
+    const container = document.getElementById("product-list");
+    products.forEach(product => {
+        const card = document.createElement("div");
+        card.className = "product-card";
 
-  if (!allSheetsData[category] || allSheetsData[category].length === 0) {
-    document.getElementById('product-list').innerHTML = '<p>目前沒有這個分類的商品</p>';
-    return;
-  }
+        // 圖片處理
+        const imageContainer = document.createElement("div");
+        imageContainer.className = "product-image-container";
+        const images = [product["商品圖片"], ...(product["額外圖片們"] ? product["額外圖片們"].split("、") : [])];
+        let imgIndex = 0;
+        const img = document.createElement("img");
+        img.className = "product-image";
+        img.src = `https://github.com/Peggy845/Yoshi_Selection/images/${images[0]}`;
+        imageContainer.appendChild(img);
 
-  const filtered = allSheetsData[category].filter(
-    row => (row['商品系列'] || '').trim() === subcategory
-  );
+        if (images.length > 1) {
+            const leftArrow = document.createElement("button");
+            leftArrow.className = "image-arrow left";
+            leftArrow.innerHTML = "&#8249;";
+            leftArrow.onclick = () => {
+                imgIndex = (imgIndex - 1 + images.length) % images.length;
+                img.src = `https://github.com/Peggy845/Yoshi_Selection/images/${images[imgIndex]}`;
+            };
+            imageContainer.appendChild(leftArrow);
 
-  const container = document.getElementById('product-list');
-  container.innerHTML = '';
+            const rightArrow = document.createElement("button");
+            rightArrow.className = "image-arrow right";
+            rightArrow.innerHTML = "&#8250;";
+            rightArrow.onclick = () => {
+                imgIndex = (imgIndex + 1) % images.length;
+                img.src = `https://github.com/Peggy845/Yoshi_Selection/images/${images[imgIndex]}`;
+            };
+            imageContainer.appendChild(rightArrow);
+        }
 
-  if (filtered.length === 0) {
-    container.innerHTML = '<p>目前沒有這個分類的商品</p>';
-    return;
-  }
+        // 狀態
+        const status = document.createElement("div");
+        status.className = "status";
+        status.textContent = `狀態: ${product["販售狀態"]}`;
 
-  filtered.forEach(product => {
-    const productDiv = document.createElement('div');
-    productDiv.className = 'product-item';
-    productDiv.innerHTML = `
-      <div class="product-name">${product['商品名稱'] || ''}</div>
-      <div class="product-price">$ ${product['價格'] || ''}</div>
-      <div class="product-detail">${product['詳細資訊'] || ''}</div>
-    `;
-    container.appendChild(productDiv);
-  });
+        // 詳細資料
+        const details = document.createElement("div");
+        details.className = "product-details";
+        const name = document.createElement("div");
+        name.className = "product-name";
+        name.textContent = product["商品名稱"];
+        const price = document.createElement("div");
+        price.className = "product-price";
+        price.textContent = `$ ${product["價格"]}`;
+        const desc = document.createElement("div");
+        desc.className = "product-description";
+        desc.textContent = product["詳細資訊"] || "";
+
+        // 選項
+        const optionsContainer = document.createElement("div");
+        optionsContainer.className = "options";
+        Object.keys(product).forEach(key => {
+            if (key.startsWith("選項-")) {
+                const btn = document.createElement("button");
+                btn.className = "option-btn";
+                btn.textContent = product[key];
+                btn.onclick = () => {
+                    [...optionsContainer.querySelectorAll(".option-btn")].forEach(b => b.classList.remove("active"));
+                    btn.classList.add("active");
+                };
+                optionsContainer.appendChild(btn);
+            }
+        });
+
+        // 選購區
+        const purchaseSection = document.createElement("div");
+        purchaseSection.className = "purchase-section";
+
+        const qtyControl = document.createElement("div");
+        qtyControl.className = "quantity-control";
+        const minusBtn = document.createElement("button");
+        minusBtn.textContent = "-";
+        const qty = document.createElement("span");
+        qty.textContent = "1";
+        const plusBtn = document.createElement("button");
+        plusBtn.textContent = "+";
+
+        let stock = parseInt(product["庫存"], 10) || 0;
+        minusBtn.onclick = () => {
+            let val = parseInt(qty.textContent, 10);
+            if (val > 1) qty.textContent = val - 1;
+        };
+        plusBtn.onclick = () => {
+            let val = parseInt(qty.textContent, 10);
+            if (val < stock) qty.textContent = val + 1;
+        };
+
+        const stockInfo = document.createElement("span");
+        stockInfo.textContent = `還剩${stock}件`;
+
+        qtyControl.append(minusBtn, qty, plusBtn, stockInfo);
+
+        // 購物車按鈕
+        const cartBtn = document.createElement("button");
+        cartBtn.className = "add-to-cart";
+        cartBtn.textContent = "加入購物車";
+        cartBtn.onclick = () => {
+            alert(`${product["商品名稱"]} 已加入購物車`);
+        };
+
+        purchaseSection.append(qtyControl, cartBtn);
+
+        // 組裝
+        const leftSide = document.createElement("div");
+        leftSide.append(imageContainer, status);
+        const rightSide = document.createElement("div");
+        rightSide.className = "product-details";
+        rightSide.append(name, price, desc, optionsContainer, purchaseSection);
+
+        card.append(leftSide, rightSide);
+        container.appendChild(card);
+    });
 }
 
 loadProducts();

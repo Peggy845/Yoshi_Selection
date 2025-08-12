@@ -82,6 +82,10 @@ function createSubCategoryMenu(mainCat, subCategories)
   const all = document.createElement('button');
   all.textContent = '全部';
   all.className = 'sub-category-button';
+  all.onclick = () => 
+  {
+    window.location.href = `product_list.html?sub=全部`;
+  };
   menu.appendChild(all);
 
   // 動態建立每個子分類按鈕
@@ -90,6 +94,11 @@ function createSubCategoryMenu(mainCat, subCategories)
     const btn = document.createElement('button');
     btn.textContent = name;
     btn.className = 'sub-category-button';
+	btn.onclick = () => 
+	{
+      // 跳轉並在網址帶上子分類名稱
+      window.location.href = `product_list.html?sub=${encodeURIComponent(name)}`;
+    };
     menu.appendChild(btn);
   });
 

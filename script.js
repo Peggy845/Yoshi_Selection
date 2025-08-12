@@ -201,5 +201,5 @@ document.addEventListener('DOMContentLoaded', async () =>
       .filter(row => row.mainCat === mainCat && row.subCat)
       .map(row => ({ subCat: row.subCat, subImg: row.subImg }));
     createProductSection(mainCat, subData);
-  });
+  }
 };

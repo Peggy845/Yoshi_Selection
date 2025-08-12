@@ -1,8 +1,9 @@
 function doGet(e) {
   const ss = SpreadsheetApp.openById('1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo');
-  const type = e.parameter.type || 'category';
   const action = e.parameter.action || '';
+  const type = e.parameter.type || 'category';
 
+  // 回傳所有分頁名稱（排除「分類圖片」）
   if (action === 'getSheetNames') {
     const sheets = ss.getSheets();
     const sheetNames = sheets
@@ -13,7 +14,8 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  if (action === 'category') {
+  // 回傳分類圖片分頁資料
+  if (type === 'category') {
     const sheet = ss.getSheetByName('分類圖片');
     if (!sheet) {
       return ContentService.createTextOutput(JSON.stringify({ error: '找不到分類圖片分頁' }))
@@ -33,7 +35,8 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  if (action === 'product') {
+  // 回傳指定商品分頁資料
+  if (type === 'product') {
     const sheetName = e.parameter.sheet;
     if (!sheetName) {
       return ContentService.createTextOutput(JSON.stringify({ error: '缺少 sheet 參數' }))
@@ -58,6 +61,7 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  return ContentService.createTextOutput(JSON.stringify({ error: '無效的 action 參數' }))
+  // 無效參數
+  return ContentService.createTextOutput(JSON.stringify({ error: '無效的 action 或 type 參數' }))
     .setMimeType(ContentService.MimeType.JSON);
 }

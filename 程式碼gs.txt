@@ -1,94 +1,63 @@
-/**
- * doGet(e)
- * 當有人以 GET 方法存取此 Apps Script Web App 連結時會自動執行
- * 主要功能：從 Google 試算表讀取「分類圖片」工作表的內容，轉換成 JSON 回傳
- * e.parameter.type
- *   - "category" → 讀取「分類圖片」分頁
- *   - "product"  → 讀取其他商品分頁 (需搭配 e.parameter.sheet 指定分頁名稱)
- */
-function doGet(e) 
-{
-  // 1. 透過試算表 ID 開啟 Google 試算表
-  // 注意：這個 ID 來自試算表網址中間的那一段(如果要換excel就是換這個id)
+function doGet(e) {
   const ss = SpreadsheetApp.openById('1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo');
-  
-  // 沒有帶 type 預設給分類資料
-  const type = e && e.parameter && e.parameter.type ? e.parameter.type : 'category';
 
-	//讀取「分類圖片」分頁
-	if (type === 'category') 
-	{
-	  // 2. 取得名稱為「分類圖片」的工作表
-	  // 請確保試算表內確實存在這個分頁，否則會報錯
-	  const sheet = ss.getSheetByName('分類圖片');
-	    
-	  // 3. 取得整張工作表的所有資料（含標題列）
-	  // getDataRange() 會自動抓到所有有內容的儲存格範圍。
-	  // getDataRange().getValues() 會一次取整張表，資料多時可能造成效能下降。
-	  //若資料量變大，可以用 getRange(row, col, numRows, numCols) 取特定範圍。
-	  const data = sheet.getDataRange().getValues();
+  const action = e.parameter.action || 'category'; // 新增 action 參數判斷
 
-	  // 4. 建立一個陣列，用來存放整理好的分類資料
-	  const categoryImages = [];
-
-	  // 5. 從第 2 列開始讀取（i=1，因為 i=0 是標題列）
-	  for (let i = 1; i < data.length; i++) 
-	  {
-		categoryImages.push(
-		{
-		  mainCat: data[i][0], // 第一欄：主分類名稱
-		  mainImg: data[i][1], // 第二欄：主分類圖片 URL
-		  subCat: data[i][2],  // 第三欄：子分類名稱
-		  subImg: data[i][3]   // 第四欄：子分類圖片 URL
-		});
-	  }
-
-	  // 6. 將整理好的陣列轉成 JSON 字串，並回傳給前端
-	  // setMimeType 設定回傳格式為 JSON（否則會是純文字）
-	  return ContentService.createTextOutput(
-		JSON.stringify({ categoryImages }) // 包成物件是為了前端更容易擴充資料
-	  ).setMimeType(ContentService.MimeType.JSON);
-	}else if (type === 'product') 
-	{
-		// 讀取指定商品分頁
-		const sheetName = e.parameter.sheet;
-		if (!sheetName) {
-		  return ContentService
-			.createTextOutput(JSON.stringify({ error: '缺少 sheet 參數' }))
-			.setMimeType(ContentService.MimeType.JSON);
-		}
-
-		const sheet = ss.getSheetByName(sheetName);
-		if (!sheet) {
-		  return ContentService
-			.createTextOutput(JSON.stringify({ error: '找不到分頁: ' + sheetName }))
-			.setMimeType(ContentService.MimeType.JSON);
-		}
-
-		const data = sheet.getDataRange().getValues();
-		const headers = data[0];
-		const products = [];
-
-		for (let i = 1; i < data.length; i++) {
-		  let product = {};
-		  for (let j = 0; j < headers.length; j++) {
-			product[headers[j]] = data[i][j];
-		  }
-		  products.push(product);
-    }
-
-    return ContentService
-      .createTextOutput(JSON.stringify({ products }))
+  if (action === 'getSheetNames') {
+    // 取得所有分頁名稱，排除「分類圖片」
+    const sheets = ss.getSheets();
+    const sheetNames = sheets
+      .map(sheet => sheet.getName())
+      .filter(name => name !== '分類圖片');
+    return ContentService.createTextOutput(JSON.stringify(sheetNames))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  // type 參數錯誤
-  return ContentService
-    .createTextOutput(JSON.stringify({ error: '無效的 type 參數' }))
+  if (action === 'category') {
+    const sheet = ss.getSheetByName('分類圖片');
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify({ error: '找不到分類圖片分頁' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    const data = sheet.getDataRange().getValues();
+    const categoryImages = [];
+    for (let i = 1; i < data.length; i++) {
+      categoryImages.push({
+        mainCat: data[i][0],
+        mainImg: data[i][1],
+        subCat: data[i][2],
+        subImg: data[i][3]
+      });
+    }
+    return ContentService.createTextOutput(JSON.stringify({ categoryImages }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  if (action === 'product') {
+    const sheetName = e.parameter.sheet;
+    if (!sheetName) {
+      return ContentService.createTextOutput(JSON.stringify({ error: '缺少 sheet 參數' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    const sheet = ss.getSheetByName(sheetName);
+    if (!sheet) {
+      return ContentService.createTextOutput(JSON.stringify({ error: '找不到分頁: ' + sheetName }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+    const data = sheet.getDataRange().getValues();
+    const headers = data[0];
+    const products = [];
+    for (let i = 1; i < data.length; i++) {
+      let product = {};
+      for (let j = 0; j < headers.length; j++) {
+        product[headers[j]] = data[i][j];
+      }
+      products.push(product);
+    }
+    return ContentService.createTextOutput(JSON.stringify({ products }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  return ContentService.createTextOutput(JSON.stringify({ error: '無效的 action 參數' }))
     .setMimeType(ContentService.MimeType.JSON);
 }
-
-//抓分類圖片資料
-//https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?type=category
-//抓指定商品分頁資料
-//https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec?type=product&sheet=手機用飾

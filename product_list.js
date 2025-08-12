@@ -135,10 +135,8 @@ async function loadProducts() {
   const subcategory = getQueryParam('subcategory');
 
   const res = await fetch(`${API_URL}?category=${category}&subcategory=${subcategory}`);
-  const data = await res.json();
-  const products = data.categoryImages || []; // 這裡改成正確 key
-  
-  console.log(data); // 看一下實際回傳格式
+	const data = await res.json();
+	console.log(data); // 看一下實際回傳格式
   
   // 如果 API 是 { products: [...] }
   const products = data.products || [];
@@ -151,9 +149,9 @@ async function loadProducts() {
   }
 
   list.innerHTML = '';
-	products.forEach(p => {
-	  list.appendChild(renderProductCard(p));
-	});
+  products.forEach(p => {
+    list.appendChild(renderProductCard(p));
+  });
 }
 
 loadProducts();

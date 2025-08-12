@@ -136,6 +136,7 @@ async function loadProducts() {
 
   const res = await fetch(`${API_URL}?category=${category}&subcategory=${subcategory}`);
   const data = await res.json();
+  const products = data.categoryImages || []; // 這裡改成正確 key
   
   console.log(data); // 看一下實際回傳格式
   
@@ -150,9 +151,9 @@ async function loadProducts() {
   }
 
   list.innerHTML = '';
-  products.forEach(p => {
-    list.appendChild(renderProductCard(p));
-  });
+	products.forEach(p => {
+	  list.appendChild(renderProductCard(p));
+	});
 }
 
 loadProducts();

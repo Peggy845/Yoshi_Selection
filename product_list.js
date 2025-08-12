@@ -6,33 +6,33 @@ function getQueryParam(name) {
 
 // 讀取 Excel 資料（排除「分類圖片」分頁）
 async function fetchData() {
-  const response = await fetch('data.xlsx'); // 你的 Excel 路徑
-  const arrayBuffer = await response.arrayBuffer();
-  const workbook = XLSX.read(arrayBuffer, { type: 'array' });
+  const sheetId = '1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo';
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
+
+  const res = await fetch(url);
+  const text = await res.text();
+
+  // Google Sheets 回傳的 JSON 前後包了一層垃圾字串，要先清掉
+  const json = JSON.parse(text.substr(47).slice(0, -2));
 
   let allProducts = [];
 
-  // 排除名稱為「分類圖片」的分頁
-  const sheetNames = workbook.SheetNames.filter(name => name !== '分類圖片');
+  json.table.rows.forEach(row => {
+    const mainCat = row.c[0]?.v || '';
+    const subCat = row.c[1]?.v || '';
+    const name = row.c[2]?.v || '';
+    const price = row.c[3]?.v || '';
+    const img = row.c[4]?.v || '';
 
-  sheetNames.forEach(sheetName => {
-    const sheet = workbook.Sheets[sheetName];
-    const jsonData = XLSX.utils.sheet_to_json(sheet);
-
-    // 假設 Excel 欄位名稱是 mainCat / subCat / name / price / img
-    jsonData.forEach(row => {
-      allProducts.push({
-        mainCat: row.mainCat,
-        subCat: row.subCat,
-        name: row.name,
-        price: row.price,
-        img: row.img
-      });
-    });
+    // 排除「分類圖片」
+    if (mainCat !== '分類圖片') {
+      allProducts.push({ mainCat, subCat, name, price, img });
+    }
   });
 
   return allProducts;
 }
+
 
 // 主程式
 async function loadProducts() {

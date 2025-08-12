@@ -153,30 +153,31 @@ function createProductSection(mainCat, subData)
  * - 建立主分類按鈕
  * - 預先生成商品展示區
  */
-window.onload = async () => {
+window.onload = async () => 
+{
   const { categoryImages } = await fetchData();
 
-  const categoryContainer = document.getElementById('categoryContainer');
-  const subCategoryContainer = document.getElementById('subCategoryContainer');
-
-  if (!categoryContainer) {
-    console.error('找不到 categoryContainer 元素');
-    return;
-  }
-
+  // 從所有資料中取出唯一的主分類名稱
   const mainCats = [...new Set(categoryImages.map(row => row.mainCat))];
 
-  mainCats.forEach(mainCat => {
+  mainCats.forEach(mainCat => 
+  {
+    // 找出該主分類的第一筆資料（拿主分類圖）
     const mainRow = categoryImages.find(row => row.mainCat === mainCat);
     const block = createCategoryBlock(mainCat, mainRow.mainImg);
 
-    block.onclick = () => {
-      if (!subCategoryContainer) return;
-
-      if (currentExpanded === mainCat) {
+    // 點擊主分類按鈕時的邏輯
+    block.onclick = () => 
+	{
+      if (currentExpanded === mainCat) 
+	  {
+        // 如果已經展開，則收起
         subCategoryContainer.innerHTML = '';
         currentExpanded = null;
-      } else {
+      } 
+	  else 
+	  {
+        // 如果未展開，則載入子分類選單
         const subCats = categoryImages
           .filter(row => row.mainCat === mainCat && row.subCat)
           .map(row => row.subCat);
@@ -185,8 +186,10 @@ window.onload = async () => {
       }
     };
 
+    // 將主分類按鈕加到頁面
     categoryContainer.appendChild(block);
 
+    // 同時建立該主分類的商品展示區
     const subData = categoryImages
       .filter(row => row.mainCat === mainCat && row.subCat)
       .map(row => ({ subCat: row.subCat, subImg: row.subImg }));

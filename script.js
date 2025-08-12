@@ -98,7 +98,7 @@ function createSubCategoryMenu(mainCat, subCategories)
 	btn.onclick = () => 
 	{
       // 跳轉並在網址帶上子分類名稱
-      window.location.href = `window.location.href = `product_list.html?main=${encodeURIComponent(mainCat)}&sub=${encodeURIComponent(name)}`;
+	  window.location.href = `product_list.html?main=${encodeURIComponent(mainCat)}&sub=${encodeURIComponent(name)}`;
     };
     menu.appendChild(btn);
   });

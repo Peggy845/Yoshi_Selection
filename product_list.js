@@ -1,13 +1,12 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec";
 
-// 取得所有分頁名稱（排除「分類圖片」）
-async function getSheetNames() {
-  const res = await fetch(`${API_URL}?action=getSheetNames`);
-  if (!res.ok) throw new Error("Failed to fetch sheet names");
-  const data = await res.json();
-  console.log("sheetNames raw data:", data);
-  if (!Array.isArray(data)) throw new Error("Invalid sheet names format");
-  return data;
+// 讀取指定分頁商品資料
+async function getSheetData(sheetName) {
+  const res = await fetch(`${API_URL}?type=product&sheet=${encodeURIComponent(sheetName)}`);
+  if (!res.ok) throw new Error(`Failed to fetch sheet: ${sheetName}`);
+  const json = await res.json();
+  if (json.error) throw new Error(json.error);
+  return json.products || [];
 }
 
 // 讀取單一分頁資料

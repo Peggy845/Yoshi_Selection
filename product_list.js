@@ -267,49 +267,53 @@ function pushToCart(item) {
     console.error('product_list 需要 ?sheet=或?main= 參數');
     return;
   }
-  // 顯示標題（子分類）
-  titleEl.textContent = decodeURIComponent(subParam);
+  
+  if(sheetName != '分類圖片')
+  {
+	  // 顯示標題（子分類）
+	  titleEl.textContent = decodeURIComponent(subParam);
 
-  // 取得該分頁的所有商品
-  const data = await fetchProductsFromSheet(sheetName);
-  if (!data || data.error) {
-    titleEl.textContent = `讀取失敗：${data && data.error ? data.error : 'API 無回應'}`;
-    console.error('API 回傳：', data);
-    return;
-  }
+	  // 取得該分頁的所有商品
+	  const data = await fetchProductsFromSheet(sheetName);
+	  if (!data || data.error) {
+		titleEl.textContent = `讀取失敗：${data && data.error ? data.error : 'API 無回應'}`;
+		console.error('API 回傳：', data);
+		return;
+	  }
 
-  // data.products 預期為陣列；有些版本可能直接回傳陣列，做容錯
-  let rows = [];
-  if (Array.isArray(data.products)) rows = data.products;
-  else if (Array.isArray(data)) rows = data; // 若 API 直接回傳陣列
-  else if (Array.isArray(data.data)) rows = data.data;
-  else {
-    console.error('無法辨識 API 回傳結構', data);
-    titleEl.textContent = '讀取格式錯誤';
-    return;
-  }
+	  // data.products 預期為陣列；有些版本可能直接回傳陣列，做容錯
+	  let rows = [];
+	  if (Array.isArray(data.products)) rows = data.products;
+	  else if (Array.isArray(data)) rows = data; // 若 API 直接回傳陣列
+	  else if (Array.isArray(data.data)) rows = data.data;
+	  else {
+		console.error('無法辨識 API 回傳結構', data);
+		titleEl.textContent = '讀取格式錯誤';
+		return;
+	  }
 
-  // 過濾：根據「商品系列」欄位與 subParam（若 subParam==='全部' 代表不過濾）
-  const filtered = rows.filter(r => {
-    const series = getField(r, '商品系列') || '';
-    if (subParam === '全部') return true;
-    return series === decodeURIComponent(subParam);
-  });
+	  // 過濾：根據「商品系列」欄位與 subParam（若 subParam==='全部' 代表不過濾）
+	  const filtered = rows.filter(r => {
+		const series = getField(r, '商品系列') || '';
+		if (subParam === '全部') return true;
+		return series === decodeURIComponent(subParam);
+	  });
 
-  // 若無符合項目顯示提示
-  const list = document.getElementById('product-list');
-  list.innerHTML = '';
-  if (filtered.length === 0) {
-    const none = document.createElement('div');
-    none.textContent = '找不到符合的商品';
-    none.style.padding = '18px';
-    list.appendChild(none);
-    return;
-  }
+	  // 若無符合項目顯示提示
+	  const list = document.getElementById('product-list');
+	  list.innerHTML = '';
+	  if (filtered.length === 0) {
+		const none = document.createElement('div');
+		none.textContent = '找不到符合的商品';
+		none.style.padding = '18px';
+		list.appendChild(none);
+		return;
+	  }
 
-  // 逐筆渲染（每筆為 product-card）
-  filtered.forEach(p => {
-    const card = renderProductCard(p);
-    list.appendChild(card);
-  });
+	  // 逐筆渲染（每筆為 product-card）
+	  filtered.forEach(p => {
+		const card = renderProductCard(p);
+		list.appendChild(card);
+	  });
+	}
 })();

@@ -8,7 +8,7 @@ function doGet(e) {
     const sheets = ss.getSheets();
     const sheetNames = sheets.map(s => s.getName()).filter(name => name !== '分類圖片');
     return ContentService
-      .createTextOutput(JSON.stringify(sheetNames))
+      .createTextOutput(JSON.stringify({ sheetNames }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
@@ -33,10 +33,10 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  // 取得商品（後端直接過濾）
+  // 取得商品資料
   if (type === 'product') {
     const sheetName = e.parameter.sheet;
-    const subCategory = e.parameter.subCategory || ''; // 第二層分類名稱
+    const subCategory = e.parameter.subCategory || '';
 
     if (!sheetName) {
       return ContentService.createTextOutput(JSON.stringify({ error: '缺少 sheet 參數' }))
@@ -50,6 +50,11 @@ function doGet(e) {
     }
 
     const data = sheet.getDataRange().getValues();
+    if (data.length < 2) {
+      return ContentService.createTextOutput(JSON.stringify({ products: [] }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+
     const headers = data[0];
     const products = [];
 
@@ -59,7 +64,7 @@ function doGet(e) {
         product[headers[j]] = data[i][j];
       }
 
-      // 後端直接過濾「商品系列」欄位
+      // 如果指定 subCategory，後端直接過濾「商品系列」
       if (!subCategory || String(product['商品系列']).trim() === String(subCategory).trim()) {
         products.push(product);
       }

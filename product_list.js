@@ -76,11 +76,14 @@ async function loadProducts() {
   }
 
   // 先定義你 Google Sheet 裡所有的分頁名稱
+  // 這裡要列出你所有的第一層分類分頁名稱
   const sheetNames = [
     '日本寶可夢',
-    '台灣寶可夢',
-    '美國寶可夢'
-    // 這裡要列出你所有的第一層分類分頁名稱
+    '日本三麗鷗',
+	'日本貓福珊迪',
+	'日本親子玩具與母嬰用品'
+	'日本童裝品牌',
+	'進擊的巨人'
   ];
 
   const allSheetsData = await fetchMultipleSheets(sheetNames);
@@ -100,6 +103,10 @@ async function loadProducts() {
   if (filtered.length === 0) {
     container.innerHTML = '<p>目前沒有這個分類的商品</p>';
     return;
+  }
+  else
+  {
+	  console.log("[Debug] 這個分類總共有 %d 個商品:", filtered.length);
   }
 
   filtered.forEach(product => {

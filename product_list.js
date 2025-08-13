@@ -13,15 +13,21 @@ async function getSheetNames() {
   const data = await res.json();
   console.log("[getSheetNames] raw:", data);
 
-  if (Array.isArray(data)) return data; // 萬一 API 回傳直接是 array
-  if (data && Array.isArray(data.categoryImages)) {
-    // 從 categoryImages 抓 mainCat 當 sheetNames，並去重
-    const names = Array.from(new Set(data.categoryImages.map(ci => ci.mainCat).filter(Boolean)));
+  if (Array.isArray(data.sheetNames)) {
+    return data.sheetNames.filter(n => n && n !== "分類圖片");
+  }
+
+  // 如果 API 回傳的是 categoryImages
+  if (Array.isArray(data.categoryImages)) {
+    const names = Array.from(
+      new Set(data.categoryImages.map(ci => ci.mainCat).filter(Boolean))
+    );
     return names.filter(n => n !== "分類圖片");
   }
 
   throw new Error("sheetNames 格式不正確");
 }
+
 
 // 讀取單一分頁商品資料
 async function getSheetData(sheetName) {

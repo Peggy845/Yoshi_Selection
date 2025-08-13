@@ -104,7 +104,11 @@ async function loadProducts() {
     container.innerHTML = '<p>目前沒有這個分類的商品</p>';
     return;
   }
-
+  else
+  {
+	  console.log("[Debug] 商品數量:", filtered.length);
+  }
+  
   filtered.forEach(product => {
     const productDiv = document.createElement('div');
     productDiv.className = 'product-item';

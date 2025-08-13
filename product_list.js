@@ -9,8 +9,18 @@ function getQueryParam(name) {
 async function getSheetNames() {
   const res = await fetch(`${API_URL}?action=getSheetNames`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to fetch sheet names: ${res.status}`);
+
   const data = await res.json();
-  return Array.isArray(data.sheetNames) ? data.sheetNames : [];
+  console.log("[getSheetNames] raw:", data);
+
+  if (Array.isArray(data)) return data; // 萬一 API 回傳直接是 array
+  if (data && Array.isArray(data.categoryImages)) {
+    // 從 categoryImages 抓 mainCat 當 sheetNames，並去重
+    const names = Array.from(new Set(data.categoryImages.map(ci => ci.mainCat).filter(Boolean)));
+    return names.filter(n => n !== "分類圖片");
+  }
+
+  throw new Error("sheetNames 格式不正確");
 }
 
 // 讀取單一分頁商品資料

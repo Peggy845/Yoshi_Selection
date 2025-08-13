@@ -61,6 +61,13 @@ async function loadProducts() {
       return;
     }
 
+	let products = await getSheetData(mainCat);
+	console.log("=== raw products ===", products);
+
+	// 測試每筆資料的欄位名稱
+	products.forEach((p, i) => console.log(i, Object.keys(p)));
+
+/*
     let products = await getSheetData(mainCat);
 
     if (subCat) {
@@ -75,7 +82,7 @@ async function loadProducts() {
       document.getElementById("product-list").innerHTML = "<p>目前沒有商品資料</p>";
       return;
     }
-
+*/
     const subCatImageObj = categoryImages.find(
       ci => ci.mainCat === mainCat && ci.subCat === subCat
     );

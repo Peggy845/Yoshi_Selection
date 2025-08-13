@@ -17,24 +17,29 @@ async function getSheetNames() {
   const data = await res.json();
   console.log("[getSheetNames] raw:", data);
 
+  // 情境 A：純陣列
   if (Array.isArray(data)) {
     return data.filter(n => n && n !== "分類圖片");
   }
+  // 情境 B：物件包陣列
   if (data && Array.isArray(data.sheetNames)) {
     return data.sheetNames.filter(n => n && n !== "分類圖片");
   }
+  // 情境 C：目前你實際拿到的 { categoryImages: [...] }
   if (data && Array.isArray(data.categoryImages)) {
     const names = Array.from(
       new Set(
         data.categoryImages
-          .map(x => x && x.mainCat)
+          .map(x => x && x.subCat) // ← 改成 subCat
           .filter(Boolean)
       )
     );
     return names.filter(n => n && n !== "分類圖片");
   }
+
   throw new Error("Invalid sheet names format");
 }
+
 
 // 讀取單一分頁資料
 async function getSheetData(sheetName) {

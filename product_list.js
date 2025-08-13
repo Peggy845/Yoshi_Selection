@@ -113,16 +113,30 @@ async function loadProducts() {
 	  const productDiv = document.createElement('div');
 	  productDiv.className = 'product-item';
 
+	  // 處理圖片
+	  const mainImage = product['商品圖片'] 
+		? `https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/${product['商品圖片']}` 
+		: '';
+	  const extraImages = product['額外圖片'] && product['額外圖片'] !== '無'
+		? product['額外圖片'].split('、').map(img => `https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/${img}`)
+		: [];
+
+	  let currentImageIndex = 0;
+	  let allImages = [mainImage, ...extraImages];
+
+	  const leftArrowDisplay = extraImages.length > 0 ? '' : 'style="display:none"';
+	  const rightArrowDisplay = extraImages.length > 0 ? '' : 'style="display:none"';
+
 	  productDiv.innerHTML = `
 		<!-- 商品圖片小區 -->
 		<div class="product-image-block">
-		  <div class="image-arrow left-arrow">&#9664;</div>
-		  <img src="${product['商品圖片'] || ''}" alt="${product['商品名稱'] || ''}">
-		  <div class="image-arrow right-arrow">&#9654;</div>
+		  <div class="image-arrow left-arrow" ${leftArrowDisplay}>&#9664;</div>
+		  <img src="${mainImage}" alt="${product['商品名稱'] || ''}">
+		  <div class="image-arrow right-arrow" ${rightArrowDisplay}>&#9654;</div>
 		</div>
 
 		<!-- 商品名稱 -->
-		<div class="product-name">商品名稱: ${product['商品名稱'] || ''}</div>
+		<div class="product-name">${product['商品名稱'] || ''}</div>
 
 		<!-- 價格 -->
 		<div class="product-price">$ ${product['價格'] || ''}</div>
@@ -148,6 +162,21 @@ async function loadProducts() {
 		  <button class="cart-btn">加入購物車</button>
 		</div>
 	  `;
+
+	  // 圖片切換事件
+	  const imgElement = productDiv.querySelector('img');
+	  productDiv.querySelector('.left-arrow')?.addEventListener('click', () => {
+		if (extraImages.length > 0) {
+		  currentImageIndex = (currentImageIndex - 1 + allImages.length) % allImages.length;
+		  imgElement.src = allImages[currentImageIndex];
+		}
+	  });
+	  productDiv.querySelector('.right-arrow')?.addEventListener('click', () => {
+		if (extraImages.length > 0) {
+		  currentImageIndex = (currentImageIndex + 1) % allImages.length;
+		  imgElement.src = allImages[currentImageIndex];
+		}
+	  });
 
 	  container.appendChild(productDiv);
 	});

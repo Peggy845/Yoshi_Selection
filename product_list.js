@@ -15,16 +15,14 @@ console.log("sub 參數:", subCatParam);
 // 取得所有商品分頁名稱及分類圖片
 async function getSheetNames() {
   try {
-    console.log("[Debug] 開始 fetch sheetNames...");
     const res = await fetch(`${API_URL}?action=getSheetNames`, { cache: "no-store" });
-    if (!res.ok) throw new Error(`fetch 失敗: ${res.status}`);
     const data = await res.json();
     console.log("[Debug] getSheetNames raw data:", data);
 
     if (Array.isArray(data.categoryImages)) {
-      const sheetNames = Array.from(new Set(data.sheetNames));
+      // 用 categoryImages 推 sheetNames
+      const sheetNames = Array.from(new Set(data.categoryImages.map(ci => ci.mainCat)));
       console.log("[Debug] sheetNames:", sheetNames);
-      console.log("[Debug] categoryImages:", data.categoryImages);
       return { sheetNames, categoryImages: data.categoryImages };
     } else {
       throw new Error("categoryImages 格式不正確");

@@ -21,7 +21,7 @@ async function getSheetNames() {
       return { sheetNames, categoryImages };
     }
 
-    throw new Error("sheetNames 格式不正確");
+    throw new Error("categoryImages 格式不正確");
   } catch (err) {
     console.error("抓取 sheetNames 發生錯誤:", err);
     return { sheetNames: [], categoryImages: [] };
@@ -29,21 +29,22 @@ async function getSheetNames() {
 }
 
 // 讀取單一分頁商品資料
-async function getSheetData(sheetName) {
+async function getSheetData(sheetName, subCategory = "") {
   const url = `${API_URL}?type=product&sheet=${encodeURIComponent(sheetName)}`;
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to fetch sheet: ${sheetName} (${res.status})`);
   const json = await res.json();
   if (json.error) throw new Error(json.error);
-  return json.products || [];
-}
+  let products = json.products || [];
 
-// 讀取分類圖片
-async function getCategoryImages() {
-  const res = await fetch(`${API_URL}?type=category`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`Failed to fetch category images: ${res.status}`);
-  const data = await res.json();
-  return Array.isArray(data.categoryImages) ? data.categoryImages : [];
+  // 過濾 subCategory
+  if (subCategory) {
+    products = products.filter(p =>
+      p["商品系列"] && String(p["商品系列"]).trim() === subCategory
+    );
+  }
+
+  return products;
 }
 
 // 主流程
@@ -54,35 +55,19 @@ async function loadProducts() {
     console.log("[loadProducts] mainCat:", mainCat, "subCat:", subCat);
 
     const { sheetNames, categoryImages } = await getSheetNames();
-    console.log("[loadProducts] sheetNames:", sheetNames);
-
     if (!mainCat || !sheetNames.includes(mainCat)) {
       document.getElementById("product-list").innerHTML = "<p>找不到該分類</p>";
       return;
     }
 
-	let products = await getSheetData(mainCat);
-	console.log("=== raw products ===", products);
+    let products = await getSheetData(mainCat, subCat);
+    console.log("=== raw products ===", products);
 
-	// 測試每筆資料的欄位名稱
-	products.forEach((p, i) => console.log(i, Object.keys(p)));
-
-/*
-    let products = await getSheetData(mainCat);
-
-    if (subCat) {
-      products = products.filter(p =>
-        p["商品系列"] && p["商品系列"].includes(subCat)
-      );
-    }
-
-    console.log("raw products:", products);
-
-    if (products.length === 0) {
+    if (!products.length) {
       document.getElementById("product-list").innerHTML = "<p>目前沒有商品資料</p>";
       return;
     }
-*/
+
     const subCatImageObj = categoryImages.find(
       ci => ci.mainCat === mainCat && ci.subCat === subCat
     );
@@ -105,6 +90,7 @@ function renderProducts(products, subCatImage = "") {
     const card = document.createElement("div");
     card.className = "product-card";
 
+    // 左側圖片區
     const leftSide = document.createElement("div");
     const imageContainer = document.createElement("div");
     imageContainer.className = "product-image-container";
@@ -112,7 +98,7 @@ function renderProducts(products, subCatImage = "") {
     const images = [];
     if (subCatImage) images.push(subCatImage);
     if (product["商品圖片"]) images.push(product["商品圖片"]);
-    if (product["額外圖片們"]) images.push(...product["額外圖片們"].split("、").map(s=>s.trim()).filter(Boolean));
+    if (product["額外圖片們"]) images.push(...product["額外圖片們"].split("、").map(s => s.trim()).filter(Boolean));
 
     let imgIndex = 0;
     const img = document.createElement("img");
@@ -140,6 +126,7 @@ function renderProducts(products, subCatImage = "") {
     status.textContent = `狀態: ${product["販售狀態"] || ""}`;
     leftSide.appendChild(status);
 
+    // 右側商品資訊
     const rightSide = document.createElement("div");
     rightSide.className = "product-details";
 

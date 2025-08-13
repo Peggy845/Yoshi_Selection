@@ -9,28 +9,16 @@ function doGet(e) {
   if (action === 'getSheetNames') {
     const sheets = ss.getSheets();
     const sheetNames = sheets.map(s => s.getName()).filter(name => name !== '分類圖片');
-    return ContentService
-      .createTextOutput(JSON.stringify({ sheetNames }))
-      .setMimeType(ContentService.MimeType.JSON);
-  }
 
-  // --- 取得分類圖片 ---
-  if (type === 'category') {
-    const sheet = ss.getSheetByName('分類圖片');
-    if (!sheet) {
-      return ContentService
-        .createTextOutput(JSON.stringify({ error: '找不到分類圖片分頁' }))
-        .setMimeType(ContentService.MimeType.JSON);
-    }
-
-    const data = sheet.getDataRange().getValues();
-    const headers = data[0];
+    // 取得分類圖片
+    const catSheet = ss.getSheetByName('分類圖片');
+    const catData = catSheet ? catSheet.getDataRange().getValues() : [];
+    const headers = catData[0] || [];
     const categoryImages = [];
-
-    for (let i = 1; i < data.length; i++) {
+    for (let i = 1; i < catData.length; i++) {
       const rowObj = {};
       for (let j = 0; j < headers.length; j++) {
-        rowObj[headers[j]] = data[i][j];
+        rowObj[headers[j]] = catData[i][j];
       }
       categoryImages.push({
         mainCat: rowObj['主分類'] || rowObj['mainCat'] || '',
@@ -41,7 +29,7 @@ function doGet(e) {
     }
 
     return ContentService
-      .createTextOutput(JSON.stringify({ categoryImages }))
+      .createTextOutput(JSON.stringify({ sheetNames, categoryImages }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 
@@ -76,10 +64,10 @@ function doGet(e) {
         product[headers[j]] = data[i][j];
       }
 
-      // 過濾 subCategory
-		if (!subCategory || String(product['商品系列']).includes(subCategory)) {
-		  products.push(product);
-		}
+      // 精確或包含比對 subCategory
+      if (!subCategory || (product['商品系列'] && String(product['商品系列']).includes(subCategory))) {
+        products.push(product);
+      }
     }
 
     return ContentService

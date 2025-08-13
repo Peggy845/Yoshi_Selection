@@ -14,11 +14,9 @@ async function getSheetNames() {
 
     if (Array.isArray(data.categoryImages)) {
       const sheetNames = Array.from(
-        new Set(data.categoryImages.map(ci => ci.mainCat).filter(Boolean))
+        new Set(data.sheetNames)
       );
-      const categoryImages = data.categoryImages;
-      console.log("[getSheetNames] sheetNames:", sheetNames);
-      return { sheetNames, categoryImages };
+      return { sheetNames, categoryImages: data.categoryImages };
     }
 
     throw new Error("categoryImages 格式不正確");
@@ -28,7 +26,7 @@ async function getSheetNames() {
   }
 }
 
-// 讀取單一分頁商品資料
+// 讀取單一分頁商品資料，支援 subCategory
 async function getSheetData(sheetName, subCategory = "") {
   const url = `${API_URL}?type=product&sheet=${encodeURIComponent(sheetName)}&subCategory=${encodeURIComponent(subCategory)}`;
   const res = await fetch(url, { cache: "no-store" });
@@ -37,7 +35,6 @@ async function getSheetData(sheetName, subCategory = "") {
   if (json.error) throw new Error(json.error);
   return json.products || [];
 }
-
 
 // 主流程
 async function loadProducts() {

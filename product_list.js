@@ -7,26 +7,27 @@ function getQueryParam(name) {
 
 // 取得所有商品分頁名稱
 async function getSheetNames() {
-  const res = await fetch(`${API_URL}?action=getSheetNames`, { cache: "no-store" });
-  if (!res.ok) throw new Error(`Failed to fetch sheet names: ${res.status}`);
+  try {
+    const res = await fetch(`${API_URL}?action=getSheetNames`, { cache: "no-store" });
+    const data = await res.json();
+    console.log("[getSheetNames] raw:", data);
 
-  const data = await res.json();
-  console.log("[getSheetNames] raw:", data);
+    if (Array.isArray(data.categoryImages)) {
+      // 把 categoryImages 轉成 sheetNames（去重 mainCat）
+      const sheetNames = Array.from(
+        new Set(data.categoryImages.map(ci => ci.mainCat).filter(Boolean))
+      );
+      console.log("[getSheetNames] sheetNames:", sheetNames);
+      return { sheetNames, categoryImages: data.categoryImages };
+    }
 
-  if (Array.isArray(data.sheetNames)) {
-    return data.sheetNames.filter(n => n && n !== "分類圖片");
+    throw new Error("sheetNames 格式不正確");
+  } catch (err) {
+    console.error("抓取 sheetNames 發生錯誤:", err);
+    return { sheetNames: [], categoryImages: [] };
   }
-
-  // 如果 API 回傳的是 categoryImages
-  if (Array.isArray(data.categoryImages)) {
-    const names = Array.from(
-      new Set(data.categoryImages.map(ci => ci.mainCat).filter(Boolean))
-    );
-    return names.filter(n => n !== "分類圖片");
-  }
-
-  throw new Error("sheetNames 格式不正確");
 }
+
 
 
 // 讀取單一分頁商品資料
@@ -54,7 +55,8 @@ async function loadProducts() {
     const subCat = getQueryParam("sub");
     console.log("[loadProducts] mainCat:", mainCat, "subCat:", subCat);
 
-    const sheetNames = await getSheetNames();
+    // 取得 sheetNames 與 categoryImages
+    const { sheetNames, categoryImages } = await getSheetNames();
     console.log("[loadProducts] sheetNames:", sheetNames);
 
     if (!mainCat || !sheetNames.includes(mainCat)) {
@@ -62,8 +64,10 @@ async function loadProducts() {
       return;
     }
 
+    // 取得該主分類的商品資料
     let products = await getSheetData(mainCat);
 
+    // 篩選子分類
     if (subCat) {
       products = products.filter(p =>
         p["商品系列"] && p["商品系列"].includes(subCat)
@@ -77,10 +81,13 @@ async function loadProducts() {
       return;
     }
 
-    const categoryImages = await getCategoryImages();
-    const subCatImageObj = categoryImages.find(ci => ci.subCat === subCat);
+    // 取得子分類圖片
+    const subCatImageObj = categoryImages.find(
+      ci => ci.mainCat === mainCat && ci.subCat === subCat
+    );
     const subCatImage = subCatImageObj ? subCatImageObj.subImg : "";
 
+    // 渲染商品
     renderProducts(products, subCatImage);
   } catch (err) {
     console.error(err);

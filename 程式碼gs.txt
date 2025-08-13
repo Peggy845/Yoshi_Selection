@@ -77,9 +77,9 @@ function doGet(e) {
       }
 
       // 過濾 subCategory
-      if (!subCategory || String(product['商品系列']).trim() === String(subCategory).trim()) {
-        products.push(product);
-      }
+		if (!subCategory || String(product['商品系列']).includes(subCategory)) {
+		  products.push(product);
+		}
     }
 
     return ContentService

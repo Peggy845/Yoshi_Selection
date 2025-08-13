@@ -30,22 +30,14 @@ async function getSheetNames() {
 
 // 讀取單一分頁商品資料
 async function getSheetData(sheetName, subCategory = "") {
-  const url = `${API_URL}?type=product&sheet=${encodeURIComponent(sheetName)}`;
+  const url = `${API_URL}?type=product&sheet=${encodeURIComponent(sheetName)}&subCategory=${encodeURIComponent(subCategory)}`;
   const res = await fetch(url, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to fetch sheet: ${sheetName} (${res.status})`);
   const json = await res.json();
   if (json.error) throw new Error(json.error);
-  let products = json.products || [];
-
-  // 過濾 subCategory
-  if (subCategory) {
-    products = products.filter(p =>
-      p["商品系列"] && String(p["商品系列"]).trim() === subCategory
-    );
-  }
-
-  return products;
+  return json.products || [];
 }
+
 
 // 主流程
 async function loadProducts() {

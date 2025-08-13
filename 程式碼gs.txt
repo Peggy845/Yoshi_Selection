@@ -5,26 +5,26 @@ function doGet(e) {
   const sheetName = e.parameter.sheet || '';
   const subCategory = e.parameter.subCategory || '';
 
-  // --- 取得分頁名稱 ---
+  // --- 取得分頁名稱與分類圖片 ---
   if (action === 'getSheetNames') {
     const sheets = ss.getSheets();
     const sheetNames = sheets.map(s => s.getName()).filter(name => name !== '分類圖片');
 
-    // 取得分類圖片
     const catSheet = ss.getSheetByName('分類圖片');
     const catData = catSheet ? catSheet.getDataRange().getValues() : [];
     const headers = catData[0] || [];
     const categoryImages = [];
+
     for (let i = 1; i < catData.length; i++) {
       const rowObj = {};
       for (let j = 0; j < headers.length; j++) {
         rowObj[headers[j]] = catData[i][j];
       }
       categoryImages.push({
-        mainCat: rowObj['主分類'] || rowObj['mainCat'] || '',
-        mainImg: rowObj['主分類圖片'] || rowObj['mainImg'] || '',
-        subCat: rowObj['子分類'] || rowObj['subCat'] || '',
-        subImg: rowObj['子分類圖片'] || rowObj['subImg'] || ''
+        mainCat: rowObj['頂層分類'] || '',
+        mainImg: rowObj['頂層分類圖片檔名'] || '',
+        subCat: rowObj['第二層分類'] || '',
+        subImg: rowObj['第二層分類圖片檔名'] || ''
       });
     }
 
@@ -61,7 +61,7 @@ function doGet(e) {
     for (let i = 1; i < data.length; i++) {
       const product = {};
       for (let j = 0; j < headers.length; j++) {
-        product[headers[j]] = data[i][j];
+        product[headers[j]] = data[i][j] || ""; // 處理空值
       }
 
       // 精確或包含比對 subCategory
@@ -75,7 +75,7 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   }
 
-  // --- 其他無效請求 ---
+  // --- 無效請求 ---
   return ContentService
     .createTextOutput(JSON.stringify({ error: '無效的 action 或 type 參數' }))
     .setMimeType(ContentService.MimeType.JSON);

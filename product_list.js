@@ -1,24 +1,17 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec";
 
-// 從 URL 抓取 query 參數
 function getQueryParam(name) {
   return new URLSearchParams(window.location.search).get(name) || "";
 }
 
-// 取得所有商品分頁名稱及分類圖片
 async function getSheetNames() {
   try {
     const res = await fetch(`${API_URL}?action=getSheetNames`, { cache: "no-store" });
     const data = await res.json();
-    console.log("[getSheetNames] raw:", data);
-
     if (Array.isArray(data.categoryImages)) {
-      const sheetNames = Array.from(
-        new Set(data.sheetNames)
-      );
+      const sheetNames = Array.from(new Set(data.sheetNames));
       return { sheetNames, categoryImages: data.categoryImages };
     }
-
     throw new Error("categoryImages 格式不正確");
   } catch (err) {
     console.error("抓取 sheetNames 發生錯誤:", err);
@@ -26,7 +19,6 @@ async function getSheetNames() {
   }
 }
 
-// 讀取單一分頁商品資料，支援 subCategory
 async function getSheetData(sheetName, subCategory = "") {
   const url = `${API_URL}?type=product&sheet=${encodeURIComponent(sheetName)}&subCategory=${encodeURIComponent(subCategory)}`;
   const res = await fetch(url, { cache: "no-store" });
@@ -36,12 +28,10 @@ async function getSheetData(sheetName, subCategory = "") {
   return json.products || [];
 }
 
-// 主流程
 async function loadProducts() {
   try {
     const mainCat = getQueryParam("main");
     const subCat = getQueryParam("sub");
-    console.log("[loadProducts] mainCat:", mainCat, "subCat:", subCat);
 
     const { sheetNames, categoryImages } = await getSheetNames();
     if (!mainCat || !sheetNames.includes(mainCat)) {
@@ -50,16 +40,12 @@ async function loadProducts() {
     }
 
     let products = await getSheetData(mainCat, subCat);
-    console.log("=== raw products ===", products);
-
     if (!products.length) {
       document.getElementById("product-list").innerHTML = "<p>目前沒有商品資料</p>";
       return;
     }
 
-    const subCatImageObj = categoryImages.find(
-      ci => ci.mainCat === mainCat && ci.subCat === subCat
-    );
+    const subCatImageObj = categoryImages.find(ci => ci.mainCat === mainCat && ci.subCat === subCat);
     const subCatImage = subCatImageObj ? subCatImageObj.subImg : "";
 
     renderProducts(products, subCatImage);
@@ -69,7 +55,6 @@ async function loadProducts() {
   }
 }
 
-// 渲染商品卡片
 function renderProducts(products, subCatImage = "") {
   const container = document.getElementById("product-list");
   if (!container) return;
@@ -79,7 +64,7 @@ function renderProducts(products, subCatImage = "") {
     const card = document.createElement("div");
     card.className = "product-card";
 
-    // 左側圖片區
+    // 左側圖片
     const leftSide = document.createElement("div");
     const imageContainer = document.createElement("div");
     imageContainer.className = "product-image-container";
@@ -105,8 +90,7 @@ function renderProducts(products, subCatImage = "") {
       rightArrow.className = "image-arrow right";
       rightArrow.innerHTML = "&#8250;";
       rightArrow.onclick = () => { imgIndex = (imgIndex + 1) % images.length; img.src = `${BASE_IMAGE}${images[imgIndex]}`; };
-      imageContainer.appendChild(leftArrow);
-      imageContainer.appendChild(rightArrow);
+      imageContainer.append(leftArrow, rightArrow);
     }
 
     leftSide.appendChild(imageContainer);
@@ -148,14 +132,15 @@ function renderProducts(products, subCatImage = "") {
 
     const purchaseSection = document.createElement("div");
     purchaseSection.className = "purchase-section";
+
     const qtyControl = document.createElement("div");
     qtyControl.className = "quantity-control";
     const minusBtn = document.createElement("button"); minusBtn.textContent = "-";
     const qty = document.createElement("span"); qty.textContent = "1";
     const plusBtn = document.createElement("button"); plusBtn.textContent = "+";
-    const stock = parseInt(product["庫存"],10) || 0;
-    minusBtn.onclick = () => { const val = parseInt(qty.textContent,10); if(val>1) qty.textContent=String(val-1); };
-    plusBtn.onclick = () => { const val = parseInt(qty.textContent,10); if(val<stock) qty.textContent=String(val+1); };
+    const stock = parseInt(product["庫存"], 10) || 0;
+    minusBtn.onclick = () => { const val = parseInt(qty.textContent, 10); if(val>1) qty.textContent=String(val-1); };
+    plusBtn.onclick = () => { const val = parseInt(qty.textContent, 10); if(val<stock) qty.textContent=String(val+1); };
     const stockInfo = document.createElement("span");
     stockInfo.textContent = stock ? `還剩${stock}件` : "無庫存";
     qtyControl.append(minusBtn, qty, plusBtn, stockInfo);
@@ -164,6 +149,7 @@ function renderProducts(products, subCatImage = "") {
     cartBtn.className = "add-to-cart";
     cartBtn.textContent = "加入購物車";
     cartBtn.onclick = () => alert(`${product["商品名稱"] || "此商品"} 已加入購物車`);
+
     purchaseSection.append(qtyControl, cartBtn);
 
     rightSide.append(name, price, desc, optionsContainer, purchaseSection);

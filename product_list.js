@@ -5,7 +5,7 @@ function getQueryParam(name) {
   return new URLSearchParams(window.location.search).get(name) || "";
 }
 
-// 取得所有商品分頁名稱
+// 取得所有商品分頁名稱及分類圖片
 async function getSheetNames() {
   try {
     const res = await fetch(`${API_URL}?action=getSheetNames`, { cache: "no-store" });
@@ -13,12 +13,12 @@ async function getSheetNames() {
     console.log("[getSheetNames] raw:", data);
 
     if (Array.isArray(data.categoryImages)) {
-      // 把 categoryImages 轉成 sheetNames（去重 mainCat）
       const sheetNames = Array.from(
         new Set(data.categoryImages.map(ci => ci.mainCat).filter(Boolean))
       );
+      const categoryImages = data.categoryImages;
       console.log("[getSheetNames] sheetNames:", sheetNames);
-      return { sheetNames, categoryImages: data.categoryImages };
+      return { sheetNames, categoryImages };
     }
 
     throw new Error("sheetNames 格式不正確");
@@ -27,8 +27,6 @@ async function getSheetNames() {
     return { sheetNames: [], categoryImages: [] };
   }
 }
-
-
 
 // 讀取單一分頁商品資料
 async function getSheetData(sheetName) {
@@ -55,7 +53,6 @@ async function loadProducts() {
     const subCat = getQueryParam("sub");
     console.log("[loadProducts] mainCat:", mainCat, "subCat:", subCat);
 
-    // 取得 sheetNames 與 categoryImages
     const { sheetNames, categoryImages } = await getSheetNames();
     console.log("[loadProducts] sheetNames:", sheetNames);
 
@@ -64,10 +61,8 @@ async function loadProducts() {
       return;
     }
 
-    // 取得該主分類的商品資料
     let products = await getSheetData(mainCat);
 
-    // 篩選子分類
     if (subCat) {
       products = products.filter(p =>
         p["商品系列"] && p["商品系列"].includes(subCat)
@@ -81,13 +76,11 @@ async function loadProducts() {
       return;
     }
 
-    // 取得子分類圖片
     const subCatImageObj = categoryImages.find(
       ci => ci.mainCat === mainCat && ci.subCat === subCat
     );
     const subCatImage = subCatImageObj ? subCatImageObj.subImg : "";
 
-    // 渲染商品
     renderProducts(products, subCatImage);
   } catch (err) {
     console.error(err);

@@ -109,18 +109,66 @@ async function loadProducts() {
 	  console.log("[Debug] 商品數量:", filtered.length);
   }
   
-  filtered.forEach(product => {
-    const productDiv = document.createElement('div');
-    productDiv.className = 'product-item';
-    productDiv.innerHTML = `
-      <div class="product-name">${product['商品名稱'] || ''}</div>
-      <div class="product-price">$ ${product['價格'] || ''}</div>
-	  <div class="product-stock">$ ${product['庫存'] || ''}</div>
-	  <div class="product-status">$ ${product['販售狀態'] || ''}</div>
-      <div class="product-detail">${product['詳細資訊'] || ''}</div>
-    `;
-    container.appendChild(productDiv);
-  });
+	filtered.forEach(product => {
+	  const productDiv = document.createElement('div');
+	  productDiv.className = 'product-item';
+
+	  productDiv.innerHTML = `
+		<!-- 商品圖片小區 -->
+		<div class="product-image-block">
+		  <div class="image-arrow left-arrow">&#9664;</div>
+		  <img src="${product['商品圖片'] || ''}" alt="${product['商品名稱'] || ''}">
+		  <div class="image-arrow right-arrow">&#9654;</div>
+		</div>
+
+		<!-- 商品名稱 -->
+		<div class="product-name">商品名稱: ${product['商品名稱'] || ''}</div>
+
+		<!-- 價格 -->
+		<div class="product-price">$ ${product['價格'] || ''}</div>
+
+		<!-- 詳細資訊 -->
+		<div class="product-detail">${product['詳細資訊'] || ''}</div>
+
+		<!-- 選項 -->
+		<div class="product-option">選項</div>
+
+		<!-- 販售狀態 -->
+		<div class="product-status">狀態: ${product['販售狀態'] || ''}</div>
+
+		<!-- 選購區塊 -->
+		<div class="purchase-block">
+		  <div class="quantity-block">
+			<span>數量</span>
+			<button class="qty-btn" data-type="minus">-</button>
+			<input type="number" value="1" min="1" max="${product['庫存'] || 0}" readonly>
+			<button class="qty-btn" data-type="plus">+</button>
+			<span class="stock-text">還剩 ${product['庫存'] || 0} 件</span>
+		  </div>
+		  <button class="cart-btn">加入購物車</button>
+		</div>
+	  `;
+
+	  container.appendChild(productDiv);
+	});
 }
 
 loadProducts();
+
+document.addEventListener('click', function(e) {
+  if (e.target.classList.contains('qty-btn')) {
+    const type = e.target.dataset.type;
+    const input = e.target.parentElement.querySelector('input');
+    let value = parseInt(input.value);
+    const max = parseInt(input.max);
+
+    if (type === 'plus' && value < max) value++;
+    if (type === 'minus' && value > 1) value--;
+    input.value = value;
+  }
+
+  if (e.target.classList.contains('cart-btn')) {
+    e.target.classList.toggle('active');
+    e.target.textContent = e.target.classList.contains('active') ? '已加入' : '加入購物車';
+  }
+});

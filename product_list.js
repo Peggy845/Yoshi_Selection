@@ -1,8 +1,9 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec";
 
-// 從 URL 抓取 query 參數
+// 從 URL 抓取 query 參數，並 decode
 function getQueryParam(name) {
-  return new URLSearchParams(window.location.search).get(name) || "";
+  const param = new URLSearchParams(window.location.search).get(name) || "";
+  return decodeURIComponent(param.trim());
 }
 
 // --- Debug: 印出 URL 與參數 ---
@@ -68,6 +69,7 @@ async function loadProducts() {
       return;
     }
 
+    // fetch 商品
     let products = await getSheetData(mainCatParam, subCatParam);
     console.log("[Debug] 取得的商品數量:", products.length);
 
@@ -76,8 +78,9 @@ async function loadProducts() {
       return;
     }
 
+    // 找出對應子分類圖片
     const subCatImageObj = categoryImages.find(
-      ci => ci.mainCat === mainCatParam && ci.subCat === subCatParam
+      ci => ci.mainCat.trim() === mainCatParam && ci.subCat.trim() === subCatParam
     );
     const subCatImage = subCatImageObj ? subCatImageObj.subImg : "";
     console.log("[Debug] subCatImage:", subCatImage);

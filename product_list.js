@@ -1,10 +1,15 @@
 /* =========================
- * product_list.js  (完整覆蓋版)
+ * product_list.js  (加上 mainCat / subCat 過濾)
  * ========================= */
 
 const API_URL = "https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec";
 
-// 取得所有商品分頁名稱（強韌處理：支援 Array / {sheetNames} / {categoryImages}）
+// 從 URL 抓取 query 參數
+function getQueryParam(name) {
+  return new URLSearchParams(window.location.search).get(name) || "";
+}
+
+// 取得所有商品分頁名稱
 async function getSheetNames() {
   const res = await fetch(`${API_URL}?action=getSheetNames`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to fetch sheet names: ${res.status}`);
@@ -12,15 +17,12 @@ async function getSheetNames() {
   const data = await res.json();
   console.log("[getSheetNames] raw:", data);
 
-  // 情境 A：純陣列
   if (Array.isArray(data)) {
     return data.filter(n => n && n !== "分類圖片");
   }
-  // 情境 B：物件包陣列
   if (data && Array.isArray(data.sheetNames)) {
     return data.sheetNames.filter(n => n && n !== "分類圖片");
   }
-  // 情境 C：目前你實際拿到的 { categoryImages: [...] }
   if (data && Array.isArray(data.categoryImages)) {
     const names = Array.from(
       new Set(
@@ -29,14 +31,12 @@ async function getSheetNames() {
           .filter(Boolean)
       )
     );
-    // 這些 mainCat 就是商品分頁名稱（你的 Excel 設計是一個 main 對一個商品分頁）
     return names.filter(n => n && n !== "分類圖片");
   }
-
   throw new Error("Invalid sheet names format");
 }
 
-// 讀取單一分頁資料（商品）
+// 讀取單一分頁資料
 async function getSheetData(sheetName) {
   const url = `${API_URL}?type=product&sheet=${encodeURIComponent(sheetName)}`;
   const res = await fetch(url, { cache: "no-store" });
@@ -46,53 +46,55 @@ async function getSheetData(sheetName) {
   return json.products || [];
 }
 
-// 主流程：取得所有商品分頁並合併顯示
+// 主流程
 async function loadProducts() {
   try {
-    const sheetNames = await getSheetNames(); // ← 一定已定義
+    const mainCat = getQueryParam("mainCat");
+    const subCat = getQueryParam("subCat");
+    console.log("[loadProducts] mainCat:", mainCat, "subCat:", subCat);
+
+    const sheetNames = await getSheetNames();
     console.log("[loadProducts] sheetNames:", sheetNames);
 
-    if (!Array.isArray(sheetNames) || sheetNames.length === 0) {
-      document.getElementById("product-list").innerHTML = "<p>目前沒有可顯示的商品分頁</p>";
+    if (!mainCat || !sheetNames.includes(mainCat)) {
+      document.getElementById("product-list").innerHTML = "<p>找不到該分類</p>";
       return;
     }
 
-    let allProducts = [];
-    for (const name of sheetNames) {
-      try {
-        const products = await getSheetData(name);
-        allProducts = allProducts.concat(products);
-      } catch (innerErr) {
-        console.warn(`[loadProducts] 無法讀取分頁 ${name}:`, innerErr);
-      }
+    let products = await getSheetData(mainCat);
+
+    // 如果有 subCat，就過濾商品系列
+    if (subCat) {
+      products = products.filter(
+        p => (p["商品系列"] || "").trim() === subCat.trim()
+      );
     }
 
-    if (allProducts.length === 0) {
+    if (products.length === 0) {
       document.getElementById("product-list").innerHTML = "<p>目前沒有商品資料</p>";
       return;
     }
 
-    renderProducts(allProducts);
+    renderProducts(products);
   } catch (err) {
     console.error(err);
     document.getElementById("product-list").innerHTML = "<p>載入商品失敗</p>";
   }
 }
 
-// 渲染商品卡片（保留你的原樣式與互動）
+// 渲染商品卡片
 function renderProducts(products) {
   const container = document.getElementById("product-list");
   if (!container) {
     console.error("找不到 #product-list 容器");
     return;
   }
-  container.innerHTML = ""; // 先清空
+  container.innerHTML = "";
 
   products.forEach(product => {
     const card_product_1 = document.createElement("div");
     card_product_1.className = "product-card-1";
 
-    // 圖片處理
     const imageContainer = document.createElement("div");
     imageContainer.className = "product-image-container";
 
@@ -104,10 +106,7 @@ function renderProducts(products) {
     const img = document.createElement("img");
     img.className = "product-image";
 
-    // 提醒：如果 GitHub 圖片顯示不出來，請改用 raw 連結：
-    // const BASE_IMAGE = "https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/";
-    const BASE_IMAGE = "https://github.com/Peggy845/Yoshi_Selection/images/";
-
+    const BASE_IMAGE = "https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/";
     img.src = images.length ? `${BASE_IMAGE}${images[0]}` : "";
     imageContainer.appendChild(img);
 
@@ -131,12 +130,10 @@ function renderProducts(products) {
       imageContainer.appendChild(rightArrow);
     }
 
-    // 狀態
     const status = document.createElement("div");
     status.className = "status";
     status.textContent = `狀態: ${product["販售狀態"] || ""}`;
 
-    // 詳細資料
     const rightSide = document.createElement("div");
     rightSide.className = "product-details";
 
@@ -152,7 +149,6 @@ function renderProducts(products) {
     desc.className = "product-description";
     desc.textContent = product["詳細資訊"] || "";
 
-    // 選項
     const optionsContainer = document.createElement("div");
     optionsContainer.className = "options";
     Object.keys(product).forEach(key => {
@@ -168,7 +164,6 @@ function renderProducts(products) {
       }
     });
 
-    // 選購區
     const purchaseSection = document.createElement("div");
     purchaseSection.className = "purchase-section";
 
@@ -209,7 +204,6 @@ function renderProducts(products) {
 
     purchaseSection.append(qtyControl, cartBtn);
 
-    // 左右區塊組裝
     const leftSide = document.createElement("div");
     leftSide.append(imageContainer, status);
 
@@ -223,5 +217,4 @@ function renderProducts(products) {
   });
 }
 
-// 確保 DOM 讀取完成後才執行（避免載入順序造成未定義）
 window.addEventListener("DOMContentLoaded", loadProducts);

@@ -1,5 +1,5 @@
 /* =========================
- * product_list.js  (加上 mainCat / subCat 過濾)
+ * product_list.js  (加上 mainCat / subCat 過濾 + 分類圖片排除 + subCat 圖片渲染)
  * ========================= */
 
 const API_URL = "https://script.google.com/macros/s/AKfycbzR_kTmx5QdrHCMmoPCCYV6iXX_KFsphdmW-_-C0gudItIg1yflD6CyfUl1A4KwI6KIKw/exec";
@@ -9,7 +9,7 @@ function getQueryParam(name) {
   return new URLSearchParams(window.location.search).get(name) || "";
 }
 
-// 取得所有商品分頁名稱
+// 取得所有商品分頁名稱（排除 "分類圖片"）
 async function getSheetNames() {
   const res = await fetch(`${API_URL}?action=getSheetNames`, { cache: "no-store" });
   if (!res.ok) throw new Error(`Failed to fetch sheet names: ${res.status}`);
@@ -17,20 +17,17 @@ async function getSheetNames() {
   const data = await res.json();
   console.log("[getSheetNames] raw:", data);
 
-  // 情境 A：純陣列
   if (Array.isArray(data)) {
     return data.filter(n => n && n !== "分類圖片");
   }
-  // 情境 B：物件包陣列
   if (data && Array.isArray(data.sheetNames)) {
     return data.sheetNames.filter(n => n && n !== "分類圖片");
   }
-  // 情境 C：目前你實際拿到的 { categoryImages: [...] }
   if (data && Array.isArray(data.categoryImages)) {
     const names = Array.from(
       new Set(
         data.categoryImages
-          .map(x => x && x.subCat) // ← 改成 subCat
+          .map(x => x && x.mainCat) // mainCat 當成分頁名稱
           .filter(Boolean)
       )
     );
@@ -40,7 +37,6 @@ async function getSheetNames() {
   throw new Error("Invalid sheet names format");
 }
 
-
 // 讀取單一分頁資料
 async function getSheetData(sheetName) {
   const url = `${API_URL}?type=product&sheet=${encodeURIComponent(sheetName)}`;
@@ -49,6 +45,14 @@ async function getSheetData(sheetName) {
   const json = await res.json();
   if (json.error) throw new Error(json.error);
   return json.products || [];
+}
+
+// 讀取分類圖片資料
+async function getCategoryImages() {
+  const res = await fetch(`${API_URL}?action=getCategoryImages`, { cache: "no-store" });
+  if (!res.ok) throw new Error(`Failed to fetch category images: ${res.status}`);
+  const data = await res.json();
+  return Array.isArray(data.categoryImages) ? data.categoryImages : [];
 }
 
 // 主流程
@@ -80,7 +84,12 @@ async function loadProducts() {
       return;
     }
 
-    renderProducts(products);
+    // 取得 subCat 對應的分類圖片
+    const categoryImages = await getCategoryImages();
+    const subCatImageObj = categoryImages.find(ci => ci.subCat === subCat);
+    const subCatImage = subCatImageObj ? subCatImageObj.image : "";
+
+    renderProducts(products, subCatImage);
   } catch (err) {
     console.error(err);
     document.getElementById("product-list").innerHTML = "<p>載入商品失敗</p>";
@@ -88,7 +97,7 @@ async function loadProducts() {
 }
 
 // 渲染商品卡片
-function renderProducts(products) {
+function renderProducts(products, subCatImage = "") {
   const container = document.getElementById("product-list");
   if (!container) {
     console.error("找不到 #product-list 容器");
@@ -105,7 +114,20 @@ function renderProducts(products) {
 
     const rawExtra = (product["額外圖片們"] || "").trim();
     const extraList = rawExtra ? rawExtra.split("、").map(s => s.trim()).filter(Boolean) : [];
-    const images = [product["商品圖片"], ...extraList].filter(Boolean);
+    const images = [];
+
+    // 如果有 subCat 專屬圖片，放在第一張
+    if (subCatImage) {
+      images.push(subCatImage);
+    }
+
+    // 再加上商品圖片
+    if (product["商品圖片"]) {
+      images.push(product["商品圖片"]);
+    }
+
+    // 再加上額外圖片
+    images.push(...extraList);
 
     let imgIndex = 0;
     const img = document.createElement("img");

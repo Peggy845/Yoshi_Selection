@@ -89,8 +89,8 @@ function renderProducts(products) {
   container.innerHTML = ""; // 先清空
 
   products.forEach(product => {
-    const card = document.createElement("div");
-    card.className = "product-card";
+    const card_product_1 = document.createElement("div");
+    card_product_1.className = "product-card-1";
 
     // 圖片處理
     const imageContainer = document.createElement("div");

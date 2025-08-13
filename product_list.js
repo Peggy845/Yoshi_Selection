@@ -77,10 +77,13 @@ async function loadProducts() {
 
     // 如果有 subCat，就過濾商品系列
     if (subCat) {
-      products = products.filter(
-        p => (p["商品系列"] || "").trim() === subCat.trim()
-      );
+		products = products.filter(p =>
+		  p["商品系列"] && p["商品系列"].includes(subCat)
+		);
     }
+	
+	console.log("raw products:", products);
+	console.log("products before filter:", products.map(p => p["商品系列"]));
 
     if (products.length === 0) {
       document.getElementById("product-list").innerHTML = "<p>目前沒有商品資料</p>";

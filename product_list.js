@@ -58,8 +58,11 @@ async function getCategoryImages() {
 // 主流程
 async function loadProducts() {
   try {
-    const mainCat = getQueryParam("mainCat");
-    const subCat = getQueryParam("subCat");
+	  
+	//mainCat 對應 Excel 裡分頁名稱:日本寶可夢
+	//subCat 對應的是商品系列:寶可夢-天氣主題
+	const mainCat = getQueryParam("main");
+	const subCat = getQueryParam("sub");
     console.log("[loadProducts] mainCat:", mainCat, "subCat:", subCat);
 
     const sheetNames = await getSheetNames();

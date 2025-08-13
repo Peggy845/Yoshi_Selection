@@ -113,73 +113,92 @@ async function loadProducts() {
 	  const productDiv = document.createElement('div');
 	  productDiv.className = 'product-item';
 
-	  // 處理圖片
-	  const mainImage = product['商品圖片'] 
-		? `https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/${product['商品圖片']}` 
+	  // 1) 組圖：主圖 + 額外圖片（用頓號分隔）
+	  const mainImage = product['商品圖片']
+		? `https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/${product['商品圖片']}`
 		: '';
-	  const extraImages = product['額外圖片'] && product['額外圖片'] !== '無'
+	  const extraImages = (product['額外圖片'] && product['額外圖片'] !== '無')
 		? product['額外圖片'].split('、').map(img => `https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/${img}`)
 		: [];
+	  const imgList = [mainImage, ...extraImages].filter(Boolean);
+	  let idx = 0;
 
-	  let currentImageIndex = 0;
-	  let allImages = [mainImage, ...extraImages];
-
-	  const leftArrowDisplay = extraImages.length > 0 ? '' : 'style="display:none"';
-	  const rightArrowDisplay = extraImages.length > 0 ? '' : 'style="display:none"';
-
+	  // 2) DOM 結構：左欄（圖片＋狀態）＋ 右欄（名稱→價格→詳細→選項→選購）
 	  productDiv.innerHTML = `
-		<!-- 商品圖片小區 -->
-		<div class="product-image-block">
-		  <div class="image-arrow left-arrow" ${leftArrowDisplay}>&#9664;</div>
-		  <img src="${mainImage}" alt="${product['商品名稱'] || ''}">
-		  <div class="image-arrow right-arrow" ${rightArrowDisplay}>&#9654;</div>
+		<div class="left-col">
+		  <div class="product-image-block">
+			<div class="image-arrow left-arrow" style="${extraImages.length ? '' : 'display:none'}">&#9664;</div>
+			<img src="${imgList[0] || ''}" alt="${product['商品名稱'] || ''}">
+			<div class="image-arrow right-arrow" style="${extraImages.length ? '' : 'display:none'}">&#9654;</div>
+		  </div>
+		  <div class="sale-status-block">狀態: ${product['販售狀態'] || ''}</div>
 		</div>
 
-		<!-- 商品名稱 -->
-		<div class="product-name">${product['商品名稱'] || ''}</div>
+		<div class="right-col">
+		  <div class="product-name">${product['商品名稱'] || ''}</div>
+		  <div class="product-price">$ ${product['價格'] || ''}</div>
+		  <div class="product-detail">${product['詳細資訊'] || ''}</div>
 
-		<!-- 價格 -->
-		<div class="product-price">$ ${product['價格'] || ''}</div>
+		  <!-- 選項區塊（填滿剩餘高度） -->
+		  <div class="product-option">選項</div>
 
-		<!-- 詳細資訊 -->
-		<div class="product-detail">${product['詳細資訊'] || ''}</div>
-
-		<!-- 選項 -->
-		<div class="product-option">選項</div>
-
-		<!-- 販售狀態 -->
-		<div class="product-status">狀態: ${product['販售狀態'] || ''}</div>
-
-		<!-- 選購區塊 -->
-		<div class="purchase-block">
-		  <div class="quantity-block">
-			<span>數量</span>
-			<button class="qty-btn" data-type="minus">-</button>
-			<input type="number" value="1" min="1" max="${product['庫存'] || 0}" readonly>
-			<button class="qty-btn" data-type="plus">+</button>
-			<span class="stock-text">還剩 ${product['庫存'] || 0} 件</span>
+		  <!-- 選購區塊（最底部） -->
+		  <div class="purchase-block">
+			<div class="quantity-block">
+			  <span>數量</span>
+			  <button class="qty-btn" data-type="minus">−</button>
+			  <input class="quantity-input" type="number" value="1" min="1" max="${product['庫存'] || 0}" readonly>
+			  <button class="qty-btn" data-type="plus">＋</button>
+			  <span class="stock-text">還剩 ${product['庫存'] || 0} 件</span>
+			</div>
+			<button class="cart-btn">加入購物車</button>
 		  </div>
-		  <button class="cart-btn">加入購物車</button>
 		</div>
 	  `;
 
-	  // 圖片切換事件
-	  const imgElement = productDiv.querySelector('img');
-	  productDiv.querySelector('.left-arrow')?.addEventListener('click', () => {
-		if (extraImages.length > 0) {
-		  currentImageIndex = (currentImageIndex - 1 + allImages.length) % allImages.length;
-		  imgElement.src = allImages[currentImageIndex];
-		}
+	  // 3) 圖片切換
+	  const imgEl = productDiv.querySelector('.product-image-block img');
+	  const leftBtn = productDiv.querySelector('.left-arrow');
+	  const rightBtn = productDiv.querySelector('.right-arrow');
+
+	  leftBtn?.addEventListener('click', () => {
+		if (!imgList.length) return;
+		idx = (idx - 1 + imgList.length) % imgList.length;
+		imgEl.src = imgList[idx];
 	  });
-	  productDiv.querySelector('.right-arrow')?.addEventListener('click', () => {
-		if (extraImages.length > 0) {
-		  currentImageIndex = (currentImageIndex + 1) % allImages.length;
-		  imgElement.src = allImages[currentImageIndex];
+	  rightBtn?.addEventListener('click', () => {
+		if (!imgList.length) return;
+		idx = (idx + 1) % imgList.length;
+		imgEl.src = imgList[idx];
+	  });
+
+	  // 4) 數量調整（數字限制在 1 ~ 庫存），框內文字置中已在 CSS 完成
+	  productDiv.addEventListener('click', (e) => {
+		const target = e.target;
+		if (target.classList.contains('qty-btn')) {
+		  const block = target.closest('.quantity-block');
+		  const input = block.querySelector('.quantity-input');
+		  const max = parseInt(input.max || '0', 10);
+		  let val = parseInt(input.value || '1', 10);
+
+		  if (target.dataset.type === 'plus') {
+			if (max > 0) val = Math.min(max, val + 1);
+			else val = val + 1; // 若未填庫存，允許遞增
+		  } else if (target.dataset.type === 'minus') {
+			val = Math.max(1, val - 1);
+		  }
+		  input.value = val;
+		}
+
+		if (target.classList.contains('cart-btn')) {
+		  target.classList.toggle('active');
+		  target.textContent = target.classList.contains('active') ? '已加入' : '加入購物車';
 		}
 	  });
 
 	  container.appendChild(productDiv);
 	});
+
 }
 
 loadProducts();

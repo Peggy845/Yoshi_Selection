@@ -307,9 +307,102 @@ function initMagnifier(productDiv, state) {
   });
 }
 
+function getOptionTotalLength(key, variants) {
+  const values = collectOptionValues(variants, [key])[key] || [];
+  const totalLength = key.length + values.reduce((sum, v) => sum + v.length, 0);
+  return totalLength;
+}
+
+function mergeTwoOptions(keys, shortestKey) {
+  const idx = keys.indexOf(shortestKey);
+  if (idx < keys.length - 1) {
+    // 跟下一個併排
+    const combined = [shortestKey, keys[idx + 1]];
+    return [...keys.slice(0, idx), combined, ...keys.slice(idx + 2)];
+  } else {
+    // 如果是最後一個，就跟前一個併排
+    const combined = [keys[idx - 1], shortestKey];
+    return [...keys.slice(0, idx - 1), combined];
+  }
+}
+
+function renderOptionGroupHTML(optionName, values, selectedValue) {
+  const group = document.createElement('div');
+  group.className = 'option-group';
+  const label = document.createElement('span');
+  label.className = 'option-label';
+  label.textContent = optionName;
+  group.appendChild(label);
+
+  values.forEach(value => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = value;
+    btn.className = value === selectedValue ? 'active' : '';
+    group.appendChild(btn);
+  });
+
+  return group;
+}
+
 function initOptionSelection(productDiv, state) {
   const optionWrap = productDiv.querySelector('.product-option');
-  renderOptionGroups(optionWrap, state.optionKeys, collectOptionValues(state.variants, state.optionKeys), state.selection);
+
+  // 1. 過濾掉只有一種值的選項
+  const filteredKeys = state.optionKeys.filter(key => {
+    const values = collectOptionValues(state.variants, [key])[key] || [];
+    return values.length > 1; // 只有一種就不顯示
+  });
+
+  if (filteredKeys.length === 0) {
+    optionWrap.innerHTML = ''; // 沒有選項
+    return;
+  }
+
+  // 2. 渲染測試高度
+  optionWrap.innerHTML = '';
+  filteredKeys.forEach(key => {
+    const group = renderOptionGroupHTML(key, collectOptionValues(state.variants, [key])[key], state.selection[key]);
+    optionWrap.appendChild(group);
+  });
+
+  const maxHeight = optionWrap.clientHeight;
+  const allowedHeight = 120; // 假設容器允許的高度(px)
+
+  if (maxHeight > allowedHeight && filteredKeys.length > 1) {
+    // 找最短的選項
+    let shortestKey = filteredKeys[0];
+    let shortestLen = getOptionTotalLength(shortestKey, state.variants);
+
+    filteredKeys.forEach(key => {
+      const len = getOptionTotalLength(key, state.variants);
+      if (len < shortestLen) {
+        shortestKey = key;
+        shortestLen = len;
+      }
+    });
+
+    // 重新排版，把最短Key和下一個Key合併顯示
+    const reordered = mergeTwoOptions(filteredKeys, shortestKey);
+    optionWrap.innerHTML = '';
+    reordered.forEach(entry => {
+      if (Array.isArray(entry)) {
+        // 併排
+        const combinedRow = document.createElement('div');
+        combinedRow.className = 'option-row-combined';
+        entry.forEach(k => {
+          const group = renderOptionGroupHTML(k, collectOptionValues(state.variants, [k])[k], state.selection[k]);
+          combinedRow.appendChild(group);
+        });
+        optionWrap.appendChild(combinedRow);
+      } else {
+        // 單列
+        optionWrap.appendChild(
+          renderOptionGroupHTML(entry, collectOptionValues(state.variants, [entry])[entry], state.selection[entry])
+        );
+      }
+    });
+  }
 }
 
 function initQuantityAndCart(productDiv) {

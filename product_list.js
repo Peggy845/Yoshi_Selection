@@ -41,9 +41,7 @@ async function loadProducts() {
   const subcategory = getQueryParam('sub');
 
   const titleElement = document.getElementById('subcategory-title');
-  if (titleElement) {
-    titleElement.textContent = subcategory || '商品列表';
-  }
+  if (titleElement) titleElement.textContent = subcategory || '商品列表';
 
   const sheetNames = [
     '日本寶可夢',
@@ -101,7 +99,7 @@ async function loadProducts() {
         <div class="product-price">$ ${product['價格'] || ''}</div>
         <div class="product-detail">${product['詳細資訊'] || ''}</div>
         <div class="product-option">選項</div>
-        <div class="purchase-block">
+        <div class="product-quantity">
           <div class="quantity-block">
             <span>數量</span>
             <button class="qty-btn" data-type="minus">−</button>
@@ -110,7 +108,9 @@ async function loadProducts() {
             <span class="stock-text">還剩 ${product['庫存'] || 0} 件</span>
           </div>
         </div>
-        <button class="cart-btn">加入購物車</button>
+        <div class="product-cart">
+          <button class="cart-btn">加入購物車</button>
+        </div>
       </div>
     `;
 
@@ -118,7 +118,6 @@ async function loadProducts() {
     const leftBtn = productDiv.querySelector('.arrow-left');
     const rightBtn = productDiv.querySelector('.arrow-right');
 
-    // 左右箭頭點擊切換圖片
     leftBtn?.addEventListener('click', () => {
       if (!imgList.length) return;
       idx = (idx - 1 + imgList.length) % imgList.length;
@@ -137,16 +136,10 @@ async function loadProducts() {
         const input = block.querySelector('.quantity-input');
         const max = parseInt(input.max || '0', 10);
         let val = parseInt(input.value || '1', 10);
-
-        if (target.dataset.type === 'plus') {
-          if (max > 0) val = Math.min(max, val + 1);
-          else val = val + 1;
-        } else if (target.dataset.type === 'minus') {
-          val = Math.max(1, val - 1);
-        }
+        if (target.dataset.type === 'plus') val = max > 0 ? Math.min(max, val + 1) : val + 1;
+        if (target.dataset.type === 'minus') val = Math.max(1, val - 1);
         input.value = val;
       }
-
       if (target.classList.contains('cart-btn')) {
         target.classList.toggle('active');
         target.textContent = target.classList.contains('active') ? '已加入' : '加入購物車';

@@ -1,135 +1,159 @@
-// 模擬商品資料
-const filtered = [
-    {
-        id: 1,
-        name: "測試商品A",
-        price: 299,
-        details: "這是一個詳細資訊的範例",
-        stock: 5,
-        image: "https://via.placeholder.com/150",
-        status: "熱賣中"
-    },
-    {
-        id: 2,
-        name: "測試商品B",
-        price: 599,
-        details: "另一個詳細資訊的範例",
-        stock: 10,
-        image: "https://via.placeholder.com/150",
-        status: "促銷中"
+function getQueryParam(param) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(param);
+}
+
+async function fetchMultipleSheets(sheetNames) {
+  const sheetId = '1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo';
+  const allData = {};
+
+  for (const name of sheetNames) {
+    if (name === '分類圖片') continue;
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(name)}&tqx=out:json`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`無法讀取分頁：${name}`);
+
+      const text = await res.text();
+      const json = JSON.parse(text.substring(47, text.length - 2));
+      const cols = json.table.cols.map(col => col.label.trim());
+      const rows = json.table.rows.map(row => {
+        const obj = {};
+        row.c.forEach((cell, i) => {
+          obj[cols[i]] = cell ? cell.v : '';
+        });
+        return obj;
+      });
+
+      allData[name] = rows;
+    } catch (e) {
+      console.warn(`分頁 ${name} 抓取失敗:`, e);
+      allData[name] = [];
     }
-];
+  }
 
-// 渲染商品列表
-const productList = document.getElementById("product-list");
+  return allData;
+}
 
-filtered.forEach(product => {
-    const productContainer = document.createElement("div");
-    productContainer.classList.add("product-item");
+async function loadProducts() {
+  const category = getQueryParam('main');
+  const subcategory = getQueryParam('sub');
 
-    // 左半部
-    const leftDiv = document.createElement("div");
-    leftDiv.classList.add("product-left");
+  const titleElement = document.getElementById('subcategory-title');
+  if (titleElement) {
+    titleElement.textContent = subcategory || '商品列表';
+  }
 
-    const imgDiv = document.createElement("div");
-    imgDiv.classList.add("product-image");
-    const img = document.createElement("img");
-    img.src = product.image;
-    imgDiv.appendChild(img);
+  const sheetNames = [
+    '日本寶可夢',
+    '日本三麗鷗',
+    '日本貓福珊迪',
+    '日本親子玩具與母嬰用品',
+    '日本童裝品牌',
+    '進擊的巨人'
+  ];
 
-    const statusDiv = document.createElement("div");
-    statusDiv.classList.add("product-status");
-    statusDiv.textContent = product.status;
+  const allSheetsData = await fetchMultipleSheets(sheetNames);
 
-    leftDiv.appendChild(imgDiv);
-    leftDiv.appendChild(statusDiv);
+  if (!allSheetsData[category] || allSheetsData[category].length === 0) {
+    document.getElementById('product-list').innerHTML = '<p>目前沒有這個分類的商品</p>';
+    return;
+  }
 
-    // 右半部
-    const rightDiv = document.createElement("div");
-    rightDiv.classList.add("product-right");
+  const filtered = allSheetsData[category].filter(
+    row => (row['商品系列'] || '').trim() === subcategory
+  );
 
-    // 商品名稱區
-    const nameDiv = document.createElement("div");
-    nameDiv.classList.add("product-name");
-    nameDiv.textContent = product.name;
+  const container = document.getElementById('product-list');
+  container.innerHTML = '';
 
-    // 價錢區
-    const priceDiv = document.createElement("div");
-    priceDiv.classList.add("product-price");
-    priceDiv.textContent = ` $ ${product.price}`;
+  if (filtered.length === 0) {
+    container.innerHTML = '<p>目前沒有這個分類的商品</p>';
+    return;
+  }
 
-    // 詳細資訊區
-    const detailsDiv = document.createElement("div");
-    detailsDiv.classList.add("product-details");
-    detailsDiv.textContent = product.details;
+  filtered.forEach(product => {
+    const productDiv = document.createElement('div');
+    productDiv.className = 'product-item';
 
-    // 選項區（暫時空）
-    const optionsDiv = document.createElement("div");
-    optionsDiv.classList.add("product-options");
+    const mainImage = product['商品圖片']
+      ? `https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/${product['商品圖片']}`
+      : '';
+    const extraImages = (product['額外圖片'] && product['額外圖片'] !== '無')
+      ? product['額外圖片'].split('、').map(img => `https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/${img}`)
+      : [];
+    const imgList = [mainImage, ...extraImages].filter(Boolean);
+    let idx = 0;
 
-    // 選購區
-    const quantityDiv = document.createElement("div");
-    quantityDiv.classList.add("product-quantity");
+    productDiv.innerHTML = `
+      <div class="left-col">
+        <div class="product-image-block">
+          <div class="image-arrow left-arrow" style="${extraImages.length ? '' : 'display:none'}">&#9664;</div>
+          <img src="${imgList[0] || ''}" alt="${product['商品名稱'] || ''}">
+          <div class="image-arrow right-arrow" style="${extraImages.length ? '' : 'display:none'}">&#9654;</div>
+        </div>
+        <div class="sale-status-block">狀態: ${product['販售狀態'] || ''}</div>
+      </div>
 
-    const quantityLabel = document.createElement("span");
-    quantityLabel.textContent = "數量";
+      <div class="right-col">
+        <div class="product-name">${product['商品名稱'] || ''}</div>
+        <div class="product-price">$ ${product['價格'] || ''}</div>
+        <div class="product-detail">${product['詳細資訊'] || ''}</div>
+        <div class="product-option">選項</div>
+        <div class="purchase-block">
+          <div class="quantity-block">
+            <span>數量</span>
+            <button class="qty-btn" data-type="minus">−</button>
+            <input class="quantity-input" type="number" value="1" min="1" max="${product['庫存'] || 0}" readonly>
+            <button class="qty-btn" data-type="plus">＋</button>
+            <span class="stock-text">還剩 ${product['庫存'] || 0} 件</span>
+          </div>
+        </div>
+        <button class="cart-btn">加入購物車</button>
+      </div>
+    `;
 
-    const quantityControls = document.createElement("div");
-    quantityControls.classList.add("quantity-controls");
+    const imgEl = productDiv.querySelector('.product-image-block img');
+    const leftBtn = productDiv.querySelector('.left-arrow');
+    const rightBtn = productDiv.querySelector('.right-arrow');
 
-    const minusBtn = document.createElement("button");
-    minusBtn.textContent = "-";
-    const quantityInput = document.createElement("input");
-    quantityInput.type = "number";
-    quantityInput.value = 1;
-    quantityInput.min = 1;
-    quantityInput.max = product.stock;
-    const plusBtn = document.createElement("button");
-    plusBtn.textContent = "+";
-
-    minusBtn.addEventListener("click", () => {
-        let value = parseInt(quantityInput.value);
-        if (value > 1) quantityInput.value = value - 1;
+    leftBtn?.addEventListener('click', () => {
+      if (!imgList.length) return;
+      idx = (idx - 1 + imgList.length) % imgList.length;
+      imgEl.src = imgList[idx];
+    });
+    rightBtn?.addEventListener('click', () => {
+      if (!imgList.length) return;
+      idx = (idx + 1) % imgList.length;
+      imgEl.src = imgList[idx];
     });
 
-    plusBtn.addEventListener("click", () => {
-        let value = parseInt(quantityInput.value);
-        if (value < product.stock) quantityInput.value = value + 1;
+    productDiv.addEventListener('click', (e) => {
+      const target = e.target;
+      if (target.classList.contains('qty-btn')) {
+        const block = target.closest('.quantity-block');
+        const input = block.querySelector('.quantity-input');
+        const max = parseInt(input.max || '0', 10);
+        let val = parseInt(input.value || '1', 10);
+
+        if (target.dataset.type === 'plus') {
+          if (max > 0) val = Math.min(max, val + 1);
+          else val = val + 1;
+        } else if (target.dataset.type === 'minus') {
+          val = Math.max(1, val - 1);
+        }
+        input.value = val;
+      }
+
+      if (target.classList.contains('cart-btn')) {
+        target.classList.toggle('active');
+        target.textContent = target.classList.contains('active') ? '已加入' : '加入購物車';
+      }
     });
 
-    quantityControls.appendChild(minusBtn);
-    quantityControls.appendChild(quantityInput);
-    quantityControls.appendChild(plusBtn);
+    container.appendChild(productDiv);
+  });
+}
 
-    const stockText = document.createElement("span");
-    stockText.classList.add("stock-text");
-    stockText.textContent = `還剩 ${product.stock} 件`;
-
-    quantityDiv.appendChild(quantityLabel);
-    quantityDiv.appendChild(quantityControls);
-    quantityDiv.appendChild(stockText);
-
-    // 購物車區
-    const cartDiv = document.createElement("div");
-    cartDiv.classList.add("product-cart");
-    const cartButton = document.createElement("button");
-    cartButton.classList.add("add-to-cart");
-    cartButton.textContent = "加入購物車";
-    cartButton.addEventListener("click", () => {
-        cartButton.classList.toggle("active");
-    });
-    cartDiv.appendChild(cartButton);
-
-    // 組裝右半部
-    rightDiv.appendChild(nameDiv);
-    rightDiv.appendChild(priceDiv);
-    rightDiv.appendChild(detailsDiv);
-    rightDiv.appendChild(optionsDiv);
-    rightDiv.appendChild(quantityDiv);
-    rightDiv.appendChild(cartDiv);
-
-    // 組裝整個商品區塊
-    productContainer.appendChild(leftDiv);
-    productContainer.appendChild(rightDiv);
-    productList.appendChild(productContainer);
-});
+loadProducts();

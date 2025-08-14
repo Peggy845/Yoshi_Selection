@@ -250,7 +250,7 @@ body {
 .cart-btn.active { background-color: #ff7f00; }
 
 
-/* 任意地方加 */
+/* 任意位置加 */
 .option-row {
   display: flex;
   align-items: center;

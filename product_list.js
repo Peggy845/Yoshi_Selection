@@ -187,7 +187,6 @@ async function loadProducts() {
     return;
   }
 
-  // 只取該子分類
   const filtered = allSheetsData[category].filter(
     row => (row['商品系列'] || '').toString().trim() === (subcategory || '').toString().trim()
   );
@@ -197,8 +196,7 @@ async function loadProducts() {
     container.innerHTML = '<p>目前沒有這個分類的商品</p>';
     return;
   }
-  
-  // **請把這段加在這裡**
+
   const groupedProducts = {};
   filtered.forEach(p => {
     if (!groupedProducts[p['商品名稱']]) groupedProducts[p['商品名稱']] = [];
@@ -211,25 +209,20 @@ async function loadProducts() {
     const optionKeys = Object.keys(variants[0]).filter(k => k.startsWith('選項-'));
     const validOptions = optionKeys.filter(key => {
       const values = [...new Set(variants.map(v => v[key]).filter(v => v))];
-      return values.length > 1; // 只保留有多個值的選項
+      return values.length > 1;
     });
     productOptionMeta[name] = { variants, validOptions };
   });
-  // **新增段落結束**
 
-  // 依商品名稱分組
   const grouped = groupByProductName(filtered);
 
-  // 逐商品名稱渲染一個 product-item
   for (const [productName, variants] of grouped.entries()) {
     const productDiv = document.createElement('div');
     productDiv.className = 'product-item';
 
-    // 找出選項欄位與值
     const optionKeys = extractOptionKeys(variants);
     const optionValues = collectOptionValues(variants, optionKeys);
 
-    // 初始選擇 = 第一列對應之選項
     const initialVariant = variants[0];
     const selection = {};
     optionKeys.forEach(k => {
@@ -237,10 +230,8 @@ async function loadProducts() {
       if (val) selection[k] = val;
     });
 
-    // 初始圖片清單
     const imgListInit = buildImageList(initialVariant);
 
-    // HTML 結構（含左右箭頭 + 放大鏡）
     productDiv.innerHTML = `
       <div class="left-col">
         <div class="product-image-block">
@@ -281,7 +272,6 @@ async function loadProducts() {
       </div>
     `;
 
-    // 狀態管理（此商品用）
     const state = {
       variants,
       optionKeys,
@@ -290,25 +280,12 @@ async function loadProducts() {
       imgIndex: 0
     };
 
-    // 渲染選項群組
     const optionWrap = productDiv.querySelector('.product-option');
     renderOptionGroups(optionWrap, optionKeys, optionValues, state.selection);
 
-    // 左右箭頭事件
     const imgEl = productDiv.querySelector('.product-image-block img');
     const leftBtn = productDiv.querySelector('.arrow-left');
     const rightBtn = productDiv.querySelector('.arrow-right');
-
-    leftBtn?.addEventListener('click', () => {
-      if (!state.imgList.length) return;
-      state.imgIndex = (state.imgIndex - 1 + state.imgList.length) % state.imgList.length;
-      imgEl.src = state.imgList[state.imgIndex];
-    });
-    rightBtn?.addEventListener('click', () => {
-      if (!state.imgList.length) return;
-      state.imgIndex = (state.imgIndex + 1) % state.imgList.length;
-      imgEl.src = state.imgList[state.imgIndex];
-    });
 
     // 放大鏡初始化
     const imgBlock = productDiv.querySelector('.product-image-block');
@@ -322,19 +299,36 @@ async function loadProducts() {
     let zoomActive = false;
     const ZOOM = 2;
 
+    const updateLensImage = () => {
+      const rect = imgEl.getBoundingClientRect();
+      lensImg.src = state.imgList[state.imgIndex] || '';
+      lensImg.style.width  = rect.width * ZOOM + 'px';
+      lensImg.style.height = rect.height * ZOOM + 'px';
+    };
+
+    leftBtn?.addEventListener('click', () => {
+      if (!state.imgList.length) return;
+      state.imgIndex = (state.imgIndex - 1 + state.imgList.length) % state.imgList.length;
+      imgEl.src = state.imgList[state.imgIndex];
+      if (zoomActive) updateLensImage();
+    });
+
+    rightBtn?.addEventListener('click', () => {
+      if (!state.imgList.length) return;
+      state.imgIndex = (state.imgIndex + 1) % state.imgList.length;
+      imgEl.src = state.imgList[state.imgIndex];
+      if (zoomActive) updateLensImage();
+    });
+
     magnifierBtn.addEventListener('click', () => {
       zoomActive = !zoomActive;
       lens.style.display = zoomActive ? 'block' : 'none';
       if (zoomActive) {
-        // 初次打開時把鏡片放在正中央
         const rect = imgEl.getBoundingClientRect();
         const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
         lens.style.left = (rect.width - lensW) / 2 + 'px';
         lens.style.top  = (rect.height - lensH) / 2 + 'px';
-        // 設定鏡片中的圖
-        lensImg.src = state.imgList[state.imgIndex] || '';
-        lensImg.style.width  = rect.width * ZOOM + 'px';
-        lensImg.style.height = rect.height * ZOOM + 'px';
+        updateLensImage();
         lensImg.style.left   = -(rect.width/2 - lensW/2) * ZOOM + 'px';
         lensImg.style.top    = -(rect.height/2 - lensH/2) * ZOOM + 'px';
       }
@@ -354,10 +348,7 @@ async function loadProducts() {
 
       lens.style.left = lensX + 'px';
       lens.style.top  = lensY + 'px';
-
-      lensImg.src = state.imgList[state.imgIndex] || '';
-      lensImg.style.width  = rect.width * ZOOM + 'px';
-      lensImg.style.height = rect.height * ZOOM + 'px';
+      updateLensImage();
       lensImg.style.left   = -lensX * ZOOM + 'px';
       lensImg.style.top    = -lensY * ZOOM + 'px';
     });
@@ -369,53 +360,36 @@ async function loadProducts() {
       if (zoomActive) lens.style.display = 'block';
     });
 
-    // 右欄互動（事件委派）
+    // 右欄互動
     productDiv.addEventListener('click', (e) => {
       const target = e.target;
-
-      // 選項切換
       if (target.classList.contains('option-btn')) {
         const optKey = target.dataset.optionKey;
         const optVal = target.dataset.optionValue;
-
-        // 同一行互斥
         const group = target.closest('.option-buttons');
         group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
         target.classList.add('selected');
-
-        // 更新選擇
         state.selection[optKey] = optVal;
 
-        // 找到對應變體
         const variant = findVariantBySelection(state.variants, state.selection);
         if (variant) {
           applyVariantToUI(productDiv, variant, state);
-
-          // 若目前數量 > 新庫存，調整數量
           const input = productDiv.querySelector('.quantity-input');
           const max = parseInt(input.max || '0', 10);
           let val = parseInt(input.value || '1', 10);
           if (max > 0 && val > max) input.value = Math.max(1, max);
-
-          // 變體切換後，鏡片底圖需同步
-          const rect = imgEl.getBoundingClientRect();
-          lensImg.src = state.imgList[state.imgIndex] || '';
-          lensImg.style.width  = rect.width * ZOOM + 'px';
-          lensImg.style.height = rect.height * ZOOM + 'px';
+          if (zoomActive) updateLensImage();
         } else {
-          // 沒有符合的組合（少見情況）：提示並還原按鈕狀態
           target.classList.remove('selected');
         }
         return;
       }
 
-      // 數量 +/- 按鈕
       if (target.classList.contains('qty-btn')) {
         const block = target.closest('.quantity-block');
         const input = block.querySelector('.quantity-input');
         const max = parseInt(input.max || '0', 10);
         let val = parseInt(input.value || '1', 10);
-
         if (target.dataset.type === 'plus') {
           if (max > 0) val = Math.min(max, val + 1);
           else val = val + 1;
@@ -426,7 +400,6 @@ async function loadProducts() {
         return;
       }
 
-      // 加入購物車
       if (target.classList.contains('cart-btn')) {
         target.classList.toggle('active');
         target.textContent = target.classList.contains('active') ? '已加入' : '加入購物車';
@@ -438,10 +411,11 @@ async function loadProducts() {
   }
 }
 
+
 loadProducts();
 
-// 加在任意位置（建議 loadProducts 外面）
-function generateOptionsUI(container, optionKeys, variants) {
+// **加在任意位置（建議 loadProducts 外面）**
+function generateOptionsUI(container, optionKeys, variants, updateCallback) {
   container.innerHTML = '';
 
   const MAX_HEIGHT = 200; // 假設 product-option 高度限制
@@ -457,6 +431,8 @@ function generateOptionsUI(container, optionKeys, variants) {
     });
   }
 
+  const selectedValues = {};
+
   for (let i = 0; i < arrangedOptions.length; i++) {
     const key = arrangedOptions[i];
     const values = [...new Set(variants.map(v => v[key]).filter(v => v))];
@@ -466,19 +442,55 @@ function generateOptionsUI(container, optionKeys, variants) {
       const nextValues = [...new Set(variants.map(v => v[nextKey]).filter(v => v))];
       const row = document.createElement('div');
       row.className = 'option-row two-col';
-      row.innerHTML = `
-        <div class="option-group"><span>${key.replace('選項-', '')}</span> ${values.map(v => `<button>${v}</button>`).join('')}</div>
-        <div class="option-group"><span>${nextKey.replace('選項-', '')}</span> ${nextValues.map(v => `<button>${v}</button>`).join('')}</div>
-      `;
+
+      const col1 = createOptionGroup(key, values, selectedValues, updateCallback, variants);
+      const col2 = createOptionGroup(nextKey, nextValues, selectedValues, updateCallback, variants);
+
+      row.appendChild(col1);
+      row.appendChild(col2);
       container.appendChild(row);
       i++;
     } else {
       const row = document.createElement('div');
       row.className = 'option-row';
-      row.innerHTML = `<span>${key.replace('選項-', '')}</span> ${values.map(v => `<button>${v}</button>`).join('')}`;
+      const col = createOptionGroup(key, values, selectedValues, updateCallback, variants);
+      row.appendChild(col);
       container.appendChild(row);
     }
   }
+}
+
+function createOptionGroup(key, values, selectedValues, updateCallback, variants) {
+  const group = document.createElement('div');
+  group.className = 'option-group';
+  const label = document.createElement('span');
+  label.textContent = key.replace('選項-', '');
+  group.appendChild(label);
+
+  values.forEach(v => {
+    const btn = document.createElement('button');
+    btn.textContent = v;
+    btn.addEventListener('click', () => {
+      // 標記選擇
+      [...group.querySelectorAll('button')].forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+
+      selectedValues[key] = v;
+
+      // 篩選符合條件的 variant
+      let match = variants;
+      Object.keys(selectedValues).forEach(k => {
+        match = match.filter(item => item[k] === selectedValues[k]);
+      });
+
+      if (match.length === 1) {
+        updateCallback(match[0]); // 更新價格 / 圖片 / 庫存
+      }
+    });
+    group.appendChild(btn);
+  });
+
+  return group;
 }
 
 function getOptionLength(key, variants) {

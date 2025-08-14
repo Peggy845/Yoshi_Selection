@@ -39,8 +39,7 @@ async function fetchMultipleSheets(sheetNames) {
 async function loadProducts() {
   const category = getQueryParam('main');
   const subcategory = getQueryParam('sub');
-  const titleElement = document.getElementById('subcategory-title');
-  if (titleElement) titleElement.textContent = subcategory || '商品列表';
+  document.getElementById('subcategory-title').textContent = subcategory || '商品列表';
 
   const sheetNames = [
     '日本寶可夢',
@@ -64,8 +63,7 @@ async function loadProducts() {
 
   const container = document.getElementById('product-list');
   container.innerHTML = '';
-
-  if (filtered.length === 0) {
+  if (!filtered.length) {
     container.innerHTML = '<p>目前沒有這個分類的商品</p>';
     return;
   }
@@ -101,7 +99,7 @@ async function loadProducts() {
         <div class="product-name">${product['商品名稱'] || ''}</div>
         <div class="product-price">$ ${product['價格'] || ''}</div>
         <div class="product-detail">${product['詳細資訊'] || ''}</div>
-        <div class="product-option">選項</div>
+        <div class="product-option">選項區域</div>
         <div class="product-quantity">
           <div class="quantity-block">
             <span>數量</span>
@@ -122,12 +120,10 @@ async function loadProducts() {
     const rightBtn = productDiv.querySelector('.arrow-right');
 
     leftBtn?.addEventListener('click', () => {
-      if (!imgList.length) return;
       idx = (idx - 1 + imgList.length) % imgList.length;
       imgEl.src = imgList[idx];
     });
     rightBtn?.addEventListener('click', () => {
-      if (!imgList.length) return;
       idx = (idx + 1) % imgList.length;
       imgEl.src = imgList[idx];
     });
@@ -140,11 +136,9 @@ async function loadProducts() {
         const max = parseInt(input.max || '0', 10);
         let val = parseInt(input.value || '1', 10);
 
-        if (target.dataset.type === 'plus') {
-          if (max > 0) val = Math.min(max, val + 1);
-        } else if (target.dataset.type === 'minus') {
-          val = Math.max(1, val - 1);
-        }
+        if (target.dataset.type === 'plus') val = Math.min(max, val + 1);
+        if (target.dataset.type === 'minus') val = Math.max(1, val - 1);
+
         input.value = val;
       }
 

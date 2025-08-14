@@ -1,4 +1,4 @@
-/* 清空現有樣式 */
+/* Reset */
 * {
     margin: 0;
     padding: 0;
@@ -21,38 +21,87 @@
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
     margin-bottom: 15px;
     padding: 10px;
+    gap: 2%; /* y 間距 > x 與 z */
 }
 
-/* 左側區塊（35% 寬度，優先依圖片大區為基準） */
+/* 左側（35% 寬度） */
 .product-item-left {
-    width: 35%;
+    flex: 0 0 35%;
     display: flex;
     flex-direction: column;
     border: 1px solid #ccc;
+    padding: 5px; /* z */
+    gap: 5px;
 }
 
 /* 商品圖片大區（正方形） */
 .product-image-large {
     width: 100%;
-    aspect-ratio: 1 / 1; /* 保證正方形 */
-    border-bottom: 1px solid #ccc;
+    aspect-ratio: 1 / 1;
+    border: 1px solid #ccc;
+    background: #f9f9f9;
 }
 
-/* 商品圖片小區 */
+/* 商品圖片小區（固定高度） */
 .product-image-small {
     width: 100%;
-    height: 80px; /* 暫定，後面可依比例調整 */
-    border-bottom: 1px solid #ccc;
+    height: 4cm; /* 依需求可調整 */
+    border: 1px solid #ccc;
+    background: #f1f1f1;
 }
 
 /* 販售狀態區（填滿剩餘高度） */
 .product-status {
     flex: 1;
-    border-top: 1px solid #ccc;
+    border: 1px solid #ccc;
+    background: #fafafa;
 }
 
-/* 右側區塊（剩餘寬度） */
+/* 右側（65% 寬度） */
 .product-item-right {
-    width: 65%;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ccc;
+    padding: 5px; /* z */
+    gap: 5px;
+}
+
+/* 右側五區塊 */
+.product-name {
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+
+.product-price {
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+
+.product-detail {
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+
+.product-options {
+    flex: 1;
+    border: 1px solid #ccc;
+    padding: 5px;
+}
+
+.product-purchase {
+    border: 1px solid #ccc;
+    padding: 5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* 選購小區內的數量框置中 */
+.quantity-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
     border: 1px solid #ccc;
 }

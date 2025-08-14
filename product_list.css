@@ -1,156 +1,68 @@
-#subcategory-title {
-  font-size: 24px;
-  font-weight: bold;
-  margin: 10px 0;
-  text-align: center;
+body {
+    font-family: "Microsoft JhengHei", Calibri, sans-serif;
+    margin: 0;
+    padding: 0;
 }
 
-#product-list {
-  display: flex;
-  flex-direction: column;
-  gap: 20px;
+.subcategory-title {
+    font-family: "Microsoft JhengHei", Calibri, sans-serif;
+    font-size: 1.8em;
+    text-align: center;
+    margin: 1em 0;
 }
 
+/* 商品大區塊 */
 .product-item {
-  display: flex;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  overflow: hidden;
+    display: flex;
+    border: 1px solid #ccc;
+    margin: 1em;
+    height: 300px;
 }
 
-.left-col {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
+/* 左半部 */
+.product-left {
+    display: flex;
+    flex-direction: column;
+    width: 150px;
 }
 
-.product-image-block {
-  position: relative;
-  width: 200px;
-  height: 200px;
+.product-image {
+    flex: 1;
+    border-bottom: 1px solid #ccc;
 }
 
-.product-image-block img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+.product-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
-.image-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(0, 0, 0, 0.5);
-  color: white;
-  padding: 5px;
-  cursor: pointer;
-  user-select: none;
+.product-status {
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f8f8;
+    font-size: 0.9em;
+    border-top: 1px solid #ccc;
 }
 
-.left-arrow {
-  left: 0;
-}
-.right-arrow {
-  right: 0;
-}
-
-.sale-status-block {
-  margin-top: 5px;
-  font-size: 14px;
-  color: #666;
-}
-
-.right-col {
-  flex: 2;
-  display: flex;
-  flex-direction: column;
-  padding: 10px;
-}
-
-.product-name {
-  font-size: 18px;
-  font-weight: bold;
-}
-
-.product-price {
-  font-size: 16px;
-  color: red;
-}
-
-.product-detail {
-  font-size: 14px;
-  margin: 10px 0;
-}
-
-.product-option {
-  flex-grow: 1;
-}
-
-.purchase-block {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.quantity-block {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-}
-
-.qty-btn {
-  width: 30px;
-  height: 30px;
-}
-
-.quantity-input {
-  width: 40px;
-  text-align: center;
-}
-
-.cart-btn {
-  padding: 5px 10px;
-  background: orange;
-  border: none;
-  cursor: pointer;
-}
-
-.cart-btn.active {
-  background: green;
-  color: white;
-}
-
-/* 單項商品大區塊-右 */
+/* 右半部 */
 .product-right {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    box-sizing: border-box;
+    flex: 1;
 }
 
-/* 各區通用樣式 */
-.product-name,
-.product-price,
-.product-details,
-.product-options,
-.product-quantity,
-.product-cart {
-    width: 100%;
-    padding: 0.5em;
-    box-sizing: border-box;
-    font-family: "Microsoft JhengHei", Calibri, sans-serif;
-}
-
-/* 高度比例 */
-.product-name { flex: 0 0 15%; display: flex; align-items: center; justify-content: flex-start; font-weight: bold; font-size: 1.1em; }
-.product-price { flex: 0 0 10%; display: flex; align-items: center; justify-content: flex-start; color: #c44; font-size: 1em; }
-.product-details { flex: 0 0 20%; display: flex; align-items: center; justify-content: flex-start; font-size: 0.95em; color: #555; }
-.product-options { flex: 0 0 35%; border: 1px dashed #ccc; } /* 先留白，之後設計 */
-.product-quantity { flex: 0 0 10%; display: flex; align-items: center; gap: 0.5em; font-size: 0.9em; }
+/* 高度比例設定 */
+.product-name { flex: 0 0 15%; display: flex; align-items: center; justify-content: flex-start; padding-left: 0.5em; font-weight: bold; }
+.product-price { flex: 0 0 10%; display: flex; align-items: center; justify-content: flex-start; padding-left: 0.5em; color: #c44; }
+.product-details { flex: 0 0 20%; display: flex; align-items: center; justify-content: flex-start; padding-left: 0.5em; color: #555; }
+.product-options { flex: 0 0 35%; border: 1px dashed #ccc; }
+.product-quantity { flex: 0 0 10%; display: flex; align-items: center; gap: 0.5em; padding-left: 0.5em; }
 .product-cart { flex: 0 0 10%; display: flex; align-items: center; justify-content: center; }
 
-/* 選購區內的數量控制 */
+/* 選購區數量控制 */
 .quantity-controls {
     display: flex;
     align-items: center;
@@ -173,9 +85,8 @@
     border: 1px solid #ccc;
 }
 
-/* 庫存文字 */
+/* 庫存提示 */
 .stock-text {
-    margin-left: 0.5em;
     color: #888;
 }
 

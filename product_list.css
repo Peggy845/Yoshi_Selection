@@ -52,6 +52,25 @@ body {
   object-fit: contain; /* 保持圖片完整，不會被zoom in */
 }
 
+.image-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 40px;
+  color: #fff;
+  background-color: rgba(0,0,0,0.3);
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+}
+
+.left-arrow { left: 10px; }
+.right-arrow { right: 10px; }
+
 /* 放大鏡圖示 */
 .magnifier-btn {
   position: absolute;

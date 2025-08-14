@@ -36,66 +36,6 @@ async function fetchMultipleSheets(sheetNames) {
   return allData;
 }
 
-// 建立每個 product-item 的放大鏡功能
-function setupMagnifier(productDiv) {
-  const imgBlock = productDiv.querySelector('.product-image-block');
-  const img = imgBlock.querySelector('img');
-
-  const magnifierBtn = document.createElement('div');
-  magnifierBtn.className = 'magnifier-btn';
-  magnifierBtn.innerHTML = `
-    <svg viewBox="0 0 24 24">
-      <circle cx="11" cy="11" r="8"/>
-      <line x1="16" y1="16" x2="22" y2="22"/>
-    </svg>
-  `;
-  imgBlock.appendChild(magnifierBtn);
-
-  const lens = document.createElement('div');
-  lens.className = 'magnifier-lens';
-  const lensImg = img.cloneNode(true);
-  lens.appendChild(lensImg);
-  imgBlock.appendChild(lens);
-
-  let zoomActive = false;
-
-  magnifierBtn.addEventListener('click', () => {
-    zoomActive = !zoomActive;
-    lens.style.display = zoomActive ? 'block' : 'none';
-  });
-
-  imgBlock.addEventListener('mousemove', (e) => {
-    if (!zoomActive) return;
-
-    const rect = img.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-
-    const lensWidth = lens.offsetWidth;
-    const lensHeight = lens.offsetHeight;
-    const zoom = 2; // 放大倍率
-
-    // 限制 lens 位置
-    let lensX = x - lensWidth / 2;
-    let lensY = y - lensHeight / 2;
-    lensX = Math.max(0, Math.min(rect.width - lensWidth, lensX));
-    lensY = Math.max(0, Math.min(rect.height - lensHeight, lensY));
-
-    lens.style.left = lensX + 'px';
-    lens.style.top = lensY + 'px';
-
-    // 調整鏡片內圖片位置
-    lensImg.style.width = rect.width * zoom + 'px';
-    lensImg.style.height = rect.height * zoom + 'px';
-    lensImg.style.left = -lensX * zoom + 'px';
-    lensImg.style.top = -lensY * zoom + 'px';
-  });
-
-  imgBlock.addEventListener('mouseleave', () => {
-    if (zoomActive) lens.style.display = 'none';
-  });
-}
-
 async function loadProducts() {
   const category = getQueryParam('main');
   const subcategory = getQueryParam('sub');
@@ -175,8 +115,6 @@ async function loadProducts() {
       </div>
     `;
 
-	setupMagnifier(productDiv); // <-- 呼叫放大鏡功能
-
     const imgEl = productDiv.querySelector('.product-image-block img');
     const leftBtn = productDiv.querySelector('.arrow-left');
     const rightBtn = productDiv.querySelector('.arrow-right');
@@ -189,6 +127,53 @@ async function loadProducts() {
       idx = (idx + 1) % imgList.length;
       imgEl.src = imgList[idx];
     });
+	
+	   const imgEl = productDiv.querySelector('.product-image-block img');
+    const leftBtn = productDiv.querySelector('.left-arrow');
+    const rightBtn = productDiv.querySelector('.right-arrow');
+
+    // 左右箭頭切換圖片
+    leftBtn?.addEventListener('click', () => { idx=(idx-1+imgList.length)%imgList.length; imgEl.src=imgList[idx]; });
+    rightBtn?.addEventListener('click',()=>{ idx=(idx+1)%imgList.length; imgEl.src=imgList[idx]; });
+
+    // 放大鏡
+    const magnifierBtn = document.createElement('div');
+    magnifierBtn.className='magnifier-btn';
+    magnifierBtn.innerHTML=`<svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="16" y1="16" x2="22" y2="22"/></svg>`;
+    productDiv.querySelector('.product-image-block').appendChild(magnifierBtn);
+
+    const lens = document.createElement('div');
+    lens.className='magnifier-lens';
+    const lensImg = imgEl.cloneNode(true);
+    lens.appendChild(lensImg);
+    productDiv.querySelector('.product-image-block').appendChild(lens);
+
+    let zoomActive=false;
+    magnifierBtn.addEventListener('click',()=>{ zoomActive=!zoomActive; lens.style.display=zoomActive?'block':'none'; });
+
+    productDiv.querySelector('.product-image-block').addEventListener('mousemove',(e)=>{
+      if(!zoomActive) return;
+      const rect=imgEl.getBoundingClientRect();
+      const x=e.clientX-rect.left;
+      const y=e.clientY-rect.top;
+      const lensWidth=lens.offsetWidth;
+      const lensHeight=lens.offsetHeight;
+      const zoom=2;
+      let lensX=x-lensWidth/2;
+      let lensY=y-lensHeight/2;
+      lensX=Math.max(0,Math.min(rect.width-lensWidth,lensX));
+      lensY=Math.max(0,Math.min(rect.height-lensHeight,lensY));
+      lens.style.left=lensX+'px';
+      lens.style.top=lensY+'px';
+      lensImg.src=imgList[idx];
+      lensImg.style.width=rect.width*zoom+'px';
+      lensImg.style.height=rect.height*zoom+'px';
+      lensImg.style.left=-lensX*zoom+'px';
+      lensImg.style.top=-lensY*zoom+'px';
+    });
+
+    // 離開鏡片隱藏
+    productDiv.querySelector('.product-image-block').addEventListener('mouseleave',()=>{ if(zoomActive) lens.style.display='none'; });
 
     productDiv.addEventListener('click', (e) => {
       const target = e.target;

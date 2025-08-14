@@ -251,36 +251,32 @@ body {
 
 
 /* 任意位置加 */
+.product-option {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .option-row {
   display: flex;
+  gap: 20px;
+}
+
+.option-block {
+  display: flex;
   align-items: center;
-  margin-bottom: 5px;
+  gap: 6px;
 }
 
-.option-row span {
-  font-weight: bold;
-  margin-right: 5px;
-}
-
-.option-row button {
-  margin-right: 5px;
+.option-btn {
   padding: 4px 8px;
-  border: 1px solid #ccc;
+  border: 1px solid #aaa;
+  background: #fff;
   cursor: pointer;
-  background: #f9f9f9;
+  border-radius: 4px;
 }
 
-.option-row button.selected {
-  background: #333;
+.option-btn.active {
+  background: #444;
   color: #fff;
-}
-
-.option-row.two-col {
-  display: flex;
-  justify-content: space-between;
-}
-
-.option-group {
-  display: flex;
-  align-items: center;
 }

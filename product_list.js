@@ -167,6 +167,173 @@ function renderOptionGroups(optionWrap, optionKeys, optionValues, initialSelecti
   });
 }
 
+function createProductCard(productName, variants) {
+  const productDiv = document.createElement('div');
+  productDiv.className = 'product-item';
+
+  const optionKeys = extractOptionKeys(variants);
+  const optionValues = collectOptionValues(variants, optionKeys);
+
+  const initialVariant = variants[0];
+  const selection = {};
+  optionKeys.forEach(k => {
+    const val = (initialVariant[k] || '').toString().trim();
+    if (val) selection[k] = val;
+  });
+
+  const imgListInit = buildImageList(initialVariant);
+
+  productDiv.innerHTML = generateProductHTML(productName, initialVariant, imgListInit);
+
+  const state = {
+    variants,
+    optionKeys,
+    selection,
+    imgList: imgListInit,
+    imgIndex: 0
+  };
+
+  // **綁定功能模組**
+  initImageNavigation(productDiv, state);
+  initMagnifier(productDiv, state);
+  initOptionSelection(productDiv, state);
+  initQuantityAndCart(productDiv, state);
+
+  return productDiv;
+}
+
+//新增 HTML 產生器
+function generateProductHTML(productName, variant, imgList) {
+  return `
+    <div class="left-col">
+      <div class="product-image-block">
+        <div class="arrow-block arrow-left" style="${imgList.length > 1 ? '' : 'display:none'}">
+          <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18"/></svg>
+        </div>
+        <img src="${imgList[0] || ''}" alt="${productName}">
+        <div class="arrow-block arrow-right" style="${imgList.length > 1 ? '' : 'display:none'}">
+          <svg viewBox="0 0 24 24"><path d="M9 6 L15 12 L9 18"/></svg>
+        </div>
+        <div class="magnifier-btn">
+          <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="16" y1="16" x2="22" y2="22"></line>
+          </svg>
+        </div>
+      </div>
+      <div class="sale-status-block">狀態: ${variant['販售狀態'] || ''}</div>
+    </div>
+
+    <div class="right-col">
+      <div class="product-name">${productName}</div>
+      <div class="product-price">$ ${variant['價格'] || ''}</div>
+      <div class="product-detail">${variant['詳細資訊'] || ''}</div>
+      <div class="product-option"></div>
+      <div class="product-quantity">
+        <div class="quantity-block">
+          <span>數量</span>
+          <button class="qty-btn" data-type="minus" type="button">−</button>
+          <input class="quantity-input" type="number" value="1" min="1" max="${variant['庫存'] || 0}" readonly>
+          <button class="qty-btn" data-type="plus" type="button">＋</button>
+          <span class="stock-text">還剩 ${variant['庫存'] || 0} 件</span>
+        </div>
+      </div>
+      <div class="product-cart">
+        <button class="cart-btn" type="button">加入購物車</button>
+      </div>
+    </div>
+  `;
+}
+
+function initImageNavigation(productDiv, state) {
+  const imgEl = productDiv.querySelector('.product-image-block img');
+  const leftBtn = productDiv.querySelector('.arrow-left');
+  const rightBtn = productDiv.querySelector('.arrow-right');
+
+  const updateImage = () => {
+    imgEl.src = state.imgList[state.imgIndex];
+  };
+
+  leftBtn?.addEventListener('click', () => {
+    state.imgIndex = (state.imgIndex - 1 + state.imgList.length) % state.imgList.length;
+    updateImage();
+  });
+
+  rightBtn?.addEventListener('click', () => {
+    state.imgIndex = (state.imgIndex + 1) % state.imgList.length;
+    updateImage();
+  });
+}
+
+function initMagnifier(productDiv, state) {
+  const imgEl = productDiv.querySelector('.product-image-block img');
+  const magnifierBtn = productDiv.querySelector('.magnifier-btn');
+  const imgBlock = productDiv.querySelector('.product-image-block');
+
+  const lens = document.createElement('div');
+  lens.className = 'magnifier-lens';
+  const lensImg = imgEl.cloneNode(true);
+  lens.appendChild(lensImg);
+  imgBlock.appendChild(lens);
+
+  let zoomActive = false;
+  const ZOOM = 2;
+
+  const updateLensImage = () => {
+    const rect = imgEl.getBoundingClientRect();
+    lensImg.src = state.imgList[state.imgIndex] || '';
+    lensImg.style.width = rect.width * ZOOM + 'px';
+    lensImg.style.height = rect.height * ZOOM + 'px';
+  };
+
+  magnifierBtn.addEventListener('click', () => {
+    zoomActive = !zoomActive;
+    lens.style.display = zoomActive ? 'block' : 'none';
+    if (zoomActive) updateLensImage();
+  });
+
+  imgBlock.addEventListener('mousemove', (e) => {
+    if (!zoomActive) return;
+    const rect = imgEl.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
+    let lensX = Math.max(0, Math.min(rect.width - lensW, x - lensW / 2));
+    let lensY = Math.max(0, Math.min(rect.height - lensH, y - lensH / 2));
+    lens.style.left = lensX + 'px';
+    lens.style.top = lensY + 'px';
+    lensImg.style.left = -lensX * ZOOM + 'px';
+    lensImg.style.top = -lensY * ZOOM + 'px';
+  });
+}
+
+function initOptionSelection(productDiv, state) {
+  const optionWrap = productDiv.querySelector('.product-option');
+  renderOptionGroups(optionWrap, state.optionKeys, collectOptionValues(state.variants, state.optionKeys), state.selection);
+}
+
+function initQuantityAndCart(productDiv) {
+  productDiv.addEventListener('click', (e) => {
+    const target = e.target;
+
+    if (target.classList.contains('qty-btn')) {
+      const input = productDiv.querySelector('.quantity-input');
+      const max = parseInt(input.max || '0', 10);
+      let val = parseInt(input.value || '1', 10);
+      val = target.dataset.type === 'plus'
+        ? Math.min(max || Infinity, val + 1)
+        : Math.max(1, val - 1);
+      input.value = val;
+    }
+
+    if (target.classList.contains('cart-btn')) {
+      target.classList.toggle('active');
+      target.textContent = target.classList.contains('active') ? '已加入' : '加入購物車';
+    }
+  });
+}
+
+
 async function loadProducts() {
   const category = getQueryParam('main');
   const subcategory = getQueryParam('sub');
@@ -190,6 +357,7 @@ async function loadProducts() {
   const filtered = allSheetsData[category].filter(
     row => (row['商品系列'] || '').toString().trim() === (subcategory || '').toString().trim()
   );
+
   const container = document.getElementById('product-list');
   container.innerHTML = '';
   if (!filtered.length) {
@@ -197,303 +365,12 @@ async function loadProducts() {
     return;
   }
 
-  const groupedProducts = {};
-  filtered.forEach(p => {
-    if (!groupedProducts[p['商品名稱']]) groupedProducts[p['商品名稱']] = [];
-    groupedProducts[p['商品名稱']].push(p);
-  });
-
-  const productOptionMeta = {};
-  Object.keys(groupedProducts).forEach(name => {
-    const variants = groupedProducts[name];
-    const optionKeys = Object.keys(variants[0]).filter(k => k.startsWith('選項-'));
-    const validOptions = optionKeys.filter(key => {
-      const values = [...new Set(variants.map(v => v[key]).filter(v => v))];
-      return values.length > 1;
-    });
-    productOptionMeta[name] = { variants, validOptions };
-  });
-
   const grouped = groupByProductName(filtered);
 
   for (const [productName, variants] of grouped.entries()) {
-    const productDiv = document.createElement('div');
-    productDiv.className = 'product-item';
-
-    const optionKeys = extractOptionKeys(variants);
-    const optionValues = collectOptionValues(variants, optionKeys);
-
-    const initialVariant = variants[0];
-    const selection = {};
-    optionKeys.forEach(k => {
-      const val = (initialVariant[k] || '').toString().trim();
-      if (val) selection[k] = val;
-    });
-
-    const imgListInit = buildImageList(initialVariant);
-
-    productDiv.innerHTML = `
-      <div class="left-col">
-        <div class="product-image-block">
-          <div class="arrow-block arrow-left" style="${imgListInit.length > 1 ? '' : 'display:none'}">
-            <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18"/></svg>
-          </div>
-          <img src="${imgListInit[0] || ''}" alt="${productName}">
-          <div class="arrow-block arrow-right" style="${imgListInit.length > 1 ? '' : 'display:none'}">
-            <svg viewBox="0 0 24 24"><path d="M9 6 L15 12 L9 18"/></svg>
-          </div>
-          <div class="magnifier-btn">
-            <svg viewBox="0 0 24 24">
-              <circle cx="11" cy="11" r="7"></circle>
-              <line x1="16" y1="16" x2="22" y2="22"></line>
-            </svg>
-          </div>
-        </div>
-        <div class="sale-status-block">狀態: ${initialVariant['販售狀態'] || ''}</div>
-      </div>
-
-      <div class="right-col">
-        <div class="product-name">${productName}</div>
-        <div class="product-price">$ ${initialVariant['價格'] || ''}</div>
-        <div class="product-detail">${initialVariant['詳細資訊'] || ''}</div>
-        <div class="product-option"></div>
-        <div class="product-quantity">
-          <div class="quantity-block">
-            <span>數量</span>
-            <button class="qty-btn" data-type="minus" type="button">−</button>
-            <input class="quantity-input" type="number" value="1" min="1" max="${initialVariant['庫存'] || 0}" readonly>
-            <button class="qty-btn" data-type="plus" type="button">＋</button>
-            <span class="stock-text">還剩 ${initialVariant['庫存'] || 0} 件</span>
-          </div>
-        </div>
-        <div class="product-cart">
-          <button class="cart-btn" type="button">加入購物車</button>
-        </div>
-      </div>
-    `;
-
-    const state = {
-      variants,
-      optionKeys,
-      selection,
-      imgList: imgListInit,
-      imgIndex: 0
-    };
-
-    const optionWrap = productDiv.querySelector('.product-option');
-    renderOptionGroups(optionWrap, optionKeys, optionValues, state.selection);
-
-    const imgEl = productDiv.querySelector('.product-image-block img');
-    const leftBtn = productDiv.querySelector('.arrow-left');
-    const rightBtn = productDiv.querySelector('.arrow-right');
-
-    // 放大鏡初始化
-    const imgBlock = productDiv.querySelector('.product-image-block');
-    const magnifierBtn = productDiv.querySelector('.magnifier-btn');
-    const lens = document.createElement('div');
-    lens.className = 'magnifier-lens';
-    const lensImg = imgEl.cloneNode(true);
-    lens.appendChild(lensImg);
-    imgBlock.appendChild(lens);
-
-    let zoomActive = false;
-    const ZOOM = 2;
-
-    const updateLensImage = () => {
-      const rect = imgEl.getBoundingClientRect();
-      lensImg.src = state.imgList[state.imgIndex] || '';
-      lensImg.style.width  = rect.width * ZOOM + 'px';
-      lensImg.style.height = rect.height * ZOOM + 'px';
-    };
-
-    leftBtn?.addEventListener('click', () => {
-      if (!state.imgList.length) return;
-      state.imgIndex = (state.imgIndex - 1 + state.imgList.length) % state.imgList.length;
-      imgEl.src = state.imgList[state.imgIndex];
-      if (zoomActive) updateLensImage();
-    });
-
-    rightBtn?.addEventListener('click', () => {
-      if (!state.imgList.length) return;
-      state.imgIndex = (state.imgIndex + 1) % state.imgList.length;
-      imgEl.src = state.imgList[state.imgIndex];
-      if (zoomActive) updateLensImage();
-    });
-
-    magnifierBtn.addEventListener('click', () => {
-      zoomActive = !zoomActive;
-      lens.style.display = zoomActive ? 'block' : 'none';
-      if (zoomActive) {
-        const rect = imgEl.getBoundingClientRect();
-        const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
-        lens.style.left = (rect.width - lensW) / 2 + 'px';
-        lens.style.top  = (rect.height - lensH) / 2 + 'px';
-        updateLensImage();
-        lensImg.style.left   = -(rect.width/2 - lensW/2) * ZOOM + 'px';
-        lensImg.style.top    = -(rect.height/2 - lensH/2) * ZOOM + 'px';
-      }
-    });
-
-    imgBlock.addEventListener('mousemove', (e) => {
-      if (!zoomActive) return;
-      const rect = imgEl.getBoundingClientRect();
-      const x = e.clientX - rect.left;
-      const y = e.clientY - rect.top;
-      const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
-
-      let lensX = x - lensW / 2;
-      let lensY = y - lensH / 2;
-      lensX = Math.max(0, Math.min(rect.width  - lensW, lensX));
-      lensY = Math.max(0, Math.min(rect.height - lensH, lensY));
-
-      lens.style.left = lensX + 'px';
-      lens.style.top  = lensY + 'px';
-      updateLensImage();
-      lensImg.style.left   = -lensX * ZOOM + 'px';
-      lensImg.style.top    = -lensY * ZOOM + 'px';
-    });
-
-    imgBlock.addEventListener('mouseleave', () => {
-      if (zoomActive) lens.style.display = 'none';
-    });
-    imgBlock.addEventListener('mouseenter', () => {
-      if (zoomActive) lens.style.display = 'block';
-    });
-
-    // 右欄互動
-    productDiv.addEventListener('click', (e) => {
-      const target = e.target;
-      if (target.classList.contains('option-btn')) {
-        const optKey = target.dataset.optionKey;
-        const optVal = target.dataset.optionValue;
-        const group = target.closest('.option-buttons');
-        group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
-        target.classList.add('selected');
-        state.selection[optKey] = optVal;
-
-        const variant = findVariantBySelection(state.variants, state.selection);
-        if (variant) {
-          applyVariantToUI(productDiv, variant, state);
-          const input = productDiv.querySelector('.quantity-input');
-          const max = parseInt(input.max || '0', 10);
-          let val = parseInt(input.value || '1', 10);
-          if (max > 0 && val > max) input.value = Math.max(1, max);
-          if (zoomActive) updateLensImage();
-        } else {
-          target.classList.remove('selected');
-        }
-        return;
-      }
-
-      if (target.classList.contains('qty-btn')) {
-        const block = target.closest('.quantity-block');
-        const input = block.querySelector('.quantity-input');
-        const max = parseInt(input.max || '0', 10);
-        let val = parseInt(input.value || '1', 10);
-        if (target.dataset.type === 'plus') {
-          if (max > 0) val = Math.min(max, val + 1);
-          else val = val + 1;
-        } else if (target.dataset.type === 'minus') {
-          val = Math.max(1, val - 1);
-        }
-        input.value = val;
-        return;
-      }
-
-      if (target.classList.contains('cart-btn')) {
-        target.classList.toggle('active');
-        target.textContent = target.classList.contains('active') ? '已加入' : '加入購物車';
-        return;
-      }
-    });
-
+    const productDiv = createProductCard(productName, variants); // **呼叫模組化方法**
     container.appendChild(productDiv);
   }
 }
 
-
 loadProducts();
-
-// **加在任意位置（建議 loadProducts 外面）**
-function generateOptionsUI(container, optionKeys, variants, updateCallback) {
-  container.innerHTML = '';
-
-  const MAX_HEIGHT = 200; // 假設 product-option 高度限制
-  const lineHeight = 40;
-  const needTwoCol = (optionKeys.length * lineHeight) > MAX_HEIGHT;
-
-  let arrangedOptions = [...optionKeys];
-  if (needTwoCol && optionKeys.length >= 2) {
-    arrangedOptions.sort((a, b) => {
-      const lenA = getOptionLength(a, variants);
-      const lenB = getOptionLength(b, variants);
-      return lenA - lenB;
-    });
-  }
-
-  const selectedValues = {};
-
-  for (let i = 0; i < arrangedOptions.length; i++) {
-    const key = arrangedOptions[i];
-    const values = [...new Set(variants.map(v => v[key]).filter(v => v))];
-
-    if (needTwoCol && i === 0 && arrangedOptions.length >= 2) {
-      const nextKey = arrangedOptions[1];
-      const nextValues = [...new Set(variants.map(v => v[nextKey]).filter(v => v))];
-      const row = document.createElement('div');
-      row.className = 'option-row two-col';
-
-      const col1 = createOptionGroup(key, values, selectedValues, updateCallback, variants);
-      const col2 = createOptionGroup(nextKey, nextValues, selectedValues, updateCallback, variants);
-
-      row.appendChild(col1);
-      row.appendChild(col2);
-      container.appendChild(row);
-      i++;
-    } else {
-      const row = document.createElement('div');
-      row.className = 'option-row';
-      const col = createOptionGroup(key, values, selectedValues, updateCallback, variants);
-      row.appendChild(col);
-      container.appendChild(row);
-    }
-  }
-}
-
-function createOptionGroup(key, values, selectedValues, updateCallback, variants) {
-  const group = document.createElement('div');
-  group.className = 'option-group';
-  const label = document.createElement('span');
-  label.textContent = key.replace('選項-', '');
-  group.appendChild(label);
-
-  values.forEach(v => {
-    const btn = document.createElement('button');
-    btn.textContent = v;
-    btn.addEventListener('click', () => {
-      // 標記選擇
-      [...group.querySelectorAll('button')].forEach(b => b.classList.remove('selected'));
-      btn.classList.add('selected');
-
-      selectedValues[key] = v;
-
-      // 篩選符合條件的 variant
-      let match = variants;
-      Object.keys(selectedValues).forEach(k => {
-        match = match.filter(item => item[k] === selectedValues[k]);
-      });
-
-      if (match.length === 1) {
-        updateCallback(match[0]); // 更新價格 / 圖片 / 庫存
-      }
-    });
-    group.appendChild(btn);
-  });
-
-  return group;
-}
-
-function getOptionLength(key, variants) {
-  const values = [...new Set(variants.map(v => v[key]).filter(v => v))];
-  return key.length + values.join('').length;
-}

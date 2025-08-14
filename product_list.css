@@ -120,3 +120,76 @@
   background: green;
   color: white;
 }
+
+/* 單項商品大區塊-右 */
+.product-right {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    box-sizing: border-box;
+}
+
+/* 各區通用樣式 */
+.product-name,
+.product-price,
+.product-details,
+.product-options,
+.product-quantity,
+.product-cart {
+    width: 100%;
+    padding: 0.5em;
+    box-sizing: border-box;
+    font-family: "Microsoft JhengHei", Calibri, sans-serif;
+}
+
+/* 高度比例 */
+.product-name { flex: 0 0 15%; display: flex; align-items: center; justify-content: flex-start; font-weight: bold; font-size: 1.1em; }
+.product-price { flex: 0 0 10%; display: flex; align-items: center; justify-content: flex-start; color: #c44; font-size: 1em; }
+.product-details { flex: 0 0 20%; display: flex; align-items: center; justify-content: flex-start; font-size: 0.95em; color: #555; }
+.product-options { flex: 0 0 35%; border: 1px dashed #ccc; } /* 先留白，之後設計 */
+.product-quantity { flex: 0 0 10%; display: flex; align-items: center; gap: 0.5em; font-size: 0.9em; }
+.product-cart { flex: 0 0 10%; display: flex; align-items: center; justify-content: center; }
+
+/* 選購區內的數量控制 */
+.quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.2em;
+}
+
+.quantity-controls button {
+    width: 2em;
+    height: 2em;
+    border: 1px solid #ccc;
+    background-color: #fff;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+.quantity-controls input {
+    width: 3em;
+    height: 2em;
+    text-align: center;
+    border: 1px solid #ccc;
+}
+
+/* 庫存文字 */
+.stock-text {
+    margin-left: 0.5em;
+    color: #888;
+}
+
+/* 購物車按鈕 */
+.add-to-cart {
+    background-color: #FFD8A8; /* 淺橘色 */
+    border: none;
+    padding: 0.5em 1em;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.add-to-cart.active {
+    background-color: #FF922B; /* 深橘色 */
+    color: white;
+}

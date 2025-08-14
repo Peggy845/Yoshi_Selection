@@ -119,6 +119,7 @@ async function loadProducts() {
     const leftBtn = productDiv.querySelector('.arrow-left');
     const rightBtn = productDiv.querySelector('.arrow-right');
 
+	// 左右箭頭切換圖片
     leftBtn?.addEventListener('click', () => {
       idx = (idx - 1 + imgList.length) % imgList.length;
       imgEl.src = imgList[idx];
@@ -127,14 +128,6 @@ async function loadProducts() {
       idx = (idx + 1) % imgList.length;
       imgEl.src = imgList[idx];
     });
-	
-	   const imgEl = productDiv.querySelector('.product-image-block img');
-    const leftBtn = productDiv.querySelector('.left-arrow');
-    const rightBtn = productDiv.querySelector('.right-arrow');
-
-    // 左右箭頭切換圖片
-    leftBtn?.addEventListener('click', () => { idx=(idx-1+imgList.length)%imgList.length; imgEl.src=imgList[idx]; });
-    rightBtn?.addEventListener('click',()=>{ idx=(idx+1)%imgList.length; imgEl.src=imgList[idx]; });
 
     // 放大鏡
     const magnifierBtn = document.createElement('div');

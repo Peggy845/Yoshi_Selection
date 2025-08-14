@@ -68,9 +68,6 @@ body {
   z-index: 10;
 }
 
-.left-arrow { left: 10px; }
-.right-arrow { right: 10px; }
-
 /* 放大鏡圖示 */
 .magnifier-btn {
   position: absolute;

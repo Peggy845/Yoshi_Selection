@@ -9,7 +9,7 @@
 /* 單項商品大區塊容器 */
 .product-item {
     display: flex;
-    width: 100%; /* 與螢幕同寬 */
+    width: 100%;
     background-color: #fff;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
     margin-bottom: 1rem;
@@ -23,23 +23,26 @@
     flex-direction: column;
     border: 1px solid #ccc;
     box-sizing: border-box;
+    padding: 0.3rem 0;
 }
 
-/* 圖片正方形寬度 = 螢幕 35% */
+/* 讓商品圖片大區寬度 = 螢幕 35% 並保持正方形 */
 .product-image-large {
-    width: 35vw;
-    height: 35vw;
+    width: 35vw; /* 35% 螢幕寬度 */
+    height: 35vw; /* 正方形 */
     border: 1px solid #ccc;
     box-sizing: border-box;
 }
 
+/* 商品圖片小區 */
 .product-image-small {
     width: 35vw;
-    height: 4rem; /* 高度可微調 */
+    height: 4rem;
     border: 1px solid #ccc;
     box-sizing: border-box;
 }
 
+/* 販售狀態區 */
 .product-status {
     width: 35vw;
     flex: 1;
@@ -47,41 +50,45 @@
     box-sizing: border-box;
 }
 
-/* 右邊內容 */
+/* 右側內容 */
 .product-right {
     flex: 1;
     display: flex;
     flex-direction: column;
     border: 1px solid #ccc;
-    margin-left: 1rem; /* 左右間距 */
+    margin-left: 1rem;
     box-sizing: border-box;
 }
 
-/* 右邊各區塊 */
+/* 商品名稱 */
 .product-title {
+    border-bottom: 1px solid #ccc;
     font-size: 1.6rem;
     font-weight: bold;
-    padding: 0.3rem;
-    border-bottom: 1px solid #ccc;
+    padding: 0.5rem;
 }
 
+/* 價格 */
 .product-price {
     font-size: 1.2rem;
-    padding: 0.3rem;
+    padding: 0.5rem;
     border-bottom: 1px solid #ccc;
 }
 
+/* 詳細資訊 */
 .product-details {
-    padding: 0.3rem;
+    padding: 0.5rem;
     border-bottom: 1px solid #ccc;
 }
 
+/* 選項區塊 */
 .product-options {
     flex: 1;
-    padding: 0.3rem;
+    padding: 0.5rem;
     border-bottom: 1px solid #ccc;
 }
 
+/* 選購區塊 */
 .product-purchase {
-    padding: 0.3rem;
+    padding: 0.5rem;
 }

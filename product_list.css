@@ -248,3 +248,39 @@ body {
 .cart-btn:hover { background-color: #ff9600; }
 .cart-btn:active { transform: scale(0.98); }
 .cart-btn.active { background-color: #ff7f00; }
+
+
+/* 任意地方加 */
+.option-row {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.option-row span {
+  font-weight: bold;
+  margin-right: 5px;
+}
+
+.option-row button {
+  margin-right: 5px;
+  padding: 4px 8px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  background: #f9f9f9;
+}
+
+.option-row button.selected {
+  background: #333;
+  color: #fff;
+}
+
+.option-row.two-col {
+  display: flex;
+  justify-content: space-between;
+}
+
+.option-group {
+  display: flex;
+  align-items: center;
+}

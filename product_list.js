@@ -187,16 +187,24 @@ async function loadProducts() {
     return;
   }
 
-  // 只取該子分類
-  const filtered = allSheetsData[category].filter(
-    row => (row['商品系列'] || '').toString().trim() === (subcategory || '').toString().trim()
-  );
-  const container = document.getElementById('product-list');
-  container.innerHTML = '';
-  if (!filtered.length) {
-    container.innerHTML = '<p>目前沒有這個分類的商品</p>';
-    return;
-  }
+  // **請把這段加在這裡**
+  const groupedProducts = {};
+  filtered.forEach(p => {
+    if (!groupedProducts[p['商品名稱']]) groupedProducts[p['商品名稱']] = [];
+    groupedProducts[p['商品名稱']].push(p);
+  });
+
+  const productOptionMeta = {};
+  Object.keys(groupedProducts).forEach(name => {
+    const variants = groupedProducts[name];
+    const optionKeys = Object.keys(variants[0]).filter(k => k.startsWith('選項-'));
+    const validOptions = optionKeys.filter(key => {
+      const values = [...new Set(variants.map(v => v[key]).filter(v => v))];
+      return values.length > 1; // 只保留有多個值的選項
+    });
+    productOptionMeta[name] = { variants, validOptions };
+  });
+  // **新增段落結束**
 
   // 依商品名稱分組
   const grouped = groupByProductName(filtered);
@@ -420,3 +428,49 @@ async function loadProducts() {
 }
 
 loadProducts();
+
+// 加在任意位置（建議 loadProducts 外面）
+function generateOptionsUI(container, optionKeys, variants) {
+  container.innerHTML = '';
+
+  const MAX_HEIGHT = 200; // 假設 product-option 高度限制
+  const lineHeight = 40;
+  const needTwoCol = (optionKeys.length * lineHeight) > MAX_HEIGHT;
+
+  let arrangedOptions = [...optionKeys];
+  if (needTwoCol && optionKeys.length >= 2) {
+    arrangedOptions.sort((a, b) => {
+      const lenA = getOptionLength(a, variants);
+      const lenB = getOptionLength(b, variants);
+      return lenA - lenB;
+    });
+  }
+
+  for (let i = 0; i < arrangedOptions.length; i++) {
+    const key = arrangedOptions[i];
+    const values = [...new Set(variants.map(v => v[key]).filter(v => v))];
+
+    if (needTwoCol && i === 0 && arrangedOptions.length >= 2) {
+      const nextKey = arrangedOptions[1];
+      const nextValues = [...new Set(variants.map(v => v[nextKey]).filter(v => v))];
+      const row = document.createElement('div');
+      row.className = 'option-row two-col';
+      row.innerHTML = `
+        <div class="option-group"><span>${key.replace('選項-', '')}</span> ${values.map(v => `<button>${v}</button>`).join('')}</div>
+        <div class="option-group"><span>${nextKey.replace('選項-', '')}</span> ${nextValues.map(v => `<button>${v}</button>`).join('')}</div>
+      `;
+      container.appendChild(row);
+      i++;
+    } else {
+      const row = document.createElement('div');
+      row.className = 'option-row';
+      row.innerHTML = `<span>${key.replace('選項-', '')}</span> ${values.map(v => `<button>${v}</button>`).join('')}`;
+      container.appendChild(row);
+    }
+  }
+}
+
+function getOptionLength(key, variants) {
+  const values = [...new Set(variants.map(v => v[key]).filter(v => v))];
+  return key.length + values.join('').length;
+}

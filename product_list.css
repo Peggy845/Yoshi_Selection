@@ -183,26 +183,48 @@ body {
   min-width: 56px;
   color: #333;
 }
+.option-label {
+  font-weight: bold;
+  margin-right: 6px;
+  min-width: 50px;
+}
 .option-buttons {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
 .option-btn {
-  padding: 6px 12px;
-  border-radius: 16px;
-  border: 1px solid #ddd;
-  background: #fff;
+  padding: 4px 10px;
+  margin: 2px;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+  background-color: white;
   cursor: pointer;
-  font-size: 14px;
-  transition: all .15s ease;
-  user-select: none;
+  transition: all 0.2s;
+  border-radius: 4px;
 }
+
+.option-btn.active {
+  background-color: #007BFF;
+  color: white;
+  border-color: #0056b3;
+}
+
+.option-btn.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
 .option-btn:hover { border-color: #bbb; }
 .option-btn.selected {
   background: #222;
   color: #fff;
   border-color: #222;
+}
+
+.option-row-combined {
+  display: flex;
+  gap: 12px;
 }
 
 /* 數量小區 */
@@ -268,15 +290,6 @@ body {
   gap: 6px;
 }
 
-.option-btn {
-  padding: 4px 8px;
-  border: 1px solid #aaa;
-  background: #fff;
-  cursor: pointer;
-  border-radius: 4px;
-}
 
-.option-btn.active {
-  background: #444;
-  color: #fff;
-}
+
+

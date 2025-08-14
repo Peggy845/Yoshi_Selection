@@ -36,6 +36,66 @@ async function fetchMultipleSheets(sheetNames) {
   return allData;
 }
 
+// 建立每個 product-item 的放大鏡功能
+function setupMagnifier(productDiv) {
+  const imgBlock = productDiv.querySelector('.product-image-block');
+  const img = imgBlock.querySelector('img');
+
+  const magnifierBtn = document.createElement('div');
+  magnifierBtn.className = 'magnifier-btn';
+  magnifierBtn.innerHTML = `
+    <svg viewBox="0 0 24 24">
+      <circle cx="11" cy="11" r="8"/>
+      <line x1="16" y1="16" x2="22" y2="22"/>
+    </svg>
+  `;
+  imgBlock.appendChild(magnifierBtn);
+
+  const lens = document.createElement('div');
+  lens.className = 'magnifier-lens';
+  const lensImg = img.cloneNode(true);
+  lens.appendChild(lensImg);
+  imgBlock.appendChild(lens);
+
+  let zoomActive = false;
+
+  magnifierBtn.addEventListener('click', () => {
+    zoomActive = !zoomActive;
+    lens.style.display = zoomActive ? 'block' : 'none';
+  });
+
+  imgBlock.addEventListener('mousemove', (e) => {
+    if (!zoomActive) return;
+
+    const rect = img.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    const lensWidth = lens.offsetWidth;
+    const lensHeight = lens.offsetHeight;
+    const zoom = 2; // 放大倍率
+
+    // 限制 lens 位置
+    let lensX = x - lensWidth / 2;
+    let lensY = y - lensHeight / 2;
+    lensX = Math.max(0, Math.min(rect.width - lensWidth, lensX));
+    lensY = Math.max(0, Math.min(rect.height - lensHeight, lensY));
+
+    lens.style.left = lensX + 'px';
+    lens.style.top = lensY + 'px';
+
+    // 調整鏡片內圖片位置
+    lensImg.style.width = rect.width * zoom + 'px';
+    lensImg.style.height = rect.height * zoom + 'px';
+    lensImg.style.left = -lensX * zoom + 'px';
+    lensImg.style.top = -lensY * zoom + 'px';
+  });
+
+  imgBlock.addEventListener('mouseleave', () => {
+    if (zoomActive) lens.style.display = 'none';
+  });
+}
+
 async function loadProducts() {
   const category = getQueryParam('main');
   const subcategory = getQueryParam('sub');
@@ -114,6 +174,8 @@ async function loadProducts() {
         </div>
       </div>
     `;
+
+	setupMagnifier(productDiv); // <-- 呼叫放大鏡功能
 
     const imgEl = productDiv.querySelector('.product-image-block img');
     const leftBtn = productDiv.querySelector('.arrow-left');

@@ -89,9 +89,9 @@ async function loadProducts() {
     productDiv.innerHTML = `
       <div class="left-col">
         <div class="product-image-block">
-          <div class="image-arrow left-arrow" style="${extraImages.length ? '' : 'display:none'}">&#9664;</div>
+          <div class="arrow-block arrow-left" style="${extraImages.length ? '' : 'display:none'}">&#9664;</div>
           <img src="${imgList[0] || ''}" alt="${product['商品名稱'] || ''}">
-          <div class="image-arrow right-arrow" style="${extraImages.length ? '' : 'display:none'}">&#9654;</div>
+          <div class="arrow-block arrow-right" style="${extraImages.length ? '' : 'display:none'}">&#9654;</div>
         </div>
         <div class="sale-status-block">狀態: ${product['販售狀態'] || ''}</div>
       </div>
@@ -115,9 +115,10 @@ async function loadProducts() {
     `;
 
     const imgEl = productDiv.querySelector('.product-image-block img');
-    const leftBtn = productDiv.querySelector('.left-arrow');
-    const rightBtn = productDiv.querySelector('.right-arrow');
+    const leftBtn = productDiv.querySelector('.arrow-left');
+    const rightBtn = productDiv.querySelector('.arrow-right');
 
+    // 左右箭頭點擊切換圖片
     leftBtn?.addEventListener('click', () => {
       if (!imgList.length) return;
       idx = (idx - 1 + imgList.length) % imgList.length;

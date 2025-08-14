@@ -75,6 +75,14 @@ body {
   flex-direction: column;
 }
 
+/* 高度比例設定 */
+.product-name { flex: 0 0 15%; display: flex; align-items: center; justify-content: flex-start; padding-left: 0.5em; font-weight: bold; }
+.product-price { flex: 0 0 10%; display: flex; align-items: center; justify-content: flex-start; padding-left: 0.5em; color: #c44; }
+.product-details { flex: 0 0 20%; display: flex; align-items: center; justify-content: flex-start; padding-left: 0.5em; color: #555; }
+.product-options { flex: 0 0 35%; border: 1px dashed #ccc; }
+.product-quantity { flex: 0 0 10%; display: flex; align-items: center; gap: 0.5em; padding-left: 0.5em; }
+.product-cart { flex: 0 0 10%; display: flex; align-items: center; justify-content: center; }
+
 .product-name {
   flex: 0 0 15%;
   font-size: 20px;

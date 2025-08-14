@@ -39,7 +39,6 @@ async function fetchMultipleSheets(sheetNames) {
 async function loadProducts() {
   const category = getQueryParam('main');
   const subcategory = getQueryParam('sub');
-
   const titleElement = document.getElementById('subcategory-title');
   if (titleElement) titleElement.textContent = subcategory || '商品列表';
 
@@ -87,18 +86,13 @@ async function loadProducts() {
     productDiv.innerHTML = `
       <div class="left-col">
         <div class="product-image-block">
-          <div class="arrow-block arrow-left">
-			  <svg width="24" height="24" viewBox="0 0 24 24">
-				<path d="M15 6 L9 12 L15 18" stroke="#333" stroke-width="2" fill="none"/>
-			  </svg>
-		  </div>
-
+          <div class="arrow-block arrow-left" style="${extraImages.length ? '' : 'display:none'}">
+            <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18" stroke="#fff" stroke-width="2" fill="none"/></svg>
+          </div>
           <img src="${imgList[0] || ''}" alt="${product['商品名稱'] || ''}">
-          <div class="arrow-block arrow-right">
-			  <svg width="24" height="24" viewBox="0 0 24 24">
-				<path d="M9 6 L15 12 L9 18" stroke="#333" stroke-width="2" fill="none"/>
-			  </svg>
-		  </div>
+          <div class="arrow-block arrow-right" style="${extraImages.length ? '' : 'display:none'}">
+            <svg viewBox="0 0 24 24"><path d="M9 6 L15 12 L9 18" stroke="#fff" stroke-width="2" fill="none"/></svg>
+          </div>
         </div>
         <div class="sale-status-block">狀態: ${product['販售狀態'] || ''}</div>
       </div>
@@ -145,10 +139,15 @@ async function loadProducts() {
         const input = block.querySelector('.quantity-input');
         const max = parseInt(input.max || '0', 10);
         let val = parseInt(input.value || '1', 10);
-        if (target.dataset.type === 'plus') val = max > 0 ? Math.min(max, val + 1) : val + 1;
-        if (target.dataset.type === 'minus') val = Math.max(1, val - 1);
+
+        if (target.dataset.type === 'plus') {
+          if (max > 0) val = Math.min(max, val + 1);
+        } else if (target.dataset.type === 'minus') {
+          val = Math.max(1, val - 1);
+        }
         input.value = val;
       }
+
       if (target.classList.contains('cart-btn')) {
         target.classList.toggle('active');
         target.textContent = target.classList.contains('active') ? '已加入' : '加入購物車';

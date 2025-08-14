@@ -1,83 +1,87 @@
+/* 頁面標題 */
+.page-title {
+    text-align: center;
+    font-size: 2rem;
+    font-weight: bold;
+    margin: 1rem 0;
+}
+
 /* 單項商品大區塊容器 */
 .product-item {
     display: flex;
     width: 100%; /* 與螢幕同寬 */
     background-color: #fff;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    margin-bottom: 1rem; /* 區塊之間空隙 */
-    padding: 0.5cm; /* 外框與內容距離 */
+    margin-bottom: 1rem;
+    padding: 0.5rem;
     box-sizing: border-box;
 }
 
 /* 左右兩塊 */
 .product-left {
-    width: 12cm;
     display: flex;
     flex-direction: column;
-    gap: 0; /* 上下區塊貼齊 */
     border: 1px solid #ccc;
     box-sizing: border-box;
-    padding-top: 0.2cm; /* z */
-    padding-bottom: 0.2cm;
 }
 
-.product-right {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    border: 1px solid #ccc;
-    margin-left: 1cm; /* y */
-    padding-top: 0.2cm;
-    padding-bottom: 0.2cm;
-}
-
-/* 左邊三個區塊 */
+/* 圖片正方形寬度 = 螢幕 35% */
 .product-image-large {
-    width: 12cm;
-    height: 12cm;
+    width: 35vw;
+    height: 35vw;
     border: 1px solid #ccc;
     box-sizing: border-box;
 }
 
 .product-image-small {
-    width: 12cm;
-    height: 4cm;
+    width: 35vw;
+    height: 4rem; /* 高度可微調 */
     border: 1px solid #ccc;
     box-sizing: border-box;
 }
 
 .product-status {
+    width: 35vw;
     flex: 1;
-    width: 12cm;
     border: 1px solid #ccc;
     box-sizing: border-box;
 }
 
-/* 右邊五個區塊 */
+/* 右邊內容 */
+.product-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ccc;
+    margin-left: 1rem; /* 左右間距 */
+    box-sizing: border-box;
+}
+
+/* 右邊各區塊 */
 .product-title {
-    border-bottom: 1px solid #ccc;
     font-size: 1.6rem;
     font-weight: bold;
-    padding: 0.3cm;
+    padding: 0.3rem;
+    border-bottom: 1px solid #ccc;
 }
 
 .product-price {
     font-size: 1.2rem;
-    padding: 0.3cm;
+    padding: 0.3rem;
     border-bottom: 1px solid #ccc;
 }
 
 .product-details {
-    padding: 0.3cm;
+    padding: 0.3rem;
     border-bottom: 1px solid #ccc;
 }
 
 .product-options {
-    flex: 1; /* 填滿剩餘高度 */
-    padding: 0.3cm;
+    flex: 1;
+    padding: 0.3rem;
     border-bottom: 1px solid #ccc;
 }
 
 .product-purchase {
-    padding: 0.3cm;
+    padding: 0.3rem;
 }

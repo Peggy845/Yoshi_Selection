@@ -87,9 +87,18 @@ async function loadProducts() {
     productDiv.innerHTML = `
       <div class="left-col">
         <div class="product-image-block">
-          <div class="arrow-block arrow-left" style="${extraImages.length ? '' : 'display:none'}">&#9664;</div>
+          <div class="arrow-block arrow-left">
+			  <svg width="24" height="24" viewBox="0 0 24 24">
+				<path d="M15 6 L9 12 L15 18" stroke="#333" stroke-width="2" fill="none"/>
+			  </svg>
+		  </div>
+
           <img src="${imgList[0] || ''}" alt="${product['商品名稱'] || ''}">
-          <div class="arrow-block arrow-right" style="${extraImages.length ? '' : 'display:none'}">&#9654;</div>
+          <div class="arrow-block arrow-right">
+			  <svg width="24" height="24" viewBox="0 0 24 24">
+				<path d="M9 6 L15 12 L9 18" stroke="#333" stroke-width="2" fill="none"/>
+			  </svg>
+		  </div>
         </div>
         <div class="sale-status-block">狀態: ${product['販售狀態'] || ''}</div>
       </div>

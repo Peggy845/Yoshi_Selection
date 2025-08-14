@@ -20,11 +20,15 @@ body {
 
 .product-item {
   display: flex;
-  width: 900px;   /* 固定寬度，可依需求調整 */
-  height: 400px;  /* 固定高度，可依需求調整 */
-  border: 1px solid #ccc;
-  background-color: #fff;
+  width: 900px;
+  height: 400px;
+  position: relative;
   overflow: hidden;
+  border: 1px solid #ccc;
+}
+
+.left-col, .right-col {
+  height: 100%; /* 確保填滿父容器 */
 }
 
 .left-col {
@@ -75,17 +79,16 @@ body {
 }
 
 .right-col {
-  width: 50%;
   display: flex;
   flex-direction: column;
 }
 
-.product-name { flex: 0 0 15%; padding: 5px 10px; border-bottom: 1px solid #ccc; }
-.product-price { flex: 0 0 10%; padding: 5px 10px; border-bottom: 1px solid #ccc; }
-.product-detail { flex: 0 0 20%; padding: 5px 10px; border-bottom: 1px solid #ccc; overflow-y: auto; }
-.product-option { flex: 0 0 35%; padding: 10px; border-bottom: 1px solid #ccc; overflow-y: auto; }
-.product-quantity { flex: 0 0 10%; display: flex; align-items: center; padding: 5px 10px; border-bottom: 1px solid #ccc; }
-.product-cart { flex: 0 0 10%; display: flex; align-items: center; padding: 5px 10px; }
+.product-name { flex: 0 0 15%; padding: 5px; }
+.product-price { flex: 0 0 10%; padding: 5px; }
+.product-detail { flex: 0 0 20%; padding: 5px; overflow-y: auto; }
+.product-option { flex: 0 0 35%; padding: 5px; overflow-y: auto; }
+.product-quantity { flex: 0 0 10%; padding: 5px; }
+.product-cart { flex: 0 0 10%; padding: 5px; }
 
 .quantity-block {
   display: flex;

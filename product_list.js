@@ -187,6 +187,17 @@ async function loadProducts() {
     return;
   }
 
+  // 只取該子分類
+  const filtered = allSheetsData[category].filter(
+    row => (row['商品系列'] || '').toString().trim() === (subcategory || '').toString().trim()
+  );
+  const container = document.getElementById('product-list');
+  container.innerHTML = '';
+  if (!filtered.length) {
+    container.innerHTML = '<p>目前沒有這個分類的商品</p>';
+    return;
+  }
+  
   // **請把這段加在這裡**
   const groupedProducts = {};
   filtered.forEach(p => {

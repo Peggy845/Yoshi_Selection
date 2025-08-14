@@ -1,211 +1,83 @@
-/* 頁面子分類標題 */
-#subcategory-title {
-  font-family: "Microsoft JhengHei", Calibri, sans-serif;
-  font-size: 2.2rem;
-  font-weight: 800;
-  text-align: center;
-  margin: 24px 0 16px;
-  letter-spacing: 0.5px;
-  color: #222;
-}
-
-/* 變數：左欄寬度與卡片最小高度，可依喜好微調 */
-:root {
-  --left-col-w: 260px;    /* = x */
-  --item-min-h: 420px;
-}
-
-/* 單項商品大區塊：左右兩欄 */
+/* 單項商品大區塊容器 */
 .product-item {
-  width: 100%;
-  display: grid;
-  grid-template-columns: var(--left-col-w) 1fr; /* 左欄 = x，右欄 = y */
-  gap: 14px 16px;
-  padding: 16px;
-  margin: 14px 0;
-  background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 6px 14px rgba(0,0,0,0.08);
-  min-height: var(--item-min-h);
-  align-items: stretch; /* 讓左右兩欄等高 */
+    display: flex;
+    width: 100%; /* 與螢幕同寬 */
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    margin-bottom: 1rem; /* 區塊之間空隙 */
+    padding: 0.5cm; /* 外框與內容距離 */
+    box-sizing: border-box;
 }
 
-/* —— 左欄：圖片（上）＋ 販售狀態（下） —— */
-.left-col {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
+/* 左右兩塊 */
+.product-left {
+    width: 12cm;
+    display: flex;
+    flex-direction: column;
+    gap: 0; /* 上下區塊貼齊 */
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+    padding-top: 0.2cm; /* z */
+    padding-bottom: 0.2cm;
 }
 
-/* 商品圖片小區（寬度 = x，高度自動填滿除狀態外的剩餘） */
-.product-image-block {
-  position: relative;
-  flex: 1 1 auto;
-  border-radius: 10px;
-  overflow: hidden;
-  background: #fafafa;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.product-image-block img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover; /* 填滿且維持比例 */
+.product-right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid #ccc;
+    margin-left: 1cm; /* y */
+    padding-top: 0.2cm;
+    padding-bottom: 0.2cm;
 }
 
-/* 圖片左右箭頭（有額外圖片才顯示） */
-.image-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  background: rgba(255,255,255,0.9);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-  display: grid;
-  place-items: center;
-  font-weight: 700;
-  cursor: pointer;
-  user-select: none;
-}
-.left-arrow { left: 10px; }
-.right-arrow { right: 10px; }
-
-/* 販售狀態小區（寬度 = x，貼齊圖片下緣，無外框） */
-.sale-status-block {
-  margin-top: 10px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  font-size: 0.98rem;
-  font-weight: 600;
-  color: #374151;
-  background: #f5f7fb;   /* 柔和底色，無邊框 */
-  border-radius: 8px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+/* 左邊三個區塊 */
+.product-image-large {
+    width: 12cm;
+    height: 12cm;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
 }
 
-/* —— 右欄：名稱 → 價格 → 詳細 → 選項(填滿) → 選購 —— */
-.right-col {
-  min-width: 0;
-  display: grid;
-  grid-template-rows: auto auto auto 1fr auto; /* 選項 = 1fr 吃剩餘高度 */
-  gap: 8px;
+.product-image-small {
+    width: 12cm;
+    height: 4cm;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
 }
 
-/* 商品名稱（全卡最大字體） */
-.product-name {
-  font-family: "Microsoft JhengHei", Calibri, sans-serif;
-  font-size: 1.7rem;  /* 你要的最大，價格會比它小 */
-  line-height: 1.2;
-  font-weight: 800;
-  color: #1f2937;
-  word-break: break-word;
+.product-status {
+    flex: 1;
+    width: 12cm;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
 }
 
-/* 價錢（比商品名稱小 4 個 px；名稱 1.7rem ≈ 27.2px → 價格 ~23px） */
+/* 右邊五個區塊 */
+.product-title {
+    border-bottom: 1px solid #ccc;
+    font-size: 1.6rem;
+    font-weight: bold;
+    padding: 0.3cm;
+}
+
 .product-price {
-  font-size: 1.45rem;
-  font-weight: 700;
-  color: #d9534f;
+    font-size: 1.2rem;
+    padding: 0.3cm;
+    border-bottom: 1px solid #ccc;
 }
 
-/* 詳細資訊 */
-.product-detail {
-  font-size: 0.98rem;
-  color: #374151;
-  line-height: 1.6;
+.product-details {
+    padding: 0.3cm;
+    border-bottom: 1px solid #ccc;
 }
 
-/* 選項區塊（夾在詳細與選購之間，填滿剩餘高度） */
-.product-option {
-  font-size: 1rem;
-  color: #111827;
-  background: #fcfcfd;
-  border-radius: 8px;
-  padding: 10px 12px;
-  overflow: auto;  /* 內容太多時可捲動，但不撐破整體高度 */
-  box-shadow: inset 0 0 0 1px rgba(17,24,39,0.05);
+.product-options {
+    flex: 1; /* 填滿剩餘高度 */
+    padding: 0.3cm;
+    border-bottom: 1px solid #ccc;
 }
 
-/* 選購區塊（固定在最底） */
-.purchase-block {
-  display: flex;
-  flex-wrap: wrap;          /* 螢幕太窄才換行 */
-  gap: 10px 14px;
-  justify-content: center;  /* 平時並排且水平置中 */
-  align-items: center;
-}
-
-/* 選購小區（固定橫向、不換行） */
-.quantity-block {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  white-space: nowrap;   /* 不換行 */
-  min-width: 220px;      /* 給一個基準寬；不夠寬時才會整塊換行到下一排 */
-  justify-content: center;
-  font-size: 0.98rem;
-  color: #374151;
-}
-.qty-btn {
-  background: #eef2ff;
-  border: none;
-  padding: 10px 14px;    /* 大一點好點擊 */
-  cursor: pointer;
-  font-size: 1.1rem;
-  font-weight: 800;
-  border-radius: 8px;
-  transition: transform 0.06s ease;
-}
-.qty-btn:active { transform: scale(0.98); }
-
-/* 夾在加減按鈕間的數量框 → 內容置中 */
-.quantity-input {
-  width: 56px;
-  height: 42px;
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  text-align: center;           /* 置中對齊 */
-  font-size: 1.05rem;
-  font-weight: 700;
-  -moz-appearance: textfield;
-}
-.quantity-input::-webkit-outer-spin-button,
-.quantity-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
-/* 還剩 x 件（字串太長時截斷，不另起新行） */
-.stock-text {
-  max-width: 200px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* 購物車按鈕 */
-.cart-btn {
-  background: #ffb84d;
-  border: none;
-  padding: 10px 18px;
-  cursor: pointer;
-  border-radius: 10px;
-  font-size: 1rem;
-  font-weight: 800;
-  white-space: nowrap;
-  transition: background 0.2s ease, transform 0.06s ease;
-}
-.cart-btn:hover { background: #ffa733; }
-.cart-btn:active { transform: translateY(1px); }
-.cart-btn.active { background: #ff9933; }
-
-/* RWD 微調：窄螢幕時左欄寬度縮小一點 */
-@media (max-width: 860px) {
-  :root { --left-col-w: 220px; }
-}
-@media (max-width: 680px) {
-  :root { --left-col-w: 180px; }
+.product-purchase {
+    padding: 0.3cm;
 }

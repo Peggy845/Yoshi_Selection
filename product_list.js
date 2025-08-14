@@ -3,41 +3,12 @@ function getQueryParam(param) {
   return urlParams.get(param);
 }
 
-// 從 Google Sheet 一次抓所有分頁資料
-async function fetchAllSheets() {
-  const sheetId = '1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo';
-  const baseUrl = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json`;
-
-  try {
-    const res = await fetch(baseUrl);
-    if (!res.ok) throw new Error('無法讀取 Google Sheet 資料');
-
-    const text = await res.text();
-    const json = JSON.parse(text.substring(47, text.length - 2));
-
-    // 處理每個分頁資料
-    const sheetsData = {};
-    json.table.cols.map; // 避免未使用警告
-
-    // 注意：這個方式只能抓第一個工作表，
-    // 要一次抓所有分頁，必須事先知道每個分頁名稱並各自請求
-    // 所以我們改成「批量請求所有已知分頁名稱」
-    return null; // 這裡先暫停，因為 Google Visualization API 沒有一次抓全部分頁的功能
-
-  } catch (err) {
-    console.error('抓取 Google Sheet 錯誤:', err);
-    return {};
-  }
-}
-
-// 從多個分頁名稱批量抓取
 async function fetchMultipleSheets(sheetNames) {
   const sheetId = '1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo';
-
   const allData = {};
 
   for (const name of sheetNames) {
-    if (name === '分類圖片') continue; // 排除
+    if (name === '分類圖片') continue;
     const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(name)}&tqx=out:json`;
 
     try {
@@ -69,21 +40,18 @@ async function loadProducts() {
   const category = getQueryParam('main');
   const subcategory = getQueryParam('sub');
 
-  // 設定標題
   const titleElement = document.getElementById('subcategory-title');
   if (titleElement) {
     titleElement.textContent = subcategory || '商品列表';
   }
 
-  // 先定義你 Google Sheet 裡所有的分頁名稱
-  // 這裡要列出你所有的第一層分類分頁名稱
   const sheetNames = [
     '日本寶可夢',
     '日本三麗鷗',
-	'日本貓福珊迪',
-	'日本親子玩具與母嬰用品',
-	'日本童裝品牌',
-	'進擊的巨人'
+    '日本貓福珊迪',
+    '日本親子玩具與母嬰用品',
+    '日本童裝品牌',
+    '進擊的巨人'
   ];
 
   const allSheetsData = await fetchMultipleSheets(sheetNames);
@@ -104,119 +72,88 @@ async function loadProducts() {
     container.innerHTML = '<p>目前沒有這個分類的商品</p>';
     return;
   }
-  else
-  {
-	  console.log("[Debug] 商品數量:", filtered.length);
-  }
-  
-	filtered.forEach(product => {
-	  const productDiv = document.createElement('div');
-	  productDiv.className = 'product-item';
 
-	  // 1) 組圖：主圖 + 額外圖片（用頓號分隔）
-	  const mainImage = product['商品圖片']
-		? `https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/${product['商品圖片']}`
-		: '';
-	  const extraImages = (product['額外圖片'] && product['額外圖片'] !== '無')
-		? product['額外圖片'].split('、').map(img => `https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/${img}`)
-		: [];
-	  const imgList = [mainImage, ...extraImages].filter(Boolean);
-	  let idx = 0;
+  filtered.forEach(product => {
+    const productDiv = document.createElement('div');
+    productDiv.className = 'product-item';
 
-	  // 2) DOM 結構：左欄（圖片＋狀態）＋ 右欄（名稱→價格→詳細→選項→選購）
-	  productDiv.innerHTML = `
-		<div class="left-col">
-		  <div class="product-image-block">
-			<div class="image-arrow left-arrow" style="${extraImages.length ? '' : 'display:none'}">&#9664;</div>
-			<img src="${imgList[0] || ''}" alt="${product['商品名稱'] || ''}">
-			<div class="image-arrow right-arrow" style="${extraImages.length ? '' : 'display:none'}">&#9654;</div>
-		  </div>
-		  <div class="sale-status-block">狀態: ${product['販售狀態'] || ''}</div>
-		</div>
+    const mainImage = product['商品圖片']
+      ? `https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/${product['商品圖片']}`
+      : '';
+    const extraImages = (product['額外圖片'] && product['額外圖片'] !== '無')
+      ? product['額外圖片'].split('、').map(img => `https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/${img}`)
+      : [];
+    const imgList = [mainImage, ...extraImages].filter(Boolean);
+    let idx = 0;
 
-		<div class="right-col">
-		  <div class="product-name">${product['商品名稱'] || ''}</div>
-		  <div class="product-price">$ ${product['價格'] || ''}</div>
-		  <div class="product-detail">${product['詳細資訊'] || ''}</div>
+    productDiv.innerHTML = `
+      <div class="left-col">
+        <div class="product-image-block">
+          <div class="image-arrow left-arrow" style="${extraImages.length ? '' : 'display:none'}">&#9664;</div>
+          <img src="${imgList[0] || ''}" alt="${product['商品名稱'] || ''}">
+          <div class="image-arrow right-arrow" style="${extraImages.length ? '' : 'display:none'}">&#9654;</div>
+        </div>
+        <div class="sale-status-block">狀態: ${product['販售狀態'] || ''}</div>
+      </div>
 
-		  <!-- 選項區塊（填滿剩餘高度） -->
-		  <div class="product-option">選項</div>
+      <div class="right-col">
+        <div class="product-name">${product['商品名稱'] || ''}</div>
+        <div class="product-price">$ ${product['價格'] || ''}</div>
+        <div class="product-detail">${product['詳細資訊'] || ''}</div>
+        <div class="product-option">選項</div>
+        <div class="purchase-block">
+          <div class="quantity-block">
+            <span>數量</span>
+            <button class="qty-btn" data-type="minus">−</button>
+            <input class="quantity-input" type="number" value="1" min="1" max="${product['庫存'] || 0}" readonly>
+            <button class="qty-btn" data-type="plus">＋</button>
+            <span class="stock-text">還剩 ${product['庫存'] || 0} 件</span>
+          </div>
+          <button class="cart-btn">加入購物車</button>
+        </div>
+      </div>
+    `;
 
-		  <!-- 選購區塊（最底部） -->
-		  <div class="purchase-block">
-			<div class="quantity-block">
-			  <span>數量</span>
-			  <button class="qty-btn" data-type="minus">−</button>
-			  <input class="quantity-input" type="number" value="1" min="1" max="${product['庫存'] || 0}" readonly>
-			  <button class="qty-btn" data-type="plus">＋</button>
-			  <span class="stock-text">還剩 ${product['庫存'] || 0} 件</span>
-			</div>
-			<button class="cart-btn">加入購物車</button>
-		  </div>
-		</div>
-	  `;
+    const imgEl = productDiv.querySelector('.product-image-block img');
+    const leftBtn = productDiv.querySelector('.left-arrow');
+    const rightBtn = productDiv.querySelector('.right-arrow');
 
-	  // 3) 圖片切換
-	  const imgEl = productDiv.querySelector('.product-image-block img');
-	  const leftBtn = productDiv.querySelector('.left-arrow');
-	  const rightBtn = productDiv.querySelector('.right-arrow');
+    leftBtn?.addEventListener('click', () => {
+      if (!imgList.length) return;
+      idx = (idx - 1 + imgList.length) % imgList.length;
+      imgEl.src = imgList[idx];
+    });
+    rightBtn?.addEventListener('click', () => {
+      if (!imgList.length) return;
+      idx = (idx + 1) % imgList.length;
+      imgEl.src = imgList[idx];
+    });
 
-	  leftBtn?.addEventListener('click', () => {
-		if (!imgList.length) return;
-		idx = (idx - 1 + imgList.length) % imgList.length;
-		imgEl.src = imgList[idx];
-	  });
-	  rightBtn?.addEventListener('click', () => {
-		if (!imgList.length) return;
-		idx = (idx + 1) % imgList.length;
-		imgEl.src = imgList[idx];
-	  });
+    productDiv.addEventListener('click', (e) => {
+      const target = e.target;
+      if (target.classList.contains('qty-btn')) {
+        const block = target.closest('.quantity-block');
+        const input = block.querySelector('.quantity-input');
+        const max = parseInt(input.max || '0', 10);
+        let val = parseInt(input.value || '1', 10);
 
-	  // 4) 數量調整（數字限制在 1 ~ 庫存），框內文字置中已在 CSS 完成
-	  productDiv.addEventListener('click', (e) => {
-		const target = e.target;
-		if (target.classList.contains('qty-btn')) {
-		  const block = target.closest('.quantity-block');
-		  const input = block.querySelector('.quantity-input');
-		  const max = parseInt(input.max || '0', 10);
-		  let val = parseInt(input.value || '1', 10);
+        if (target.dataset.type === 'plus') {
+          if (max > 0) val = Math.min(max, val + 1);
+          else val = val + 1;
+        } else if (target.dataset.type === 'minus') {
+          val = Math.max(1, val - 1);
+        }
+        input.value = val;
+      }
 
-		  if (target.dataset.type === 'plus') {
-			if (max > 0) val = Math.min(max, val + 1);
-			else val = val + 1; // 若未填庫存，允許遞增
-		  } else if (target.dataset.type === 'minus') {
-			val = Math.max(1, val - 1);
-		  }
-		  input.value = val;
-		}
+      if (target.classList.contains('cart-btn')) {
+        target.classList.toggle('active');
+        target.textContent = target.classList.contains('active') ? '已加入' : '加入購物車';
+      }
+    });
 
-		if (target.classList.contains('cart-btn')) {
-		  target.classList.toggle('active');
-		  target.textContent = target.classList.contains('active') ? '已加入' : '加入購物車';
-		}
-	  });
-
-	  container.appendChild(productDiv);
-	});
-
+    container.appendChild(productDiv);
+  });
 }
 
 loadProducts();
-
-document.addEventListener('click', function(e) {
-  if (e.target.classList.contains('qty-btn')) {
-    const type = e.target.dataset.type;
-    const input = e.target.parentElement.querySelector('input');
-    let value = parseInt(input.value);
-    const max = parseInt(input.max);
-
-    if (type === 'plus' && value < max) value++;
-    if (type === 'minus' && value > 1) value--;
-    input.value = value;
-  }
-
-  if (e.target.classList.contains('cart-btn')) {
-    e.target.classList.toggle('active');
-    e.target.textContent = e.target.classList.contains('active') ? '已加入' : '加入購物車';
-  }
-});

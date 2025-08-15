@@ -4,13 +4,18 @@
   --base-h: 100vh;
 }
 
+html, body {
+  overflow: scroll; /* 永遠顯示 bar */
+}
+
 /* 全域盒模型 */
 * { box-sizing: border-box; }
 body {
   font-family: "Microsoft JhengHei", Calibri, sans-serif;
   margin: 0;
   padding: 0;
-   overflow: hidden; /* 整頁不顯示滾動條，product-list 提供滾動 */
+  overflow-x: scroll; /* 水平 bar 永遠顯示 */
+  overflow-y: scroll; /* 垂直 bar 永遠顯示 */
 }
 
 .subcategory-title {
@@ -23,10 +28,12 @@ body {
 .product-list {
   width: var(--base-w);
   height: var(--base-h);
-  padding: 0 20px;          /* 舊版有這個內邊距 */
+  padding: 0;       /* 移除左右 padding */
   overflow-x: auto;         /* 內部超出時顯示橫向 & 縱向滾動條 */
   overflow-y: auto;
   background: #f5f5f5;
+  margin: 0 auto;   /* 置中或對齊 */
+  box-sizing: border-box;
 }
 
 
@@ -40,6 +47,7 @@ body {
   align-items: stretch;             /* 左右欄等高 */
   height: calc(var(--base-h) * 0.65); /* 與你原先 65vh 行為一致（使用載入時的視窗高度） */
   width: calc(100% - 40px);         /* 扣掉 product-list 的左右 padding 20px*2 */
+  flex-shrink: 0; /* 禁止縮小 */
 }
 
 .left-col {
@@ -140,3 +148,18 @@ body {
 .sale-status-block { width: 35%; }
 .product-quantity { width: 35%; }
 .product-cart { width: 30%; }
+
+/* 強制顯示並設定樣式 */
+::-webkit-scrollbar {
+  width: 12px;  /* 垂直 bar 寬度 */
+  height: 12px; /* 水平 bar 高度 */
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: rgba(0,0,0,0.4);
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: #f1f1f1;
+}

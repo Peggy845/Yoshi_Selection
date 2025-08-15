@@ -1,8 +1,16 @@
+:root{
+  /* 如果 JS 還沒寫入，先用視窗相對值做 fallback */
+  --base-w: 100vw;
+  --base-h: 100vh;
+}
+
+/* 全域盒模型 */
+* { box-sizing: border-box; }
 body {
   font-family: "Microsoft JhengHei", Calibri, sans-serif;
   margin: 0;
   padding: 0;
-  overflow: auto;
+   overflow: hidden; /* 整頁不顯示滾動條，product-list 提供滾動 */
 }
 
 .subcategory-title {
@@ -11,28 +19,27 @@ body {
   padding: 10px 0;
 }
 
-/* 固定 product-list 尺寸並啟用滾動條 */
+/* 你原先喜歡的樣式，product-list 固定為載入時決定的寬高 (px) */
 .product-list {
-  width: 100vw;
-  height: 100vh;
-  overflow-x: auto;
+  width: var(--base-w);
+  height: var(--base-h);
+  padding: 0 20px;          /* 舊版有這個內邊距 */
+  overflow-x: auto;         /* 內部超出時顯示橫向 & 縱向滾動條 */
   overflow-y: auto;
-  display: flex;
-  flex-wrap: wrap;
-  align-content: flex-start;
   background: #f5f5f5;
 }
 
-/* 單個商品卡片，禁止縮小 */
+
+/* product-item 保持你原先的寬高比與結構
+   但高度改用基於 --base-h 的計算（等同於你原先的 65vh 邏輯） */
 .product-item {
-  flex-shrink: 0;
-  width: 600px;
-  height: 450px;
-  margin: 10px;
-  background: white;
   display: flex;
   gap: 10px;
-  border: 1px solid black;
+  margin-bottom: 20px;
+  background: white;
+  align-items: stretch;             /* 左右欄等高 */
+  height: calc(var(--base-h) * 0.65); /* 與你原先 65vh 行為一致（使用載入時的視窗高度） */
+  width: calc(100% - 40px);         /* 扣掉 product-list 的左右 padding 20px*2 */
 }
 
 .left-col {
@@ -51,7 +58,7 @@ body {
   overflow: hidden; /* 確保圖片不會超出框 */
 }
 
-/* 主圖片正方形框 */
+/* 主圖不被 zoom-in、保持完整顯示 */
 .main-image {
   max-width: 100%;
   max-height: 100%;
@@ -67,6 +74,7 @@ body {
   overflow: hidden; /* 保證不會超出 left-col */
 }
 
+/* 群組包一層，方便等比例放大 */
 .sub-group {
   display: flex;
   align-items: center;
@@ -75,6 +83,7 @@ body {
   transform-origin: center center;
 }
 
+/* 箭頭與子圖尺寸（固定） */
 .sub-arrow {
   width: 28px;
   height: 60px;
@@ -94,6 +103,7 @@ body {
   border: 1px solid black;
 }
 
+/* 右欄 */
 .right-col {
   width: 65%;
   border: 1px solid black;
@@ -110,6 +120,7 @@ body {
   padding: 5px;
 }
 
+/* 原來的 flex 配比，保留 */
 .product-name { flex: 13; }
 .product-price { flex: 9; }
 .product-detail { flex: 20; }

@@ -1,47 +1,174 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>產品列表</title>
-  <link rel="stylesheet" href="product_list.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Product List</title>
+<style>
+/* 整個列表固定尺寸 + 滾動條 */
+.product-list {
+  width: 100vw;
+  height: 100vh;
+  overflow: auto; /* 超出時立即顯示滾動條 */
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  background: #f5f5f5;
+}
+
+/* 單個商品卡片 */
+.product-item {
+  flex-shrink: 0; /* 禁止縮小 */
+  width: 600px;
+  height: 450px;
+  margin: 10px;
+  background: white;
+  display: flex;
+  gap: 10px;
+  border: 1px solid black;
+}
+
+/* 左欄 */
+.left-col {
+  width: 40%;
+  border-right: 1px solid black;
+  display: flex;
+  flex-direction: column;
+}
+
+/* 主圖區域 - 高度比例 70% */
+.product-image-block {
+  flex: 7;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-bottom: 1px solid black;
+  overflow: hidden;
+}
+
+.main-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+/* 子圖區域 - 高度比例 30% */
+.sub-image-block {
+  flex: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+/* 群組包一層，方便縮放 */
+.sub-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  transform-origin: center center;
+}
+
+.sub-arrow {
+  width: 28px;
+  height: 60px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid black;
+  background: #ddd;
+}
+
+.sub-image {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border: 1px solid black;
+}
+
+/* 右欄 */
+.right-col {
+  flex: 1;
+  padding: 10px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.info-block {
+  flex-shrink: 0;
+  height: 100px;
+  border: 1px solid black;
+  background: #fafafa;
+}
+</style>
 </head>
 <body>
 
-  <div class="subcategory-title">子分類名稱</div>
-
-  <div class="product-list">
-    <div class="product-item">
-      <div class="left-col">
-		<div class="product-image-block">
-		  <img src="images/Yoshi_Selection_logo.jpg" alt="主圖片" class="main-image">
-		</div>
-
-		<div class="sub-image-block">
-		  <div class="sub-group">
-			  <div class="sub-arrow">←</div>
-			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片1" class="sub-image">
-			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片2" class="sub-image">
-			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片3" class="sub-image">
-			  <div class="sub-arrow">→</div>
-		  </div>
-		</div>
+<div class="product-list">
+  <div class="product-item">
+    <div class="left-col">
+      <div class="product-image-block">
+        <img src="https://via.placeholder.com/400x400/ff0000/ffffff?text=Main+Image" class="main-image">
       </div>
-
-      <div class="right-col">
-        <div class="product-name">商品名稱</div>
-        <div class="product-price">價格</div>
-        <div class="product-detail">商品細節</div>
-        <div class="product-option">選項區</div>
-        <div class="product-others">
-          <div class="sale-status-block">銷售狀態</div>
-          <div class="product-quantity">數量</div>
-          <div class="product-cart">購物車</div>
+      <div class="sub-image-block">
+        <div class="sub-group">
+          <div class="sub-arrow">←</div>
+          <img src="https://via.placeholder.com/60x60/ff0000/ffffff?text=1" class="sub-image">
+          <img src="https://via.placeholder.com/60x60/00ff00/ffffff?text=2" class="sub-image">
+          <img src="https://via.placeholder.com/60x60/0000ff/ffffff?text=3" class="sub-image">
+          <div class="sub-arrow">→</div>
         </div>
       </div>
     </div>
+    <div class="right-col">
+      <div class="info-block">資訊 1</div>
+      <div class="info-block">資訊 2</div>
+      <div class="info-block">資訊 3</div>
+      <div class="info-block">資訊 4</div>
+    </div>
   </div>
 
-  <script src="product_list.js"></script>
+  <!-- 你可以複製上面這個 product-item 多次測試 scroll -->
+</div>
+
+<script>
+document.addEventListener("DOMContentLoaded", () => {
+  const subBlocks = document.querySelectorAll(".sub-image-block");
+
+  function adjustSubBlocks() {
+    subBlocks.forEach(block => {
+      const group = block.querySelector(".sub-group");
+      const arrows = group.querySelectorAll(".sub-arrow");
+      const images = Array.from(group.querySelectorAll(".sub-image"));
+
+      const blockWidth = block.clientWidth;
+      const arrowW = arrows[0].offsetWidth;
+      const imageW = images[0].offsetWidth;
+
+      let imgCount = 3;
+      while (imgCount > 0 && (arrowW * 2 + imageW * imgCount) > blockWidth) {
+        imgCount--;
+      }
+
+      images.forEach((img, i) => {
+        img.style.display = i < imgCount ? "flex" : "none";
+      });
+
+      const groupWidth = arrowW * 2 + imageW * imgCount;
+      const scale = blockWidth / groupWidth;
+      group.style.transform = `scale(${scale})`;
+    });
+  }
+
+  adjustSubBlocks();
+  window.addEventListener("resize", adjustSubBlocks);
+});
+</script>
+
 </body>
 </html>

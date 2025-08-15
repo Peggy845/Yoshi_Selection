@@ -42,7 +42,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .product-list {
   width: var(--base-w);
   height: var(--base-h);
-  gap: 20px;  /* 子元素的間距 */
   padding: 0 20px; /* 你要的美觀間距，所有 item 因此自然對齊 */
   background: #f5f5f5;
   margin: 0 auto;   /* 置中或對齊 */
@@ -79,89 +78,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   border: 1px solid black;
   overflow: hidden; /* 確保圖片不會超出框 */
 }
-
-/* 主圖不被 zoom-in、保持完整顯示 */
-.main-image {
-  max-width: 100%;
-  max-height: 100%;
-  object-fit: contain; /* 確保完整顯示圖片 */
-}
-
-.sub-image-block {
-  flex: 3; /* 高度比例 30% */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid black;
-  overflow: hidden; /* 保證不會超出 left-col */
-}
-
-/* 群組包一層，方便等比例放大 */
-.sub-group {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px; /* 箭頭與圖片間隔 */
-  transform-origin: center center;
-}
-
-/* 箭頭與子圖尺寸（固定） */
-.sub-arrow {
-  width: 28px;
-  height: 60px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid black;
-  background: #ddd;
-}
-
-.sub-image {
-  width: 60px;
-  height: 60px;
-  flex-shrink: 0;
-  object-fit: cover;
-  border: 1px solid black;
-}
-
-/* 右欄 */
-.right-col {
-  width: 65%;
-  border: 1px solid black;
-  display: flex;
-  flex-direction: column;
-}
-
-.product-name,
-.product-price,
-.product-detail,
-.product-option,
-.product-others {
-  border: 1px solid black;
-  padding: 5px;
-}
-
-/* 原來的 flex 配比，保留 */
-.product-name { flex: 13; }
-.product-price { flex: 9; }
-.product-detail { flex: 20; }
-.product-option { flex: 47; }
-.product-others {
-  flex: 11;
-  display: flex;
-}
-
-.sale-status-block, .product-quantity, .product-cart {
-  border: 1px solid black;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.sale-status-block { width: 35%; }
-.product-quantity { width: 35%; }
-.product-cart { width: 30%; }
 
 .product-image-block img {
   width: 100%;
@@ -248,3 +164,80 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   position: absolute;
   transform-origin: top left;
 }
+
+.sub-image-block {
+  flex: 3; /* 高度比例 30% */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid black;
+  overflow: hidden; /* 保證不會超出 left-col */
+}
+
+/* 群組包一層，方便等比例放大 */
+.sub-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px; /* 箭頭與圖片間隔 */
+  transform-origin: center center;
+}
+
+/* 箭頭與子圖尺寸（固定） */
+.sub-arrow {
+  width: 28px;
+  height: 60px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid black;
+  background: #ddd;
+}
+
+.sub-image {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+  object-fit: cover;
+  border: 1px solid black;
+}
+
+/* 右欄 */
+.right-col {
+  width: 65%;
+  border: 1px solid black;
+  display: flex;
+  flex-direction: column;
+}
+
+.product-name,
+.product-price,
+.product-detail,
+.product-option,
+.product-others {
+  border: 1px solid black;
+  padding: 5px;
+}
+
+/* 原來的 flex 配比，保留 */
+.product-name { flex: 13; }
+.product-price { flex: 9; }
+.product-detail { flex: 20; }
+.product-option { flex: 47; }
+.product-others {
+  flex: 11;
+  display: flex;
+}
+
+.sale-status-block, .product-quantity, .product-cart {
+  border: 1px solid black;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.sale-status-block { width: 35%; }
+.product-quantity { width: 35%; }
+.product-cart { width: 30%; }
+

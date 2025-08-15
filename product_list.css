@@ -172,59 +172,72 @@ body {
 .product-cart   { flex: 0 0 10%; display: flex; align-items: center; }
 
 /* 選項每一行 */
+/* 每組選項的外框＆排版（讓高度更可控） */
 .option-group {
-  display: flex;
+  display: inline-flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap; /* 空間不夠可換行，但區塊本身高度固定於 product-option 內捲動 */
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  background: #fafafa;
+  max-width: 100%;
 }
+
 .option-title {
   font-weight: 700;
   min-width: 56px;
   color: #333;
 }
+/* 標籤 */
 .option-label {
-  font-weight: bold;
+  font-weight: 600;
   margin-right: 6px;
-  min-width: 50px;
+  white-space: nowrap;
 }
 .option-buttons {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
+/* 選項按鈕美化（單選感） */
 .option-btn {
-  padding: 4px 10px;
-  margin: 2px;
-  border: 1px solid #aaa;
-  border-radius: 4px;
-  background-color: white;
+  padding: 6px 12px;
+  border: 1px solid #ddd;
+  background: #fff;
+  border-radius: 999px;
   cursor: pointer;
-  transition: all 0.2s;
-  border-radius: 4px;
+  transition: background .2s, border-color .2s, box-shadow .2s, color .2s;
+  white-space: nowrap;
 }
 
 .option-btn.active {
-  background-color: #007BFF;
-  color: white;
-  border-color: #0056b3;
+  background: #ffe3c1;
+  border-color: #ff9f3f;
+  box-shadow: 0 0 0 2px rgba(255,159,63,.15) inset;
+  color: #a45500;
 }
 
 .option-btn.disabled {
-  opacity: 0.4;
+  opacity: .45;
   cursor: not-allowed;
+  text-decoration: line-through;
 }
 
-.option-btn:hover { border-color: #bbb; }
+.option-btn:hover { border-color: #ffb56b; }
 .option-btn.selected {
   background: #222;
   color: #fff;
   border-color: #222;
 }
 
+/* 併排一列用的容器 */
 .option-row-combined {
   display: flex;
-  gap: 12px;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 8px;
 }
 
 /* 數量小區 */
@@ -271,12 +284,13 @@ body {
 .cart-btn:active { transform: scale(0.98); }
 .cart-btn.active { background-color: #ff7f00; }
 
-
-/* 任意位置加 */
+/* 讓選項容器一定可捲動，避免被下一區塊「視覺覆蓋」 */
 .product-option {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow: auto !important;
+  position: relative;
 }
 
 .option-row {

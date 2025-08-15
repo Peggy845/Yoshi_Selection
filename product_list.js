@@ -307,9 +307,12 @@ function initMagnifier(productDiv, state) {
   });
 }
 
+// 計算「這個選項群組」總長度（用來找最短的那個）
 function getOptionTotalLength(key, variants) {
   const values = collectOptionValues(variants, [key])[key] || [];
-  return key.replace(/^選項-/, '').length + values.reduce((sum, v) => sum + v.length, 0);
+  // Label 不要含「選項-」
+  const labelLen = key.replace(/^選項-/, '').length;
+  return labelLen + values.reduce((sum, v) => sum + (v ? v.length : 0), 0);
 }
 
 function mergeTwoOptions(keys, shortestKey) {
@@ -321,13 +324,14 @@ function mergeTwoOptions(keys, shortestKey) {
   }
 }
 
+// 美化版渲染單一群組（保留你原本邏輯 + class）
 function renderOptionGroupHTML(labelName, key, values, state) {
   const group = document.createElement('div');
   group.className = 'option-group';
 
   const label = document.createElement('span');
   label.className = 'option-label';
-  label.textContent = labelName;
+  label.textContent = labelName; // 已去掉「選項-」
   group.appendChild(label);
 
   values.forEach((value, i) => {
@@ -335,9 +339,12 @@ function renderOptionGroupHTML(labelName, key, values, state) {
     btn.type = 'button';
     btn.textContent = value;
     btn.className = 'option-btn';
+
+    // 預設選第一個
     if (!state.selection[key] && i === 0) state.selection[key] = value;
     if (state.selection[key] === value) btn.classList.add('active');
 
+    // 點擊後單選 + 觸發禁用/可選更新
     btn.addEventListener('click', () => {
       if (btn.classList.contains('disabled')) return;
       group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
@@ -352,8 +359,84 @@ function renderOptionGroupHTML(labelName, key, values, state) {
   return group;
 }
 
+// 依照「順序描述」(單鍵或成對陣列) 重新渲染整個選項區
+function renderOptionOrder(optionWrap, order, state) {
+  optionWrap.innerHTML = '';
+  order.forEach(entry => {
+    if (Array.isArray(entry)) {
+      // 併排一列
+      const row = document.createElement('div');
+      row.className = 'option-row-combined';
+      entry.forEach(k => {
+        const cleanName = k.replace(/^選項-/, '');
+        const values = collectOptionValues(state.variants, [k])[k] || [];
+        if (!state.selection[k] && values.length) state.selection[k] = values[0];
+        row.appendChild(renderOptionGroupHTML(cleanName, k, values, state));
+      });
+      optionWrap.appendChild(row);
+    } else {
+      // 單列一群組
+      const cleanName = entry.replace(/^選項-/, '');
+      const values = collectOptionValues(state.variants, [entry])[entry] || [];
+      if (!state.selection[entry] && values.length) state.selection[entry] = values[0];
+      optionWrap.appendChild(renderOptionGroupHTML(cleanName, entry, values, state));
+    }
+  });
+}
+
+// 把「目前順序」裡最短的單獨群組，與一個鄰近的單獨群組合併成一列
+function combineShortestOnce(order, variants) {
+  // 找出所有「單獨」群組的 key
+  const singles = order
+    .map((e, idx) => (!Array.isArray(e) ? { key: e, idx } : null))
+    .filter(Boolean);
+
+  if (singles.length <= 1) return null;
+
+  // 找最短的
+  let shortest = singles[0];
+  let shortestLen = getOptionTotalLength(shortest.key, variants);
+  singles.forEach(s => {
+    const len = getOptionTotalLength(s.key, variants);
+    if (len < shortestLen) {
+      shortest = s;
+      shortestLen = len;
+    }
+  });
+
+  // 盡量跟「下一個」單獨群組合併，沒有就找前一個；再沒有就找清單中任一個
+  const targetIdx = shortest.idx;
+  const tryNeighbors = [
+    // 往右找下一個「單獨」項
+    singles.find(s => s.idx > targetIdx),
+    // 往左找上一個「單獨」項
+    [...singles].reverse().find(s => s.idx < targetIdx)
+  ].filter(Boolean);
+
+  const partner = tryNeighbors[0] || singles.find(s => s.idx !== targetIdx);
+  if (!partner) return null;
+
+  // 建立新順序：把兩者換成一個 pair
+  const newOrder = [];
+  for (let i = 0; i < order.length; i++) {
+    if (i === shortest.idx || i === partner.idx) {
+      // 跳過，等會一次塞 pair
+      continue;
+    }
+    newOrder.push(order[i]);
+  }
+  const pair = shortest.idx < partner.idx ? [shortest.key, partner.key] : [partner.key, shortest.key];
+
+  // 將 pair 插回「最前面被移除兩者的較小 index」位置
+  const insertAt = Math.min(shortest.idx, partner.idx);
+  newOrder.splice(insertAt, 0, pair);
+  return newOrder;
+}
+
+// 依現有 selection，禁用不可能的組合
 function updateOptionAvailability(state, container) {
   const currentSelection = { ...state.selection };
+
   container.querySelectorAll('.option-group').forEach(group => {
     const keyLabel = group.querySelector('.option-label').textContent;
     const fullKey = state.optionKeys.find(k => k.replace(/^選項-/, '') === keyLabel);
@@ -370,9 +453,12 @@ function updateOptionAvailability(state, container) {
 }
 
 
+
+// **重點：初始化 + 超高時動態「併排壓縮」直到高度 <= 容器**
 function initOptionSelection(productDiv, state) {
   const optionWrap = productDiv.querySelector('.product-option');
 
+  // 1) 過濾掉只有一種值的選項
   const filteredKeys = state.optionKeys.filter(key => {
     const values = collectOptionValues(state.variants, [key])[key] || [];
     return values.length > 1;
@@ -390,45 +476,37 @@ function initOptionSelection(productDiv, state) {
     if (!state.selection[key]) state.selection[key] = values[0];
     optionWrap.appendChild(renderOptionGroupHTML(cleanName, key, values, state));
   });
+  
+  // 2) 先用原順序渲染
+  let order = filteredKeys.slice();
+  renderOptionOrder(optionWrap, order, state);
+  updateOptionAvailability(state, optionWrap);
 
-  const allowedHeight = 120;
-  if (optionWrap.scrollHeight > allowedHeight && filteredKeys.length > 1) {
-    let shortestKey = filteredKeys[0];
-    let shortestLen = getOptionTotalLength(shortestKey, state.variants);
-    filteredKeys.forEach(key => {
-      const len = getOptionTotalLength(key, state.variants);
-      if (len < shortestLen) {
-        shortestKey = key;
-        shortestLen = len;
-      }
-    });
+  // 3) 依容器實際高度判斷是否需要「壓縮併排」
+  //    注意：allowedHeight 直接抓容器固定高度（flex-basis 的 35%）
+  const measure = () => ({
+    allowed: optionWrap.clientHeight,
+    content: optionWrap.scrollHeight
+  });
 
-    const reordered = mergeTwoOptions(filteredKeys, shortestKey);
-    optionWrap.innerHTML = '';
-    reordered.forEach(entry => {
-      if (Array.isArray(entry)) {
-        const combinedRow = document.createElement('div');
-        combinedRow.className = 'option-row-combined';
-        combinedRow.style.display = 'flex';
-        combinedRow.style.gap = '8px';
-        combinedRow.style.flexWrap = 'nowrap';
-        entry.forEach(k => {
-          const cleanName = k.replace(/^選項-/, '');
-          const values = collectOptionValues(state.variants, [k])[k] || [];
-          if (!state.selection[k]) state.selection[k] = values[0];
-          combinedRow.appendChild(renderOptionGroupHTML(cleanName, k, values, state));
-        });
-        optionWrap.appendChild(combinedRow);
-      } else {
-        const cleanName = entry.replace(/^選項-/, '');
-        const values = collectOptionValues(state.variants, [entry])[entry] || [];
-        if (!state.selection[entry]) state.selection[entry] = values[0];
-        optionWrap.appendChild(renderOptionGroupHTML(cleanName, entry, values, state));
-      }
-    });
+  let { allowed, content } = measure();
+  console.log('[Options] 初始高度:', { allowed, content, order });
+
+  // 若超高，持續「把最短的跟另一個合併」→ 重渲染 → 再量高度
+  let safety = 0;
+  while (content > allowed && safety < 10) {
+    const next = combineShortestOnce(order, state.variants);
+    if (!next) break; // 不能再合併了
+    order = next;
+    renderOptionOrder(optionWrap, order, state);
+    updateOptionAvailability(state, optionWrap);
+    ({ allowed, content } = measure());
+    console.log(`[Options] 壓縮第 ${safety + 1} 次:`, { allowed, content, order });
+    safety++;
   }
 
-  updateOptionAvailability(state, optionWrap);
+  // 即使仍然超高，也不會「覆蓋」下面區塊，因為 product-option 有 overflow:auto
+  // 使用者可以捲動檢視全部選項
 }
 
 

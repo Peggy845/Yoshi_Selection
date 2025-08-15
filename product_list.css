@@ -19,10 +19,9 @@ body {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   background: white;
-  height: 65vh;
-  align-items: stretch; /* 讓左右欄等高 */
+  height: 65vh; /* 整個卡片的高度 */
+  align-items: stretch; /* 左右欄等高 */
 }
 
 .left-col {
@@ -33,7 +32,7 @@ body {
 }
 
 .product-image-block {
-  flex: 7;
+  flex: 7; /* 高度比例 70% */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -49,14 +48,20 @@ body {
 }
 
 .sub-image-block {
-  flex: 3;
+  flex: 3; /* 高度比例 30% */
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
   border: 1px solid black;
-  padding: 4px;
-  overflow: hidden; /* 防止超出 left-col */
+  overflow: hidden; /* 保證不會超出 left-col */
+}
+
+.sub-group {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px; /* 箭頭與圖片間隔 */
+  transform-origin: center center;
 }
 
 .sub-arrow {

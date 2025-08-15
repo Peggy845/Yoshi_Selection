@@ -309,20 +309,15 @@ function initMagnifier(productDiv, state) {
 
 function getOptionTotalLength(key, variants) {
   const values = collectOptionValues(variants, [key])[key] || [];
-  const totalLength = key.length + values.reduce((sum, v) => sum + v.length, 0);
-  return totalLength;
+  return key.replace(/^選項-/, '').length + values.reduce((sum, v) => sum + v.length, 0);
 }
 
 function mergeTwoOptions(keys, shortestKey) {
   const idx = keys.indexOf(shortestKey);
   if (idx < keys.length - 1) {
-    // 跟下一個併排
-    const combined = [shortestKey, keys[idx + 1]];
-    return [...keys.slice(0, idx), combined, ...keys.slice(idx + 2)];
+    return [...keys.slice(0, idx), [shortestKey, keys[idx + 1]], ...keys.slice(idx + 2)];
   } else {
-    // 如果是最後一個，就跟前一個併排
-    const combined = [keys[idx - 1], shortestKey];
-    return [...keys.slice(0, idx - 1), combined];
+    return [...keys.slice(0, idx - 1), [keys[idx - 1], shortestKey]];
   }
 }
 
@@ -335,28 +330,22 @@ function renderOptionGroupHTML(labelName, key, values, state) {
   label.textContent = labelName;
   group.appendChild(label);
 
-  values.forEach(value => {
+  values.forEach((value, i) => {
     const btn = document.createElement('button');
     btn.type = 'button';
     btn.textContent = value;
     btn.className = 'option-btn';
-    if (state.selection[key] === value) {
-      btn.classList.add('active');
-    }
+    if (!state.selection[key] && i === 0) state.selection[key] = value;
+    if (state.selection[key] === value) btn.classList.add('active');
+
     btn.addEventListener('click', () => {
       if (btn.classList.contains('disabled')) return;
-
-      // 單選切換
-      const siblings = group.querySelectorAll('.option-btn');
-      siblings.forEach(b => b.classList.remove('active'));
+      group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('active'));
       btn.classList.add('active');
-
-      // 更新狀態
       state.selection[key] = value;
-
-      // 聯動更新
-      updateOptionAvailability(state, group.parentElement.parentElement);
+      updateOptionAvailability(state, group.closest('.product-option'));
     });
+
     group.appendChild(btn);
   });
 
@@ -365,7 +354,6 @@ function renderOptionGroupHTML(labelName, key, values, state) {
 
 function updateOptionAvailability(state, container) {
   const currentSelection = { ...state.selection };
-
   container.querySelectorAll('.option-group').forEach(group => {
     const keyLabel = group.querySelector('.option-label').textContent;
     const fullKey = state.optionKeys.find(k => k.replace(/^選項-/, '') === keyLabel);
@@ -373,20 +361,18 @@ function updateOptionAvailability(state, container) {
 
     btns.forEach(btn => {
       const testSelection = { ...currentSelection, [fullKey]: btn.textContent };
-      const isValid = state.variants.some(v => {
-        return Object.keys(testSelection).every(k => {
-          return !testSelection[k] || v[k] === testSelection[k];
-        });
-      });
+      const isValid = state.variants.some(v =>
+        Object.keys(testSelection).every(k => !testSelection[k] || v[k] === testSelection[k])
+      );
       btn.classList.toggle('disabled', !isValid);
     });
   });
 }
 
+
 function initOptionSelection(productDiv, state) {
   const optionWrap = productDiv.querySelector('.product-option');
 
-  // 1. 過濾掉只有一種值的選項，並去掉 "選項-" 前綴
   const filteredKeys = state.optionKeys.filter(key => {
     const values = collectOptionValues(state.variants, [key])[key] || [];
     return values.length > 1;
@@ -397,24 +383,18 @@ function initOptionSelection(productDiv, state) {
     return;
   }
 
-  // 2. 測試高度（先渲染一次）
   optionWrap.innerHTML = '';
   filteredKeys.forEach(key => {
     const cleanName = key.replace(/^選項-/, '');
     const values = collectOptionValues(state.variants, [key])[key] || [];
-    if (!state.selection[key]) state.selection[key] = values[0]; // 預設選第一個
-    const group = renderOptionGroupHTML(cleanName, key, values, state);
-    optionWrap.appendChild(group);
+    if (!state.selection[key]) state.selection[key] = values[0];
+    optionWrap.appendChild(renderOptionGroupHTML(cleanName, key, values, state));
   });
 
-  const maxHeight = optionWrap.clientHeight;
   const allowedHeight = 120;
-
-  if (maxHeight > allowedHeight && filteredKeys.length > 1) {
-    // 找最短的選項
+  if (optionWrap.scrollHeight > allowedHeight && filteredKeys.length > 1) {
     let shortestKey = filteredKeys[0];
     let shortestLen = getOptionTotalLength(shortestKey, state.variants);
-
     filteredKeys.forEach(key => {
       const len = getOptionTotalLength(key, state.variants);
       if (len < shortestLen) {
@@ -423,19 +403,20 @@ function initOptionSelection(productDiv, state) {
       }
     });
 
-    // 重新排版，把最短Key和下一個Key合併顯示
     const reordered = mergeTwoOptions(filteredKeys, shortestKey);
     optionWrap.innerHTML = '';
     reordered.forEach(entry => {
       if (Array.isArray(entry)) {
         const combinedRow = document.createElement('div');
         combinedRow.className = 'option-row-combined';
+        combinedRow.style.display = 'flex';
+        combinedRow.style.gap = '8px';
+        combinedRow.style.flexWrap = 'nowrap';
         entry.forEach(k => {
           const cleanName = k.replace(/^選項-/, '');
           const values = collectOptionValues(state.variants, [k])[k] || [];
           if (!state.selection[k]) state.selection[k] = values[0];
-          const group = renderOptionGroupHTML(cleanName, k, values, state);
-          combinedRow.appendChild(group);
+          combinedRow.appendChild(renderOptionGroupHTML(cleanName, k, values, state));
         });
         optionWrap.appendChild(combinedRow);
       } else {
@@ -447,7 +428,6 @@ function initOptionSelection(productDiv, state) {
     });
   }
 
-  // 3. 初始化禁用狀態
   updateOptionAvailability(state, optionWrap);
 }
 

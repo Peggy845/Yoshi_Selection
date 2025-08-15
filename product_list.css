@@ -2,7 +2,7 @@ body {
   font-family: "Microsoft JhengHei", Calibri, sans-serif;
   margin: 0;
   padding: 0;
-  overflow: auto; /* 保證可滾動 */
+  overflow: auto;
 }
 
 .subcategory-title {
@@ -12,7 +12,7 @@ body {
 }
 
 .product-list {
-  padding: 0 20px; /* 左右相等的 padding */
+  padding: 0 20px;
 }
 
 .product-item {
@@ -21,6 +21,8 @@ body {
   margin-bottom: 20px;
   box-shadow: 0 2px 5px rgba(0,0,0,0.1);
   background: white;
+  height: 65vh; /* 佔視窗高度的 65% */
+  overflow-x: auto; /* 視窗太窄時出現左右滾動條 */
 }
 
 .left-col {
@@ -31,43 +33,51 @@ body {
 }
 
 .product-image-block {
-  height: 70%;
-  border: 1px solid black;
+  flex: 7; /* 上面 70% */
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 8px; /* 主圖片與框距離 */
+  border: 1px solid black;
 }
 
-.product-image-block img {
-  width: 90%;
-  height: 90%;
+/* 主圖片正方形框 */
+.main-image {
+  width: 100%;
+  aspect-ratio: 1 / 1; /* 保持正方形比例 */
   border: 1px solid black;
-  object-fit: cover;
+  object-fit: cover; /* 填滿正方形框，超出部分裁切 */
 }
 
 .sub-image-block {
-  height: 30%;
-  border: 1px solid black;
-  display: flex;
-  align-items: center;
-  justify-content: space-around;
-}
-
-.sub-image, .sub-arrow {
-  border: 1px solid black;
+  flex: 3; /* 下面 30% */
   display: flex;
   align-items: center;
   justify-content: center;
+  gap: 6px; /* 間隔統一設定 */
+  border: 1px solid black;
+  padding: 4px;
 }
 
+.sub-arrow,
 .sub-image {
-  width: 50px;
-  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid black;
 }
 
 .sub-arrow {
-  width: 20px;
-  height: 50px;
+  width: 28px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.sub-image {
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+  object-fit: cover;
 }
 
 .right-col {
@@ -86,12 +96,12 @@ body {
   padding: 5px;
 }
 
-.product-name { height: 13%; }
-.product-price { height: 9%; }
-.product-detail { height: 20%; }
-.product-option { height: 47%; }
+.product-name { flex: 13; }
+.product-price { flex: 9; }
+.product-detail { flex: 20; }
+.product-option { flex: 47; }
 .product-others {
-  height: 11%;
+  flex: 11;
   display: flex;
 }
 

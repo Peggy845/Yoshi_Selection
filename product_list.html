@@ -1,79 +1,14 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>產品列表</title>
-  <link rel="stylesheet" href="product_list.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>商品列表</title>
+  <link rel="stylesheet" href="product_list.css"/>
 </head>
 <body>
-
-  <div class="subcategory-title">子分類名稱</div>
-
-  <!-- 只有一個最大的 product-list，scrollbar 由瀏覽器提供 -->
-  <div class="product-list">
-    <div class="product-item">
-      <div class="left-col">
-		<div class="product-image-block">
-		  <img src="images/Yoshi_Selection_logo.jpg" alt="主圖片" class="main-image">
-		</div>
-
-		<div class="sub-image-block">
-		  <div class="sub-group">
-			  <div class="sub-arrow">←</div>
-			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片1" class="sub-image">
-			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片2" class="sub-image">
-			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片3" class="sub-image">
-			  <div class="sub-arrow">→</div>
-		  </div>
-		</div>
-      </div>
-
-      <div class="right-col">
-        <div class="product-name">商品名稱</div>
-        <div class="product-price">價格</div>
-        <div class="product-detail">商品細節</div>
-        <div class="product-option">選項區</div>
-        <div class="product-others">
-          <div class="sale-status-block">銷售狀態</div>
-          <div class="product-quantity">數量</div>
-          <div class="product-cart">購物車</div>
-        </div>
-      </div>
-    </div>
-	<!-- 複製多個 item 以測試上下捲動 -->
-
-    <div class="product-item">
-      <div class="left-col">
-		<div class="product-image-block">
-		  <img src="images/Yoshi_Selection_logo.jpg" alt="主圖片" class="main-image">
-		</div>
-
-		<div class="sub-image-block">
-		  <div class="sub-group">
-			  <div class="sub-arrow">←</div>
-			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片1" class="sub-image">
-			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片2" class="sub-image">
-			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片3" class="sub-image">
-			  <div class="sub-arrow">→</div>
-		  </div>
-		</div>
-      </div>
-
-      <div class="right-col">
-        <div class="product-name">商品名稱</div>
-        <div class="product-price">價格</div>
-        <div class="product-detail">商品細節</div>
-        <div class="product-option">選項區</div>
-        <div class="product-others">
-          <div class="sale-status-block">銷售狀態</div>
-          <div class="product-quantity">數量</div>
-          <div class="product-cart">購物車</div>
-        </div>
-      </div>
-    </div>
-  </div>
-
+  <h2 id="subcategory-title">商品列表</h2>
+  <div id="product-list" class="product-list"></div>
   <script src="product_list.js"></script>
 </body>
 </html>

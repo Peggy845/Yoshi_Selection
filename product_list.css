@@ -241,3 +241,80 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .product-quantity { width: 35%; }
 .product-cart { width: 30%; }
 
+/* 選項每一行 */
+.option-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap; /* 空間不夠可換行，但區塊本身高度固定於 product-option 內捲動 */
+}
+.option-title {
+  font-weight: 700;
+  min-width: 56px;
+  color: #333;
+}
+.option-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.option-btn {
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all .15s ease;
+  user-select: none;
+}
+.option-btn:hover { border-color: #bbb; }
+.option-btn.selected {
+  background: #222;
+  color: #fff;
+  border-color: #222;
+}
+
+/* 數量小區 */
+.quantity-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.qty-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.quantity-input {
+  width: 56px;
+  height: 34px;
+  text-align: center;      /* 置中顯示數字 */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+}
+.stock-text { margin-left: 8px; color: #666; }
+
+/* 購物車按鈕 */
+.cart-btn {
+  padding: 10px 20px;
+  background-color: #ffa64d;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 800;
+  border-radius: 10px;
+  transition: background-color .15s ease, transform .05s ease;
+}
+.cart-btn:hover { background-color: #ff9600; }
+.cart-btn:active { transform: scale(0.98); }
+.cart-btn.active { background-color: #ff7f00; }

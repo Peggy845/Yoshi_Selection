@@ -1,23 +1,36 @@
 document.addEventListener("DOMContentLoaded", () => {
-  const subImageBlocks = document.querySelectorAll(".sub-image-block");
+  const subBlocks = document.querySelectorAll(".sub-image-block");
 
-  function adjustSubImages() {
-    subImageBlocks.forEach(block => {
-      const images = block.querySelectorAll(".sub-image");
+  function adjustSubBlocks() {
+    subBlocks.forEach(block => {
       const arrows = block.querySelectorAll(".sub-arrow");
-      const blockWidth = block.clientWidth;
-      const arrowWidth = arrows[0].offsetWidth + arrows[1].offsetWidth;
-      const availableWidth = blockWidth - arrowWidth;
-      const imageWidth = images[0].offsetWidth;
-      const maxImages = Math.floor(availableWidth / imageWidth);
+      const images = Array.from(block.querySelectorAll(".sub-image"));
 
-      // 顯示對應數量
-      images.forEach((img, index) => {
-        img.style.display = index < maxImages ? "flex" : "none";
+      const blockWidth = block.clientWidth;
+      const arrowW = arrows[0].offsetWidth;
+      const imageW = images[0].offsetWidth;
+
+      // 嘗試從 3 張開始往下減
+      let imgCount = 3;
+      while (imgCount > 0 && (arrowW * 2 + imageW * imgCount) > blockWidth) {
+        imgCount--;
+      }
+
+      // 顯示需要的圖片數量
+      images.forEach((img, i) => {
+        img.style.display = i < imgCount ? "flex" : "none";
       });
+
+      // 計算總寬與縮放比例
+      const groupWidth = arrowW * 2 + imageW * imgCount;
+      const scale = blockWidth / groupWidth;
+
+      // 套用等比例縮放
+      block.style.transform = `scale(${scale})`;
+      block.style.transformOrigin = "center center";
     });
   }
 
-  adjustSubImages();
-  window.addEventListener("resize", adjustSubImages);
+  adjustSubBlocks();
+  window.addEventListener("resize", adjustSubBlocks);
 });

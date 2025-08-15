@@ -49,6 +49,7 @@ function groupByProductName(rows) {
   return map; // Map(name -> [row,row,...])
 }
 
+
 /** 取得選項欄位清單（以 選項- 開頭且至少某一列不為空） */
 function extractOptionKeys(variants) {
   const keys = new Set();
@@ -221,7 +222,15 @@ function generateProductHTML(productName, variant, imgList) {
           </svg>
         </div>
       </div>
-      <div class="sale-status-block">狀態: ${variant['販售狀態'] || ''}</div>
+      <div class="sub-image-block">
+	    <div class="sub-group">
+		  <div class="sub-arrow">←</div>
+		  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片1" class="sub-image">
+		  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片2" class="sub-image">
+		  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片3" class="sub-image">
+		  <div class="sub-arrow">→</div>
+	    </div>
+	  </div>
     </div>
 
     <div class="right-col">
@@ -229,6 +238,22 @@ function generateProductHTML(productName, variant, imgList) {
       <div class="product-price">$ ${variant['價格'] || ''}</div>
       <div class="product-detail">${variant['詳細資訊'] || ''}</div>
       <div class="product-option"></div>
+      <div class="product-others">
+          <div class="sale-status-block">狀態: ${variant['販售狀態'] || ''}</div>
+          <div class="product-quantity">
+	        <div class="quantity-block">
+	          <span>數量</span>
+	          <button class="qty-btn" data-type="minus" type="button">−</button>
+	          <input class="quantity-input" type="number" value="1" min="1" max="${variant['庫存'] || 0}" readonly>
+	          <button class="qty-btn" data-type="plus" type="button">＋</button>
+	          <span class="stock-text">還剩 ${variant['庫存'] || 0} 件</span>
+	        </div>
+	      </div>
+          <div class="product-cart">
+	        <button class="cart-btn" type="button">加入購物車</button>
+	      </div>
+      </div>
+      
       <div class="product-quantity">
         <div class="quantity-block">
           <span>數量</span>
@@ -307,25 +332,6 @@ function initMagnifier(productDiv, state) {
   });
 }
 
-function getOptionTotalLength(key, variants) {
-  const values = collectOptionValues(variants, [key])[key] || [];
-  const totalLength = key.length + values.reduce((sum, v) => sum + v.length, 0);
-  return totalLength;
-}
-
-function mergeTwoOptions(keys, shortestKey) {
-  const idx = keys.indexOf(shortestKey);
-  if (idx < keys.length - 1) {
-    // 跟下一個併排
-    const combined = [shortestKey, keys[idx + 1]];
-    return [...keys.slice(0, idx), combined, ...keys.slice(idx + 2)];
-  } else {
-    // 如果是最後一個，就跟前一個併排
-    const combined = [keys[idx - 1], shortestKey];
-    return [...keys.slice(0, idx - 1), combined];
-  }
-}
-
 function renderOptionGroupHTML(optionName, values, selectedValue) {
   const group = document.createElement('div');
   group.className = 'option-group';
@@ -365,44 +371,6 @@ function initOptionSelection(productDiv, state) {
     const group = renderOptionGroupHTML(key, collectOptionValues(state.variants, [key])[key], state.selection[key]);
     optionWrap.appendChild(group);
   });
-
-  const maxHeight = optionWrap.clientHeight;
-  const allowedHeight = 120; // 假設容器允許的高度(px)
-
-  if (maxHeight > allowedHeight && filteredKeys.length > 1) {
-    // 找最短的選項
-    let shortestKey = filteredKeys[0];
-    let shortestLen = getOptionTotalLength(shortestKey, state.variants);
-
-    filteredKeys.forEach(key => {
-      const len = getOptionTotalLength(key, state.variants);
-      if (len < shortestLen) {
-        shortestKey = key;
-        shortestLen = len;
-      }
-    });
-
-    // 重新排版，把最短Key和下一個Key合併顯示
-    const reordered = mergeTwoOptions(filteredKeys, shortestKey);
-    optionWrap.innerHTML = '';
-    reordered.forEach(entry => {
-      if (Array.isArray(entry)) {
-        // 併排
-        const combinedRow = document.createElement('div');
-        combinedRow.className = 'option-row-combined';
-        entry.forEach(k => {
-          const group = renderOptionGroupHTML(k, collectOptionValues(state.variants, [k])[k], state.selection[k]);
-          combinedRow.appendChild(group);
-        });
-        optionWrap.appendChild(combinedRow);
-      } else {
-        // 單列
-        optionWrap.appendChild(
-          renderOptionGroupHTML(entry, collectOptionValues(state.variants, [entry])[entry], state.selection[entry])
-        );
-      }
-    });
-  }
 }
 
 function initQuantityAndCart(productDiv) {
@@ -425,7 +393,6 @@ function initQuantityAndCart(productDiv) {
     }
   });
 }
-
 
 async function loadProducts() {
   const category = getQueryParam('main');
@@ -468,6 +435,54 @@ async function loadProducts() {
 
 loadProducts();
 
+
+document.addEventListener("DOMContentLoaded", () => {
+  // 以「載入當下」的視窗大小作為 100% 基準（僅做一次）
+  const baseW = window.innerWidth;
+  const baseH = window.innerHeight;
+  document.documentElement.style.setProperty('--base-w', baseW + 'px');
+  document.documentElement.style.setProperty('--base-h', baseH + 'px');
+
+  // sub-image 群組的自適應顯示與等比例放大
+  function adjustSubBlocks() {
+    document.querySelectorAll(".sub-image-block").forEach(block => {
+      const group = block.querySelector(".sub-group");
+      if (!group) return;
+
+      const arrows = group.querySelectorAll(".sub-arrow");
+      const images = Array.from(group.querySelectorAll(".sub-image"));
+
+      const blockWidth = block.clientWidth;
+      const arrowW = arrows[0] ? arrows[0].offsetWidth : 0;
+      const imgW = images[0] ? images[0].offsetWidth : 0;
+
+      // 預設 3 張，不足則依序減為 2、1、0；箭頭永遠保留
+      let imgCount = 3;
+      while (imgCount > 0 && (arrowW * 2 + imgW * imgCount) > blockWidth) {
+        imgCount--;
+      }
+
+      // 顯示對應數量的圖片
+      images.forEach((img, i) => {
+        img.style.display = i < imgCount ? "flex" : "none";
+      });
+
+      // 以等比縮放填滿可用寬度
+      const groupWidth = arrowW * 2 + imgW * imgCount;
+      const scale = groupWidth > 0 ? (blockWidth / groupWidth) : 1;
+      group.style.transform = `scale(${scale})`;
+    });
+  }
+
+  // 初始調整
+  requestAnimationFrame(adjustSubBlocks);
+
+  // 縮放瀏覽器時：回到左上角為錨點，並重算 sub-group
+  window.addEventListener('resize', () => {
+    window.scrollTo(0, 0);
+    adjustSubBlocks();
+  });
+});
 document.addEventListener("DOMContentLoaded", () => {
   // 以「載入當下」的視窗大小作為 100% 基準（僅做一次）
   const baseW = window.innerWidth;

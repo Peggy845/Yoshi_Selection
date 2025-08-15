@@ -11,17 +11,28 @@ body {
   padding: 10px 0;
 }
 
+/* 固定 product-list 尺寸並啟用滾動條 */
 .product-list {
-  padding: 0 20px;
+  width: 100vw;
+  height: 100vh;
+  overflow-x: auto;
+  overflow-y: auto;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  background: #f5f5f5;
 }
 
+/* 單個商品卡片，禁止縮小 */
 .product-item {
+  flex-shrink: 0;
+  width: 600px;
+  height: 450px;
+  margin: 10px;
+  background: white;
   display: flex;
   gap: 10px;
-  margin-bottom: 20px;
-  background: white;
-  height: 65vh; /* 整個卡片的高度 */
-  align-items: stretch; /* 左右欄等高 */
+  border: 1px solid black;
 }
 
 .left-col {
@@ -72,6 +83,7 @@ body {
   align-items: center;
   justify-content: center;
   border: 1px solid black;
+  background: #ddd;
 }
 
 .sub-image {
@@ -79,6 +91,7 @@ body {
   height: 60px;
   flex-shrink: 0;
   object-fit: cover;
+  border: 1px solid black;
 }
 
 .right-col {

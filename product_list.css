@@ -14,22 +14,6 @@ body {
 .product-list {
   padding: 0 20px;
 }
-body {
-  font-family: "Microsoft JhengHei", Calibri, sans-serif;
-  margin: 0;
-  padding: 0;
-  overflow: auto;
-}
-
-.subcategory-title {
-  text-align: center;
-  font-size: 24px;
-  padding: 10px 0;
-}
-
-.product-list {
-  padding: 0 20px;
-}
 
 .product-item {
   display: flex;

@@ -505,6 +505,9 @@ function initOptionSelection(productDiv, state) {
     safety++;
   }
 
+	console.log('[Options] right-col width:', optionWrap.offsetWidth);
+	console.log('[Options] option-row-combined total width:', [...optionWrap.querySelectorAll('.option-group')].reduce((sum, el) => sum + el.offsetWidth, 0));
+
   // 即使仍然超高，也不會「覆蓋」下面區塊，因為 product-option 有 overflow:auto
   // 使用者可以捲動檢視全部選項
 }

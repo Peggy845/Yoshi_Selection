@@ -165,15 +165,18 @@ function createProductCard(productName, variants) {
   const productDiv = document.createElement('div');
   productDiv.className = 'product-item';
 
-  const optionKeys = extractOptionKeys(variants);
+  //const optionKeys = extractOptionKeys(variants);
   const optionValues = collectOptionValues(variants, optionKeys);
 
   const initialVariant = variants[0];
   const selection = {};
+  
+/*
   optionKeys.forEach(k => {
     const val = (initialVariant[k] || '').toString().trim();
     if (val) selection[k] = val;
   });
+*/
 
   const imgListInit = buildImageList(initialVariant);
 
@@ -199,7 +202,7 @@ function createProductCard(productName, variants) {
 async function loadProducts() {
   const category = getQueryParam('main');
   const subcategory = getQueryParam('sub');
-  document.getElementById('subcategory-title').textContent = subcategory || '商品列表';
+  //document.getElementById('subcategory-title').textContent = subcategory || '商品列表';
 
   const sheetNames = [
     '日本寶可夢',

@@ -1,12 +1,10 @@
-:root {
+:root{
   /* 載入時計算的基準值（JS 會覆蓋），此為保險用 fallback */
-  --base-w: 100vw; /* JS 會覆蓋 */
-  --base-h: 100vh; /* JS 會覆蓋 */
+  --base-w: 100vw;
+  --base-h: 100vh;
 }
 
-/* 全域盒模型 */
-* { box-sizing: border-box; }
-
+/* 讓 scrollbar 長在瀏覽器（body/html），而不是內層容器 */
 html, body {
   height: 100%;
   margin: 0;
@@ -16,40 +14,40 @@ html, body {
 
 body {
   font-family: "Microsoft JhengHei", Calibri, sans-serif;
-  overflow: auto; /* 捲動條在瀏覽器上 */
-  overflow-x: scroll; /* 水平 bar 永遠顯示 */
-  overflow-y: scroll; /* 垂直 bar 永遠顯示 */
-  background: #f5f5f5;
   margin: 0;
   padding: 0;
+  overflow: auto; /* 由瀏覽器提供水平/垂直捲動 */
+  background: #f5f5f5;
+  overflow-x: scroll; /* 水平 bar 永遠顯示 */
+  overflow-y: scroll; /* 垂直 bar 永遠顯示 */
 }
 
-/*（可選）捲動條樣式 */
+/* 可選：自訂瀏覽器捲軸外觀（不同 OS 行為可能略異） */
 body::-webkit-scrollbar { width: 12px; height: 12px; }
 body::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.4); border-radius: 6px; }
 body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 
-/* 唯一的 product-list：左右留白、不要 overflow */
-/* 你原先喜歡的樣式，product-list 固定為載入時決定的寬高 (px) */
-/* 唯一的 product-list：寬度鎖定為載入時的視窗寬度，左右保留少量間距 */
-.product-list {
-  height: var(--base-h);
-  padding: 0 20px; /* 你要的美觀間距，所有 item 因此自然對齊 */
-  background: #f5f5f5;
-  margin: 0 auto;   /* 置中或對齊 */
-    box-sizing: border-box;
-  /* 關鍵：不要在這裡加 overflow，避免捲軸長在內層 */}
-}
-
-/* 子分類標題 */
 .subcategory-title {
   text-align: center;
   font-size: 24px;
   padding: 10px 0;
 }
 
+/* 你原先喜歡的樣式，product-list 固定為載入時決定的寬高 (px) */
+/* 唯一的 product-list：寬度鎖定為載入時的視窗寬度，左右保留少量間距 */
+.product-list {
+  width: var(--base-w);
+  height: var(--base-h);
+  padding: 0 20px; /* 你要的美觀間距，所有 item 因此自然對齊 */
+  background: #f5f5f5;
+  margin: 0 auto;   /* 置中或對齊 */
+    box-sizing: border-box;
+  /* 關鍵：不要在這裡加 overflow，避免捲軸長在內層 */}
+
+
 /* product-item 保持你原先的寬高比與結構
-   但高度改用基於 --base-h 的計算（等同於你原先的 65vh 邏輯） */.product-item {
+   但高度改用基於 --base-h 的計算（等同於你原先的 65vh 邏輯） */
+.product-item {
   display: flex;
   gap: 10px;
   margin-bottom: 20px;
@@ -60,7 +58,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   flex-shrink: 0; /* 禁止縮小 */
 }
 
-/* 左欄 / 右欄比例 */
 .left-col {
   width: 35%;
   border: 1px solid black;
@@ -68,44 +65,29 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   flex-direction: column;
 }
 
-/* 右欄 */
-.right-col {
-  width: 65%;
-  border: 1px solid black;
-  display: flex;
-  flex-direction: column;
-}
-
-/* 主圖區塊：加上 position:relative 以放置放大鏡元素 */
 .product-image-block {
-  position: relative;
-  flex: 7; /* 70% 高度 */
+  flex: 7; /* 高度比例 70% */
   display: flex;
   align-items: center;
   justify-content: center;
-  border-bottom: 1px solid #000;
   border: 1px solid black;
-  overflow: hidden; /* 放大鏡與圖片都不會超出 */
+  overflow: hidden; /* 確保圖片不會超出框 */
 }
 
-/* 主圖完整顯示 */
+/* 主圖不被 zoom-in、保持完整顯示 */
 .main-image {
   max-width: 100%;
   max-height: 100%;
   object-fit: contain; /* 確保完整顯示圖片 */
-  user-select: none; 
-  -webkit-user-drag: none;
-  pointer-events: none; /* 讓滑鼠事件落在容器上，追蹤更準 */
 }
 
-/* 子圖區塊 */
 .sub-image-block {
-  flex: 3; /* 30% 高度 */
+  flex: 3; /* 高度比例 30% */
   display: flex;
   align-items: center;
   justify-content: center;
   border: 1px solid black;
-  overflow: hidden;
+  overflow: hidden; /* 保證不會超出 left-col */
 }
 
 /* 群組包一層，方便等比例放大 */
@@ -137,7 +119,14 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   border: 1px solid black;
 }
 
-/* 右欄內容分配 */
+/* 右欄 */
+.right-col {
+  width: 65%;
+  border: 1px solid black;
+  display: flex;
+  flex-direction: column;
+}
+
 .product-name,
 .product-price,
 .product-detail,
@@ -147,21 +136,17 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   padding: 5px;
 }
 
+/* 原來的 flex 配比，保留 */
 .product-name { flex: 13; }
 .product-price { flex: 9; }
 .product-detail { flex: 20; }
 .product-option { flex: 47; }
-
 .product-others {
   flex: 11;
   display: flex;
-  
-  
-  
 }
 
 .sale-status-block, .product-quantity, .product-cart {
-
   border: 1px solid black;
   display: flex;
   align-items: center;
@@ -171,41 +156,3 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .sale-status-block { width: 35%; }
 .product-quantity { width: 35%; }
 .product-cart { width: 30%; }
-
-/* ===== 放大鏡 UI ===== */
-
-/* 右下角放大鏡按鈕（固定在主圖區塊內，不超出） */
-.magnifier-btn {
-  position: absolute;
-  right: 8px;
-  bottom: 8px;
-  width: 36px;
-  height: 36px;
-  border: 0;
-  border-radius: 10px;
-  background: rgba(255,255,255,0.9);
-  color: #222;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
-  display: grid;
-  place-items: center;
-  cursor: pointer;
-  padding: 0;
-}
-
-.magnifier-btn:hover { background: #fff; }
-.magnifier-icon { width: 22px; height: 22px; }
-
-/* 放大鏡視窗（正方形），預設隱藏；不吃滑鼠事件以便追蹤容器的 mousemove */
-.magnifier-lens {
-  position: absolute;
-  display: none;
-  width: 160px;       /* 會在 JS 依容器大小自動調整 */
-  height: 160px;
-  border: 2px solid #222;
-  border-radius: 8px; /* 你要正方形 -> 可以改為 0；這裡保留微圓角更好看 */
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
-  background-repeat: no-repeat;
-  pointer-events: none;
-  /* 為了辨識放大模式，給使用者提示 */
-  outline: 1px dashed rgba(0,0,0,0.08);
-}

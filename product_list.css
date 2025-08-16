@@ -12,14 +12,12 @@ html, body {
   scrollbar-gutter: stable both-edges;
 }
 
-/* 全局字體與標題 */
 body {
-  font-family: "微軟正黑體", Calibri, sans-serif;
+  font-family: "Microsoft JhengHei", Calibri, sans-serif;
   margin: 0;
   padding: 0;
-  color: #222;
-  background: #fafafa;
   overflow: auto; /* 由瀏覽器提供水平/垂直捲動 */
+  background: #f5f5f5;
   overflow-x: scroll; /* 水平 bar 永遠顯示 */
   overflow-y: scroll; /* 垂直 bar 永遠顯示 */
 }
@@ -30,14 +28,12 @@ body::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.4); border-radius
 body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 
 .subcategory-title {
-  text-align: center;      /* 水平置中 */
-  margin: 20px 0 10px 0;
-  font-size: 28px;
+  text-align: center;
+  font-size: 24px;
   padding: 10px 0;
-  letter-spacing: 1px;     /* 字元間距 */
-  font-weight: 700;        /* 字體粗細 */
 }
 
+/* 你原先喜歡的樣式，product-list 固定為載入時決定的寬高 (px) */
 /* 唯一的 product-list：寬度鎖定為載入時的視窗寬度，左右保留少量間距 */
 .product-list {
   width: var(--base-w);
@@ -45,9 +41,8 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   padding: 0 20px; /* 你要的美觀間距，所有 item 因此自然對齊 */
   background: #f5f5f5;
   margin: 0 auto;   /* 置中或對齊 */
-  box-sizing: border-box;
-  /* 關鍵：不要在這裡加 overflow，避免捲軸長在內層 */
-}
+    box-sizing: border-box;
+  /* 關鍵：不要在這裡加 overflow，避免捲軸長在內層 */}
 
 
 /* product-item 保持你原先的寬高比與結構
@@ -79,90 +74,11 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   overflow: hidden; /* 確保圖片不會超出框 */
 }
 
-.product-image-block img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain; /* 不拉伸不裁切 */
-}
-
-/* 左右箭頭（SVG + 半透明背景） */
-.arrow-block {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
-  background-color: rgba(0,0,0,0.35);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: background-color .2s ease, transform .1s ease;
-  user-select: none;
-}
-.arrow-block:hover { background-color: rgba(0,0,0,0.5); }
-.arrow-block:active { transform: translateY(-50%) scale(0.96); }
-
-.arrow-left { left: 10px; }
-.arrow-right { right: 10px; }
-
-.arrow-block svg {
-  width: 24px;
-  height: 24px;
-  stroke: #fff;
-  stroke-width: 2.2;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-/* 放大鏡按鈕（右下角） */
-.magnifier-btn {
-  position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 42px;
-  height: 42px;
-  background-color: rgba(200,200,200,0.3);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 20;
-  backdrop-filter: blur(1px);
-  transition: background-color .2s ease, transform .1s ease;
-}
-.magnifier-btn:hover { background-color: rgba(200,200,200,0.45); }
-.magnifier-btn:active { transform: scale(0.96); }
-
-.magnifier-btn svg {
-  width: 22px;
-  height: 22px;
-  stroke: #222;
-  stroke-width: 2;
-  fill: none;
-}
-
-/* 放大鏡鏡片（跟著滑鼠移動） */
-.magnifier-lens {
-  position: absolute;
-  border: 3px solid #aaa;
-  border-radius: 50%;
-  width: 120px;
-  height: 120px;
-  overflow: hidden;
-  display: none;
-  pointer-events: none;
-  z-index: 15;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-  background: #fff;
-}
-.magnifier-lens img {
-  position: absolute;
-  transform-origin: top left;
+/* 主圖不被 zoom-in、保持完整顯示 */
+.main-image {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain; /* 確保完整顯示圖片 */
 }
 
 .sub-image-block {
@@ -240,81 +156,3 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .sale-status-block { width: 35%; }
 .product-quantity { width: 35%; }
 .product-cart { width: 30%; }
-
-/* 選項每一行 */
-.option-group {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap; /* 空間不夠可換行，但區塊本身高度固定於 product-option 內捲動 */
-}
-.option-title {
-  font-weight: 700;
-  min-width: 56px;
-  color: #333;
-}
-.option-buttons {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.option-btn {
-  padding: 6px 12px;
-  border-radius: 16px;
-  border: 1px solid #ddd;
-  background: #fff;
-  cursor: pointer;
-  font-size: 14px;
-  transition: all .15s ease;
-  user-select: none;
-}
-.option-btn:hover { border-color: #bbb; }
-.option-btn.selected {
-  background: #222;
-  color: #fff;
-  border-color: #222;
-}
-
-/* 數量小區 */
-.quantity-block {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.qty-btn {
-  width: 34px;
-  height: 34px;
-  border: 1px solid #ccc;
-  background-color: #fff;
-  cursor: pointer;
-  border-radius: 8px;
-  font-size: 18px;
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.quantity-input {
-  width: 56px;
-  height: 34px;
-  text-align: center;      /* 置中顯示數字 */
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  background: #fff;
-}
-.stock-text { margin-left: 8px; color: #666; }
-
-/* 購物車按鈕 */
-.cart-btn {
-  padding: 10px 20px;
-  background-color: #ffa64d;
-  border: none;
-  cursor: pointer;
-  color: #fff;
-  font-weight: 800;
-  border-radius: 10px;
-  transition: background-color .15s ease, transform .05s ease;
-}
-.cart-btn:hover { background-color: #ff9600; }
-.cart-btn:active { transform: scale(0.98); }
-.cart-btn.active { background-color: #ff7f00; }

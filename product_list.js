@@ -37,6 +37,55 @@ async function fetchMultipleSheets(sheetNames) {
   return allData;
 }
 
+/** 將列分組：商品名稱 -> variants 陣列 */
+function groupByProductName(rows) {
+  const map = new Map();
+  rows.forEach(r => {
+    const name = (r['商品名稱'] || '').trim();
+    if (!name) return;
+    if (!map.has(name)) map.set(name, []);
+    map.get(name).push(r);
+  });
+  return map; // Map(name -> [row,row,...])
+}
+
+function createProductCard(productName, variants) {
+  const productDiv = document.createElement('div');
+  productDiv.className = 'product-item';
+
+/*
+  const optionKeys = extractOptionKeys(variants);
+  const optionValues = collectOptionValues(variants, optionKeys);
+
+  const initialVariant = variants[0];
+  const selection = {};
+  optionKeys.forEach(k => {
+    const val = (initialVariant[k] || '').toString().trim();
+    if (val) selection[k] = val;
+  });
+
+  const imgListInit = buildImageList(initialVariant);
+
+  productDiv.innerHTML = generateProductHTML(productName, initialVariant, imgListInit);
+
+  const state = {
+    variants,
+    optionKeys,
+    selection,
+    imgList: imgListInit,
+    imgIndex: 0
+  };
+
+  // **綁定功能模組**
+  initImageNavigation(productDiv, state);
+  initMagnifier(productDiv, state);
+  initOptionSelection(productDiv, state);
+  initQuantityAndCart(productDiv, state);
+*/
+
+  return productDiv;
+}
+
 //新增 HTML 產生器
 function generateProductHTML(productName, variant, imgList) {
   return `
@@ -114,6 +163,13 @@ async function loadProducts() {
   }
   
   console.log("共有多少商品", filtered.length);
+  
+  const grouped = groupByProductName(filtered);
+
+  for (const [productName, variants] of grouped.entries()) {
+    const productDiv = createProductCard(productName, variants); // **呼叫模組化方法**
+    container.appendChild(productDiv);
+  }
 }
 
 loadProducts();

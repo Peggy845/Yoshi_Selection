@@ -1,3 +1,123 @@
+function getQueryParam(param) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(param);
+}
+
+/** 抓多分頁資料 */
+async function fetchMultipleSheets(sheetNames) {
+  const sheetId = '1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo';
+  const allData = {};
+
+  for (const name of sheetNames) {
+    if (name === '分類圖片') continue;
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(name)}&tqx=out:json`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`無法讀取分頁：${name}`);
+
+      const text = await res.text();
+      const json = JSON.parse(text.substring(47, text.length - 2));
+      const cols = json.table.cols.map(col => (col.label || '').trim());
+      const rows = json.table.rows.map(row => {
+        const obj = {};
+        row.c.forEach((cell, i) => {
+          obj[cols[i]] = cell ? cell.v : '';
+        });
+        return obj;
+      });
+
+      allData[name] = rows;
+    } catch (e) {
+      console.warn(`分頁 ${name} 抓取失敗:`, e);
+      allData[name] = [];
+    }
+  }
+
+  return allData;
+}
+
+//新增 HTML 產生器
+function generateProductHTML(productName, variant, imgList) {
+  return `
+    <div class="left-col">
+      <div class="product-image-block">
+        <div class="arrow-block arrow-left" style="${imgList.length > 1 ? '' : 'display:none'}">
+          <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18"/></svg>
+        </div>
+        <img src="${imgList[0] || ''}" alt="${productName}">
+        <div class="arrow-block arrow-right" style="${imgList.length > 1 ? '' : 'display:none'}">
+          <svg viewBox="0 0 24 24"><path d="M9 6 L15 12 L9 18"/></svg>
+        </div>
+        <div class="magnifier-btn">
+          <svg viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7"></circle>
+            <line x1="16" y1="16" x2="22" y2="22"></line>
+          </svg>
+        </div>
+      </div>
+      <div class="sale-status-block">狀態: ${variant['販售狀態'] || ''}</div>
+    </div>
+
+    <div class="right-col">
+      <div class="product-name">${productName}</div>
+      <div class="product-price">$ ${variant['價格'] || ''}</div>
+      <div class="product-detail">${variant['詳細資訊'] || ''}</div>
+      <div class="product-option"></div>
+      <div class="product-quantity">
+        <div class="quantity-block">
+          <span>數量</span>
+          <button class="qty-btn" data-type="minus" type="button">−</button>
+          <input class="quantity-input" type="number" value="1" min="1" max="${variant['庫存'] || 0}" readonly>
+          <button class="qty-btn" data-type="plus" type="button">＋</button>
+          <span class="stock-text">還剩 ${variant['庫存'] || 0} 件</span>
+        </div>
+      </div>
+      <div class="product-cart">
+        <button class="cart-btn" type="button">加入購物車</button>
+      </div>
+    </div>
+  `;
+}
+
+async function loadProducts() {
+  const category = getQueryParam('main');
+  const subcategory = getQueryParam('sub');
+  console.log("分頁名稱: ", category);
+  console.log("第二層名稱: ", subcategory);
+  document.getElementById('subcategory-title').textContent = subcategory || '商品列表';
+
+  const sheetNames = [
+    '日本寶可夢',
+    '日本三麗鷗',
+    '日本貓福珊迪',
+    '日本親子玩具與母嬰用品',
+    '日本童裝品牌',
+    '進擊的巨人'
+  ];
+
+  const allSheetsData = await fetchMultipleSheets(sheetNames);
+  if (!allSheetsData[category] || allSheetsData[category].length === 0) {
+    document.getElementById('product-list').innerHTML = '<p>目前沒有這個分類的商品</p>';
+    return;
+  }
+
+  const filtered = allSheetsData[category].filter(
+    row => (row['商品系列'] || '').toString().trim() === (subcategory || '').toString().trim()
+  );
+
+  const container = document.getElementById('product-list');
+  container.innerHTML = '';
+  if (!filtered.length) {
+    container.innerHTML = '<p>目前沒有這個分類的商品</p>';
+    return;
+  }
+  
+  console.log("共有多少商品", filtered.length);
+}
+
+loadProducts();
+
 document.addEventListener("DOMContentLoaded", () => {
   // 以「載入當下」的視窗大小作為 100% 基準（僅做一次）
   const baseW = window.innerWidth;

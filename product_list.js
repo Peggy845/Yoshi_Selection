@@ -4,20 +4,24 @@ document.addEventListener("DOMContentLoaded", async () => {
   // ====================================================
   async function loadProducts() {
     const productList = document.querySelector(".product-list");
+	if (!productList) {
+		console.error(".product-list 元素找不到！");
+		return; // 停止後續動作
+	}
 
     // 假資料，之後可改成 fetch 從後端取
     const products = [
       {
         name: "商品 A",
         price: "NT$1000",
-        mainImage: "images/productA_main.jpg",
-        subImages: ["images/productA_1.jpg", "images/productA_2.jpg", "images/productA_3.jpg"]
+        mainImage: "images/Yoshi_Selection_logo.jpg",
+        subImages: ["images/Yoshi_Selection_logo.jpg", "images/Yoshi_Selection_logo.jpg", "images/Yoshi_Selection_logo.jpg"]
       },
       {
         name: "商品 B",
         price: "NT$2000",
-        mainImage: "images/productB_main.jpg",
-        subImages: ["images/productB_1.jpg", "images/productB_2.jpg"]
+        mainImage: "iimages/Yoshi_Selection_logo.jpg",
+        subImages: ["images/Yoshi_Selection_logo.jpg", "images/Yoshi_Selection_logo.jpg"]
       }
     ];
 

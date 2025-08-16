@@ -85,7 +85,7 @@ async function loadProducts() {
   const subcategory = getQueryParam('sub');
   console.log("分頁名稱: ", category);
   console.log("第二層名稱: ", subcategory);
-  document.getElementById('subcategory-title').textContent = subcategory || '商品列表';
+  //document.getElementById('subcategory-title').textContent = subcategory || '商品列表';
 
   const sheetNames = [
     '日本寶可夢',

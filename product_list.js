@@ -90,41 +90,54 @@ function createProductCard(productName, variants) {
 function generateProductHTML(productName, variant, imgList) {
   return `
     <div class="left-col">
-      <div class="product-image-block">
-        <div class="arrow-block arrow-left" style="${imgList.length > 1 ? '' : 'display:none'}">
-          <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18"/></svg>
+        <div class="product-image-block">
+			<img src="${imgList[0] || ''}" alt="${productName}">
+			
+          <!-- 放大鏡按鈕（右下角） -->
+          <button class="magnifier-btn" type="button" aria-label="啟用放大鏡" title="放大鏡">
+            <!-- 簡潔漂亮的 SVG 放大鏡 -->
+            <svg viewBox="0 0 24 24" class="magnifier-icon" aria-hidden="true">
+              <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+              <line x1="16.5" y1="16.5" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="11" y1="7" x2="11" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="7" y1="11" x2="15" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
+          <!-- 放大鏡視窗（正方形、預設隱藏） -->
+          <div class="magnifier-lens" aria-hidden="true"></div>
         </div>
-        <img src="${imgList[0] || ''}" alt="${productName}">
-        <div class="arrow-block arrow-right" style="${imgList.length > 1 ? '' : 'display:none'}">
-          <svg viewBox="0 0 24 24"><path d="M9 6 L15 12 L9 18"/></svg>
+
+        <div class="sub-image-block">
+          <div class="sub-group">
+            <div class="sub-arrow">←</div>
+			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片1" class="sub-image">
+			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片2" class="sub-image">
+			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片3" class="sub-image">
+            <div class="sub-arrow">→</div>
+          </div>
         </div>
-        <div class="magnifier-btn">
-          <svg viewBox="0 0 24 24">
-            <circle cx="11" cy="11" r="7"></circle>
-            <line x1="16" y1="16" x2="22" y2="22"></line>
-          </svg>
-        </div>
-      </div>
-      <div class="sale-status-block">狀態: ${variant['販售狀態'] || ''}</div>
     </div>
 
     <div class="right-col">
-      <div class="product-name">${productName}</div>
-      <div class="product-price">$ ${variant['價格'] || ''}</div>
-      <div class="product-detail">${variant['詳細資訊'] || ''}</div>
-      <div class="product-option"></div>
-      <div class="product-quantity">
-        <div class="quantity-block">
-          <span>數量</span>
-          <button class="qty-btn" data-type="minus" type="button">−</button>
-          <input class="quantity-input" type="number" value="1" min="1" max="${variant['庫存'] || 0}" readonly>
-          <button class="qty-btn" data-type="plus" type="button">＋</button>
-          <span class="stock-text">還剩 ${variant['庫存'] || 0} 件</span>
+        <div class="product-name">${productName}</div>
+        <div class="product-price">$ ${variant['價格'] || ''}</div>
+        <div class="product-detail">${variant['詳細資訊'] || ''}</div>
+        <div class="product-option">選項區</div>
+        <div class="product-others">
+          <div class="sale-status-block">狀態: ${variant['販售狀態'] || ''}</div>
+          <div class="product-quantity">
+	        <div class="quantity-block">
+	          <span>數量</span>
+	          <button class="qty-btn" data-type="minus" type="button">−</button>
+	          <input class="quantity-input" type="number" value="1" min="1" max="${variant['庫存'] || 0}" readonly>
+	          <button class="qty-btn" data-type="plus" type="button">＋</button>
+	          <span class="stock-text">還剩 ${variant['庫存'] || 0} 件</span>
+	        </div>
+          </div>
+          <div class="product-cart">
+            <button class="cart-btn" type="button">加入購物車</button>
+          </div>
         </div>
-      </div>
-      <div class="product-cart">
-        <button class="cart-btn" type="button">加入購物車</button>
-      </div>
     </div>
   `;
 }

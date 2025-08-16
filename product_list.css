@@ -4,6 +4,9 @@
   --base-h: 100vh;
 }
 
+/* 全域盒模型 */
+* { box-sizing: border-box; }
+
 /* 讓 scrollbar 長在瀏覽器（body/html），而不是內層容器 */
 html, body {
   height: 100%;
@@ -65,8 +68,10 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   flex-direction: column;
 }
 
+/* 主圖區塊：加上 position:relative 以放置放大鏡元素 */
 .product-image-block {
   flex: 7; /* 高度比例 70% */
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -79,8 +84,12 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   max-width: 100%;
   max-height: 100%;
   object-fit: contain; /* 確保完整顯示圖片 */
+  user-select: none; 
+  -webkit-user-drag: none;
+  pointer-events: none; /* 讓滑鼠事件落在容器上，追蹤更準 */
 }
 
+/* 子圖區塊 */
 .sub-image-block {
   flex: 3; /* 高度比例 30% */
   display: flex;
@@ -156,7 +165,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .sale-status-block { width: 35%; }
 .product-quantity { width: 35%; }
 .product-cart { width: 30%; }
-
 /* ===== 放大鏡 UI ===== */
 
 /* 右下角放大鏡按鈕（固定在主圖區塊內，不超出） */

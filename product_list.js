@@ -3,7 +3,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   // 1. 動態生成商品 (可換成從 API / Excel 載入)
   // ====================================================
   async function loadProducts() {
-    const productList = document.querySelector(".product-list");
+    const productList = document.getElementById('product-list');
 	if (!productList) {
 		console.error(".product-list 元素找不到！");
 		return; // 停止後續動作

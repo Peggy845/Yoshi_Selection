@@ -137,10 +137,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   border: 1px solid black;
 }
 
-
-
-
-
 /* 右欄內容分配 */
 .product-name,
 .product-price,
@@ -156,25 +152,12 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .product-detail { flex: 20; }
 .product-option { flex: 47; }
 
-.product-name {
-  font-weight: bold;
-  margin: 10px 0;
-}
-
-.product-price {
-  color: #d9534f;
-  font-size: 18px;
-  margin: 5px 0;
-}
-
-.product-detail {
-  font-size: 14px;
-  margin: 5px 0;
-}
-
 .product-others {
   flex: 11;
-  display: flex; 
+  display: flex;
+  
+  
+  
 }
 
 .sale-status-block, .product-quantity, .product-cart {
@@ -188,48 +171,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .sale-status-block { width: 35%; }
 .product-quantity { width: 35%; }
 .product-cart { width: 30%; }
-
-.sale-status-block {
-  font-size: 14px;
-  font-weight: bold;
-  margin: 5px 0;
-}
-
-.product-option {
-  margin-top: 10px;
-}
-
-.option-row {
-  margin-bottom: 8px;
-}
-
-.option-label {
-  font-weight: bold;
-  margin-right: 10px;
-}
-
-.option-buttons {
-  display: inline-flex;
-  gap: 5px;
-}
-
-.option-buttons button {
-  padding: 5px 10px;
-  border-radius: 6px;
-  border: 1px solid #aaa;
-  background-color: #f0f0f0;
-  cursor: pointer;
-}
-
-.option-buttons button.active {
-  background-color: #007bff;
-  color: white;
-}
-
-.option-buttons button.disabled {
-  background-color: #ddd;
-  cursor: not-allowed;
-}
 
 /* ===== 放大鏡 UI ===== */
 
@@ -268,9 +209,3 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   /* 為了辨識放大模式，給使用者提示 */
   outline: 1px dashed rgba(0,0,0,0.08);
 }
-
-/* 
-改鏡片為完全直角的正方形：把 .magnifier-lens 的 border-radius: 8px; 改為 0。
-調倍率：修改 product_list.js 的 const ZOOM = 2.5;。
-啟用時改成用滑鼠所在點為起始焦點：把 enableMagnifier() 裡的置中邏輯改成用當下滑鼠位置呼叫 placeLens(x,y) 即可。
-*/

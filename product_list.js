@@ -105,7 +105,13 @@ function generateProductHTML(productName, variant, imgList) {
   return `
     <div class="left-col">
         <div class="product-image-block">
+		    <div class="arrow-block arrow-left" style="${imgList.length > 1 ? '' : 'display:none'}">
+			  <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18"/></svg>
+			</div>
 			<img src="${imgList[0] || ''}" alt="${productName}">
+			<div class="arrow-block arrow-right" style="${imgList.length > 1 ? '' : 'display:none'}">
+			  <svg viewBox="0 0 24 24"><path d="M9 6 L15 12 L9 18"/></svg>
+			</div>
 			
           <!-- 放大鏡按鈕（右下角） -->
           <button class="magnifier-btn" type="button" aria-label="啟用放大鏡" title="放大鏡">
@@ -154,6 +160,68 @@ function generateProductHTML(productName, variant, imgList) {
         </div>
     </div>
   `;
+}
+
+function initImageNavigation(productDiv, state) {
+  const imgEl = productDiv.querySelector('.product-image-block img');
+  const leftBtn = productDiv.querySelector('.arrow-left');
+  const rightBtn = productDiv.querySelector('.arrow-right');
+
+  const updateImage = () => {
+    imgEl.src = state.imgList[state.imgIndex];
+  };
+
+  leftBtn?.addEventListener('click', () => {
+    state.imgIndex = (state.imgIndex - 1 + state.imgList.length) % state.imgList.length;
+    updateImage();
+  });
+
+  rightBtn?.addEventListener('click', () => {
+    state.imgIndex = (state.imgIndex + 1) % state.imgList.length;
+    updateImage();
+  });
+}
+
+function initMagnifier(productDiv, state) {
+  const imgEl = productDiv.querySelector('.product-image-block img');
+  const magnifierBtn = productDiv.querySelector('.magnifier-btn');
+  const imgBlock = productDiv.querySelector('.product-image-block');
+
+  const lens = document.createElement('div');
+  lens.className = 'magnifier-lens';
+  const lensImg = imgEl.cloneNode(true);
+  lens.appendChild(lensImg);
+  imgBlock.appendChild(lens);
+
+  let zoomActive = false;
+  const ZOOM = 2;
+
+  const updateLensImage = () => {
+    const rect = imgEl.getBoundingClientRect();
+    lensImg.src = state.imgList[state.imgIndex] || '';
+    lensImg.style.width = rect.width * ZOOM + 'px';
+    lensImg.style.height = rect.height * ZOOM + 'px';
+  };
+
+  magnifierBtn.addEventListener('click', () => {
+    zoomActive = !zoomActive;
+    lens.style.display = zoomActive ? 'block' : 'none';
+    if (zoomActive) updateLensImage();
+  });
+
+  imgBlock.addEventListener('mousemove', (e) => {
+    if (!zoomActive) return;
+    const rect = imgEl.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
+    let lensX = Math.max(0, Math.min(rect.width - lensW, x - lensW / 2));
+    let lensY = Math.max(0, Math.min(rect.height - lensH, y - lensH / 2));
+    lens.style.left = lensX + 'px';
+    lens.style.top = lensY + 'px';
+    lensImg.style.left = -lensX * ZOOM + 'px';
+    lensImg.style.top = -lensY * ZOOM + 'px';
+  });
 }
 
 function createProductCard(productName, variants) {

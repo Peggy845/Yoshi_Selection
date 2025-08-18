@@ -528,16 +528,11 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // 初始、resize 時維持左上錨點 + 調整 sub 群組
+  // 移除 scale()，保持左上錨點
   function initOrResize() {
-    window.scrollTo(0, 0);
-    //adjustSubBlocks();
+    window.scrollTo(0, 0); // 永遠以左上角為基準
   }
 
-/*
-  requestAnimationFrame(() => {
-    adjustSubBlocks();
-  });
-*/
-
+  requestAnimationFrame(initOrResize);
   window.addEventListener('resize', initOrResize);
 });

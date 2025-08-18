@@ -163,6 +163,15 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   border: 1px solid black;
 }
 
+/* 擔心 sub 圖片太多，寬度超出 .sub-image-block */
+.sub-image-block .sub-group {
+  display: flex;
+  overflow: hidden; /* 或 auto，看你要不要出現小捲軸 */
+}
+.sub-image-block .sub-image {
+  flex: 0 0 auto; /* 固定寬度，不被壓縮 */
+}
+
 /* 右欄 */
 .right-col {
   width: 65%;

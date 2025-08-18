@@ -142,15 +142,13 @@ async function loadProducts() {
     row => (row['商品系列'] || '').toString().trim() === (subcategory || '').toString().trim()
   );
   
-/*
-
   const container = document.getElementById('product-list');
   container.innerHTML = '';
   if (!filtered.length) {
     container.innerHTML = '<p>目前沒有這個分類的商品</p>';
     return;
   }
-*/
+
   console.log("共有多少商品", filtered.length);
   
   const grouped = groupByProductName(filtered);

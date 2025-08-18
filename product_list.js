@@ -1,3 +1,99 @@
+function getQueryParam(param) {
+  const urlParams = new URLSearchParams(window.location.search);
+  return urlParams.get(param);
+}
+
+/** 抓多分頁資料 */
+async function fetchMultipleSheets(sheetNames) {
+  const sheetId = '1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo';
+  const allData = {};
+
+  for (const name of sheetNames) {
+    if (name === '分類圖片') continue;
+    const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?sheet=${encodeURIComponent(name)}&tqx=out:json`;
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`無法讀取分頁：${name}`);
+
+      const text = await res.text();
+      const json = JSON.parse(text.substring(47, text.length - 2));
+      const cols = json.table.cols.map(col => (col.label || '').trim());
+      const rows = json.table.rows.map(row => {
+        const obj = {};
+        row.c.forEach((cell, i) => {
+          obj[cols[i]] = cell ? cell.v : '';
+        });
+        return obj;
+      });
+
+      allData[name] = rows;
+    } catch (e) {
+      console.warn(`分頁 ${name} 抓取失敗:`, e);
+      allData[name] = [];
+    }
+  }
+
+  return allData;
+}
+
+/** 將列分組：商品名稱 -> variants 陣列 */
+function groupByProductName(rows) {
+  const map = new Map();
+  rows.forEach(r => {
+    const name = (r['商品名稱'] || '').trim();
+    if (!name) return;
+    if (!map.has(name)) map.set(name, []);
+    map.get(name).push(r);
+  });
+  return map; // Map(name -> [row,row,...])
+}
+
+async function loadProducts() {
+  const category = getQueryParam('main');
+  const subcategory = getQueryParam('sub');
+  console.log("分頁名稱: ", category);
+  console.log("第二層名稱: ", subcategory);
+  //document.getElementById('subcategory-title').textContent = subcategory || '商品列表';
+
+  const sheetNames = [
+    '日本寶可夢',
+    '日本三麗鷗',
+    '日本貓福珊迪',
+    '日本親子玩具與母嬰用品',
+    '日本童裝品牌',
+    '進擊的巨人'
+  ];
+
+  const allSheetsData = await fetchMultipleSheets(sheetNames);
+  if (!allSheetsData[category] || allSheetsData[category].length === 0) {
+    document.getElementById('product-list').innerHTML = '<p>目前沒有這個分類的商品</p>';
+    return;
+  }
+
+  const filtered = allSheetsData[category].filter(
+    row => (row['商品系列'] || '').toString().trim() === (subcategory || '').toString().trim()
+  );
+
+  const container = document.getElementById('product-list');
+  container.innerHTML = '';
+  if (!filtered.length) {
+    container.innerHTML = '<p>目前沒有這個分類的商品</p>';
+    return;
+  }
+  
+  console.log("共有多少商品", filtered.length);
+  
+  const grouped = groupByProductName(filtered);
+
+  for (const [productName, variants] of grouped.entries()) {
+    const productDiv = createProductCard(productName, variants); // **呼叫模組化方法**
+    container.appendChild(productDiv);
+  }
+}
+
+loadProducts();
+
 document.addEventListener("DOMContentLoaded", () => {
   // 以「載入當下」的視窗大小作為 100% 基準（僅做一次）
   const baseW = window.innerWidth;

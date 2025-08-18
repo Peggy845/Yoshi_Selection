@@ -74,6 +74,8 @@ async function loadProducts() {
   const filtered = allSheetsData[category].filter(
     row => (row['商品系列'] || '').toString().trim() === (subcategory || '').toString().trim()
   );
+  
+/*
 
   const container = document.getElementById('product-list');
   container.innerHTML = '';
@@ -81,7 +83,7 @@ async function loadProducts() {
     container.innerHTML = '<p>目前沒有這個分類的商品</p>';
     return;
   }
-  
+*/
   console.log("共有多少商品", filtered.length);
   
   const grouped = groupByProductName(filtered);

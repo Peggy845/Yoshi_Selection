@@ -49,6 +49,73 @@ function groupByProductName(rows) {
   return map; // Map(name -> [row,row,...])
 }
 
+/** 取得選項欄位清單（以 選項- 開頭且至少某一列不為空） */
+function extractOptionKeys(variants) {
+  const keys = new Set();
+  variants.forEach(v => {
+    Object.keys(v).forEach(k => {
+      if (k.startsWith('選項-') && (v[k] || '').toString().trim() !== '') {
+        keys.add(k);
+      }
+    });
+  });
+  return Array.from(keys);
+}
+
+/** 每個選項欄位的所有值（去重、依出現順序） */
+function collectOptionValues(variants, optionKeys) {
+  const values = {};
+  optionKeys.forEach(k => {
+    const seen = new Set();
+    values[k] = [];
+    variants.forEach(v => {
+      const val = (v[k] || '').toString().trim();
+      if (val && !seen.has(val)) {
+        seen.add(val);
+        values[k].push(val);
+      }
+    });
+  });
+  return values; // { '選項-尺寸': ['22cm','33cm'], ... }
+}
+
+function createProductCard(productName, variants) {
+  const productDiv = document.createElement('div');
+  productDiv.className = 'product-item';
+
+  const optionKeys = extractOptionKeys(variants);
+  const optionValues = collectOptionValues(variants, optionKeys);
+
+  const initialVariant = variants[0];
+  const selection = {};
+  optionKeys.forEach(k => {
+    const val = (initialVariant[k] || '').toString().trim();
+    if (val) selection[k] = val;
+  });
+  
+/*
+  const imgListInit = buildImageList(initialVariant);
+
+  productDiv.innerHTML = generateProductHTML(productName, initialVariant, imgListInit);
+
+  const state = {
+    variants,
+    optionKeys,
+    selection,
+    imgList: imgListInit,
+    imgIndex: 0
+  };
+
+  // **綁定功能模組**
+  initImageNavigation(productDiv, state);
+  initMagnifier(productDiv, state);
+  initOptionSelection(productDiv, state);
+  initQuantityAndCart(productDiv, state);
+*/
+
+  return productDiv;
+}
+
 async function loadProducts() {
   const category = getQueryParam('main');
   const subcategory = getQueryParam('sub');

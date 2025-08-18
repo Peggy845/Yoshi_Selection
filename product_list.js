@@ -129,7 +129,7 @@ function generateProductHTML(productName, variant, imgList) {
 
         <div class="sub-image-block">
           <div class="sub-group">
-            <div class="arrow-block arrow-left" style="${imgList.length > 1 ? '' : 'display:none'}">
+			<div class="sub-image-block sub-arrow-left" style="${imgList.length > 1 ? '' : 'display:none'}">
 			  <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18"/></svg>
 			</div>
 			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片1" class="sub-image">

@@ -161,6 +161,31 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   background: #ddd;
 }
 
+.sub-arrow-block:hover { background-color: rgba(0,0,0,0.5); }
+.sub-arrow-block:active { transform: translateY(-50%) scale(0.96); }
+
+.sub-arrow-left { 
+  width: 28px;
+  height: 60px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid black;
+  background: #ddd;
+}
+.sub-arrow-right { right: 10px; }
+
+.sub-image-block svg {
+  width: 24px;
+  height: 24px;
+  stroke: #fff;
+  stroke-width: 2.2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
 .sub-image {
   width: 60px;
   height: 60px;

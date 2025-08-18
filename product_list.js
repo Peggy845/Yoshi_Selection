@@ -105,13 +105,7 @@ function generateProductHTML(productName, variant, imgList) {
   return `
     <div class="left-col">
         <div class="product-image-block">
-			<div class="arrow-block arrow-left" style="${imgList.length > 1 ? '' : 'display:none'}">
-			  <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18"/></svg>
-			</div>
-			<img src="${imgList[0] || ''}" class="product-image-block img" alt="${productName}">
-			<div class="arrow-block arrow-right" style="${imgList.length > 1 ? '' : 'display:none'}">
-			  <svg viewBox="0 0 24 24"><path d="M9 6 L15 12 L9 18"/></svg>
-			</div>
+			<img src="${imgList[0] || ''}" alt="${productName}">
 			
           <!-- 放大鏡按鈕（右下角） -->
           <button class="magnifier-btn" type="button" aria-label="啟用放大鏡" title="放大鏡">
@@ -129,9 +123,7 @@ function generateProductHTML(productName, variant, imgList) {
 
         <div class="sub-image-block">
           <div class="sub-group">
-			<div class="sub-arror-block sub-arrow-left" style="${imgList.length > 1 ? '' : 'display:none'}">
-			  <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18"/></svg>
-			</div>
+            <div class="sub-arrow">←</div>
 			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片1" class="sub-image">
 			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片2" class="sub-image">
 			  <img src="images/Yoshi_Selection_logo.jpg" alt="子圖片3" class="sub-image">
@@ -162,26 +154,6 @@ function generateProductHTML(productName, variant, imgList) {
         </div>
     </div>
   `;
-}
-
-function initImageNavigation(productDiv, state) {
-  const imgEl = productDiv.querySelector('.product-image-block img');
-  const leftBtn = productDiv.querySelector('.arrow-left');
-  const rightBtn = productDiv.querySelector('.arrow-right');
-
-  const updateImage = () => {
-    imgEl.src = state.imgList[state.imgIndex];
-  };
-
-  leftBtn?.addEventListener('click', () => {
-    state.imgIndex = (state.imgIndex - 1 + state.imgList.length) % state.imgList.length;
-    updateImage();
-  });
-
-  rightBtn?.addEventListener('click', () => {
-    state.imgIndex = (state.imgIndex + 1) % state.imgList.length;
-    updateImage();
-  });
 }
 
 function createProductCard(productName, variants) {

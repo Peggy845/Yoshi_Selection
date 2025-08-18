@@ -182,48 +182,6 @@ function initImageNavigation(productDiv, state) {
   });
 }
 
-function initMagnifier(productDiv, state) {
-  const imgEl = productDiv.querySelector('.product-image-block img');
-  const magnifierBtn = productDiv.querySelector('.magnifier-btn');
-  const imgBlock = productDiv.querySelector('.product-image-block');
-
-  const lens = document.createElement('div');
-  lens.className = 'magnifier-lens';
-  const lensImg = imgEl.cloneNode(true);
-  lens.appendChild(lensImg);
-  imgBlock.appendChild(lens);
-
-  let zoomActive = false;
-  const ZOOM = 2;
-
-  const updateLensImage = () => {
-    const rect = imgEl.getBoundingClientRect();
-    lensImg.src = state.imgList[state.imgIndex] || '';
-    lensImg.style.width = rect.width * ZOOM + 'px';
-    lensImg.style.height = rect.height * ZOOM + 'px';
-  };
-
-  magnifierBtn.addEventListener('click', () => {
-    zoomActive = !zoomActive;
-    lens.style.display = zoomActive ? 'block' : 'none';
-    if (zoomActive) updateLensImage();
-  });
-
-  imgBlock.addEventListener('mousemove', (e) => {
-    if (!zoomActive) return;
-    const rect = imgEl.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
-    const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
-    let lensX = Math.max(0, Math.min(rect.width - lensW, x - lensW / 2));
-    let lensY = Math.max(0, Math.min(rect.height - lensH, y - lensH / 2));
-    lens.style.left = lensX + 'px';
-    lens.style.top = lensY + 'px';
-    lensImg.style.left = -lensX * ZOOM + 'px';
-    lensImg.style.top = -lensY * ZOOM + 'px';
-  });
-}
-
 function createProductCard(productName, variants) {
   const productDiv = document.createElement('div');
   productDiv.className = 'product-item';
@@ -254,7 +212,6 @@ function createProductCard(productName, variants) {
   // **綁定功能模組**
   initImageNavigation(productDiv, state);
 /*
-  initMagnifier(productDiv, state);
   initOptionSelection(productDiv, state);
   initQuantityAndCart(productDiv, state);
 */
@@ -365,16 +322,12 @@ async function loadProducts() {
   });
 }
 
-loadProducts();
+loadProducts().then(() => {
+  initMagnifier();
+});
 
-document.addEventListener("DOMContentLoaded", () => {
-  // 以「載入當下」的視窗大小作為 100% 基準（僅做一次）
-  const baseW = window.innerWidth;
-  const baseH = window.innerHeight;
-  document.documentElement.style.setProperty('--base-w', baseW + 'px');
-  document.documentElement.style.setProperty('--base-h', baseH + 'px');
-
-  // ===== 放大鏡（局部放大，正方形） =====
+function initMagnifier() {
+      // ===== 放大鏡（局部放大，正方形） =====
   const ZOOM = 2.5; // 放大倍率（可調）
   let activeBlock = null; // 目前啟用放大鏡的 .product-image-block
 
@@ -535,4 +488,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
   requestAnimationFrame(initOrResize);
   window.addEventListener('resize', initOrResize);
+  });
+}
+
+
+//這個的功能是：等整個 HTML DOM 載入完成之後，再去綁定事件、初始化功能。
+//它只是「程式的啟動點」，確保 querySelector 能找到節點。
+document.addEventListener("DOMContentLoaded", () => {
+  // 以「載入當下」的視窗大小作為 100% 基準（僅做一次）
+  const baseW = window.innerWidth;
+  const baseH = window.innerHeight;
+  document.documentElement.style.setProperty('--base-w', baseW + 'px');
+  document.documentElement.style.setProperty('--base-h', baseH + 'px');
 });

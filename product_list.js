@@ -79,41 +79,25 @@ function collectOptionValues(variants, optionKeys) {
   return values; // { '選項-尺寸': ['22cm','33cm'], ... }
 }
 
-function createProductCard(productName, variants) {
-  const productDiv = document.createElement('div');
-  productDiv.className = 'product-item';
+/** 依目前選擇的選項找對應變體；若找不到回傳 null */
+function findVariantBySelection(variants, selection) {
+  return variants.find(v =>
+    Object.keys(selection).every(k => (v[k] || '').toString().trim() === selection[k])
+  ) || null;
+}
 
-  const optionKeys = extractOptionKeys(variants);
-  const optionValues = collectOptionValues(variants, optionKeys);
-
-  const initialVariant = variants[0];
-  const selection = {};
-  optionKeys.forEach(k => {
-    const val = (initialVariant[k] || '').toString().trim();
-    if (val) selection[k] = val;
-  });
-  
-
-  const imgListInit = buildImageList(initialVariant);
-
-  productDiv.innerHTML = generateProductHTML(productName, initialVariant, imgListInit);
-/*
-  const state = {
-    variants,
-    optionKeys,
-    selection,
-    imgList: imgListInit,
-    imgIndex: 0
-  };
-
-  // **綁定功能模組**
-  initImageNavigation(productDiv, state);
-  initMagnifier(productDiv, state);
-  initOptionSelection(productDiv, state);
-  initQuantityAndCart(productDiv, state);
-*/
-
-  return productDiv;
+/** 建立圖片清單（支援 額外圖片 or 額外圖片們，頓號分隔） */
+function buildImageList(variant) {
+  const base = 'https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/';
+  const mainImg = (variant['商品圖片'] || '').toString().trim();
+  const extraRaw = ((variant['額外圖片們'] ?? variant['額外圖片']) || '').toString().trim();
+  const extraImgs = extraRaw && extraRaw !== '無'
+    ? extraRaw.split('、').map(s => s.trim()).filter(Boolean)
+    : [];
+  const list = [];
+  if (mainImg) list.push(base + mainImg);
+  extraImgs.forEach(x => list.push(base + x));
+  return list;
 }
 
 //新增 HTML 產生器
@@ -172,6 +156,42 @@ function generateProductHTML(productName, variant, imgList) {
   `;
 }
 
+function createProductCard(productName, variants) {
+  const productDiv = document.createElement('div');
+  productDiv.className = 'product-item';
+
+  const optionKeys = extractOptionKeys(variants);
+  const optionValues = collectOptionValues(variants, optionKeys);
+
+  const initialVariant = variants[0];
+  const selection = {};
+  optionKeys.forEach(k => {
+    const val = (initialVariant[k] || '').toString().trim();
+    if (val) selection[k] = val;
+  });
+  
+
+  const imgListInit = buildImageList(initialVariant);
+
+  productDiv.innerHTML = generateProductHTML(productName, initialVariant, imgListInit);
+/*
+  const state = {
+    variants,
+    optionKeys,
+    selection,
+    imgList: imgListInit,
+    imgIndex: 0
+  };
+
+  // **綁定功能模組**
+  initImageNavigation(productDiv, state);
+  initMagnifier(productDiv, state);
+  initOptionSelection(productDiv, state);
+  initQuantityAndCart(productDiv, state);
+*/
+
+  return productDiv;
+}
 
 async function loadProducts() {
   const category = getQueryParam('main');

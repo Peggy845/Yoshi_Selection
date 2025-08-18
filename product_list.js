@@ -530,12 +530,14 @@ document.addEventListener("DOMContentLoaded", () => {
   // 初始、resize 時維持左上錨點 + 調整 sub 群組
   function initOrResize() {
     window.scrollTo(0, 0);
-    adjustSubBlocks();
+    //adjustSubBlocks();
   }
 
+/*
   requestAnimationFrame(() => {
     adjustSubBlocks();
   });
+*/
 
   window.addEventListener('resize', initOrResize);
 });

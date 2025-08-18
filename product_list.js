@@ -380,7 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 讓每個 product-image-block 都可用放大鏡
   document.querySelectorAll(".product-image-block").forEach(block => {
-    const img = block.querySelector(".main-image");
+    const img = block.querySelector(".product-image-block img");
     const btn = block.querySelector(".magnifier-btn");
     const lens = block.querySelector(".magnifier-lens");
 

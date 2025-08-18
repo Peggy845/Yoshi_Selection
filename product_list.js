@@ -193,6 +193,38 @@ function createProductCard(productName, variants) {
   return productDiv;
 }
 
+// --- 全域：sub-image 群組的自適應與等比填滿 ---
+window.adjustSubBlocks = function adjustSubBlocks() {
+  document.querySelectorAll(".sub-image-block").forEach(block => {
+    const group = block.querySelector(".sub-group");
+    if (!group) return;
+
+    const arrows = group.querySelectorAll(".sub-arrow");
+    const images = Array.from(group.querySelectorAll(".sub-image"));
+
+    const blockWidth = block.clientWidth;
+    const arrowW = arrows[0] ? arrows[0].offsetWidth : 0;
+    // 有固定 CSS: .sub-image { width:60px; height:60px }，這裡就能在圖片未載入前拿到正確寬度
+    const imgW = images[0] ? images[0].offsetWidth : 0;
+
+	// 預設 3 張，不足則依序減為 2、1、0；箭頭永遠保留
+    let imgCount = 3;
+    while (imgCount > 0 && (arrowW * 2 + imgW * imgCount) > blockWidth) {
+      imgCount--;
+    }
+	
+	// 顯示對應數量的圖片
+    images.forEach((img, i) => {
+      img.style.display = i < imgCount ? "flex" : "none";
+    });
+	
+	// 以等比縮放填滿可用寬度
+    const groupWidth = arrowW * 2 + imgW * imgCount;
+    const scale = groupWidth > 0 ? (blockWidth / groupWidth) : 1;
+    group.style.transform = `scale(${scale})`;
+  });
+};
+
 async function loadProducts() {
   const category = getQueryParam('main');
   const subcategory = getQueryParam('sub');
@@ -234,6 +266,34 @@ async function loadProducts() {
     const productDiv = createProductCard(productName, variants); // **呼叫模組化方法**
     container.appendChild(productDiv);
   }
+  
+    // 全部 append 完，讓瀏覽器先排版一次再量
+  requestAnimationFrame(() => {
+    window.adjustSubBlocks();
+
+    // 初次綁定 resize（避免重複綁）
+    if (!window.__subResizeBound) {
+      window.addEventListener('resize', window.adjustSubBlocks);
+      window.__subResizeBound = true;
+    }
+  });
+
+  // 圖片載入完成後再保險量一次（避免 offsetWidth 還未就緒）
+  const subImgs = document.querySelectorAll('.sub-image');
+  let remain = subImgs.length;
+  if (remain === 0) return;
+  subImgs.forEach(img => {
+    if (img.complete) {
+      if (--remain === 0) window.adjustSubBlocks();
+    } else {
+      img.addEventListener('load', () => {
+        if (--remain === 0) window.adjustSubBlocks();
+      }, { once: true });
+      img.addEventListener('error', () => {
+        if (--remain === 0) window.adjustSubBlocks();
+      }, { once: true });
+    }
+  });
 }
 
 loadProducts();
@@ -244,37 +304,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const baseH = window.innerHeight;
   document.documentElement.style.setProperty('--base-w', baseW + 'px');
   document.documentElement.style.setProperty('--base-h', baseH + 'px');
-
-  // ===== sub-image 群組的自適應與等比填滿 =====
-  function adjustSubBlocks() {
-    document.querySelectorAll(".sub-image-block").forEach(block => {
-      const group = block.querySelector(".sub-group");
-      if (!group) return;
-
-      const arrows = group.querySelectorAll(".sub-arrow");
-      const images = Array.from(group.querySelectorAll(".sub-image"));
-
-      const blockWidth = block.clientWidth;
-      const arrowW = arrows[0] ? arrows[0].offsetWidth : 0;
-      const imgW = images[0] ? images[0].offsetWidth : 0;
-
-      // 預設 3 張，不足則依序減為 2、1、0；箭頭永遠保留
-      let imgCount = 3;
-      while (imgCount > 0 && (arrowW * 2 + imgW * imgCount) > blockWidth) {
-        imgCount--;
-      }
-
-      // 顯示對應數量的圖片
-      images.forEach((img, i) => {
-        img.style.display = i < imgCount ? "flex" : "none";
-      });
-
-      // 以等比縮放填滿可用寬度
-      const groupWidth = arrowW * 2 + imgW * imgCount;
-      const scale = groupWidth > 0 ? (blockWidth / groupWidth) : 1;
-      group.style.transform = `scale(${scale})`;
-    });
-  }
 
   // ===== 放大鏡（局部放大，正方形） =====
   const ZOOM = 2.5; // 放大倍率（可調）

@@ -45,7 +45,8 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   background: #f5f5f5;
   margin: 0 auto;   /* 置中或對齊 */
     box-sizing: border-box;
-  /* 關鍵：不要在這裡加 overflow，避免捲軸長在內層 */}
+  /* 關鍵：不要在這裡加 overflow，避免捲軸長在內層 */
+}
 
 
 /* product-item 保持你原先的寬高比與結構

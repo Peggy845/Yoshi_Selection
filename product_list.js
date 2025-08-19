@@ -237,32 +237,45 @@ function initMagnifier(productDiv) {
     const bgPosY = -(focusY - lensH / 2);
     lens.style.backgroundPosition = `${bgPosX}px ${bgPosY}px`;
   }
+  
+	function placeLens(clientX, clientY) {
+	  const lensW = lens.offsetWidth;
+	  const lensH = lens.offsetHeight;
 
-  function placeLens(x, y) {
-    const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
-    const blockW = block.clientWidth, blockH = block.clientHeight;
+	  const imgRect = img.getBoundingClientRect();
+	  const blockRect = block.getBoundingClientRect();
 
-    const clampedX = Math.max(0, Math.min(x - lensW / 2, blockW - lensW));
-    const clampedY = Math.max(0, Math.min(y - lensH / 2, blockH - lensH));
-    lens.style.left = clampedX + "px";
-    lens.style.top  = clampedY + "px";
+	  // 滑鼠相對於圖片的座標
+	  let x = clientX - imgRect.left;
+	  let y = clientY - imgRect.top;
 
-    const disp = getDisplayedImageRect();
-    const centerX = clampedX + lensW / 2;
-    const centerY = clampedY + lensH / 2;
-    const nx = Math.max(0, Math.min(1, (centerX - disp.left) / disp.width));
-    const ny = Math.max(0, Math.min(1, (centerY - disp.top)  / disp.height));
-    setLensBackground(nx, ny);
-  }
+	  // 限制滑鼠不能超過圖片範圍
+	  if (x < 0) x = 0;
+	  if (y < 0) y = 0;
+	  if (x > imgRect.width) x = imgRect.width;
+	  if (y > imgRect.height) y = imgRect.height;
 
-  function enable() {
-    fitLensSize();
-    lens.style.display = "block";
-    active = true;
-    const rect = block.getBoundingClientRect();
-    placeLens(rect.width / 2, rect.height / 2);
-    block.addEventListener("mousemove", onMove);
-  }
+	  // 把 lens 放到圖片內相對應位置
+	  const lensLeft = x - lensW / 2 + (imgRect.left - blockRect.left);
+	  const lensTop  = y - lensH / 2 + (imgRect.top - blockRect.top);
+
+	  lens.style.left = `${lensLeft}px`;
+	  lens.style.top  = `${lensTop}px`;
+
+	  // 計算比例，背景位置要跟圖片比例一致
+	  const nx = x / imgRect.width;
+	  const ny = y / imgRect.height;
+
+	  setLensBackground(nx, ny);
+	}
+
+	// 點擊放大鏡 → 只打開，不再強制對準中心
+	function enable() {
+	  fitLensSize();
+	  lens.style.display = "block";
+	  active = true;
+	  block.addEventListener("mousemove", onMove);
+	}
 
   function disable() {
     lens.style.display = "none";
@@ -270,10 +283,9 @@ function initMagnifier(productDiv) {
     block.removeEventListener("mousemove", onMove);
   }
 
-  function onMove(ev) {
-    const r = block.getBoundingClientRect();
-    placeLens(ev.clientX - r.left, ev.clientY - r.top);
-  }
+	function onMove(ev) {
+	  placeLens(ev.clientX, ev.clientY);
+	}
 
   btn.addEventListener("click", (e) => {
     e.stopPropagation();

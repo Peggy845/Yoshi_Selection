@@ -236,4 +236,8 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   pointer-events: none;
   /* 為了辨識放大模式，給使用者提示 */
   outline: 1px dashed rgba(0,0,0,0.08);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  z-index: 20;
 }

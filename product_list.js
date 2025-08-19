@@ -431,3 +431,21 @@ async function loadProducts() {
 }
 
 loadProducts();
+
+// ===== 初始化：整個頁面載入完成後執行 =====
+document.addEventListener("DOMContentLoaded", () => {
+  // 設定基準尺寸
+  const baseW = window.innerWidth;
+  const baseH = window.innerHeight;
+  document.documentElement.style.setProperty('--base-w', baseW + 'px');
+  document.documentElement.style.setProperty('--base-h', baseH + 'px');
+
+/*
+  // 套用放大鏡功能到所有 product
+  document.querySelectorAll(".product").forEach(productDiv => {
+    initMagnifier(productDiv);
+  });
+*/
+  // 如果還有 sub-image-block 需要調整，這裡可以呼叫 adjustSubBlocks()
+  // requestAnimationFrame(adjustSubBlocks);
+});

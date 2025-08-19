@@ -123,8 +123,6 @@ function generateProductHTML(productName, variant, imgList) {
               <line x1="7" y1="11" x2="15" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </button>
-          <!-- 放大鏡視窗（正方形、預設隱藏） -->
-          <div class="magnifier-lens" aria-hidden="true"></div>
         </div>
 
         <div class="sub-image-block">

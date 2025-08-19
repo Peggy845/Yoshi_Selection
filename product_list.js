@@ -185,15 +185,23 @@ function initMagnifier(productDiv) {
   const block = productDiv.querySelector(".product-image-block");
   if (!block) return;
 
+  // 1) 抓主圖與按鈕（不依賴主圖 class 名稱）
   const img = block.querySelector("img");
   const btn = block.querySelector(".magnifier-btn");
-  const lens = block.querySelector(".magnifier-lens");
-  if (!img || !btn || !lens) return;
+  if (!img || !btn) return;
 
-  const ZOOM = 2.5; // 放大倍率（可調）
-  let activeBlock = null; // 目前啟用放大鏡的 .product-image-block
+  // 2) 若沒有 magnifier-lens，動態建立
+  let lens = block.querySelector(".magnifier-lens");
+  if (!lens) {
+    lens = document.createElement("div");
+    lens.className = "magnifier-lens";
+    lens.setAttribute("aria-hidden", "true");
+    block.appendChild(lens);
+  }
 
-  // 動態依容器大小調整鏡片尺寸
+  const ZOOM = 2.5;
+  let active = false;
+
   function fitLensSize() {
     const rect = block.getBoundingClientRect();
     const s = Math.round(Math.max(100, Math.min(220, Math.min(rect.width, rect.height) * 0.28)));
@@ -201,25 +209,26 @@ function initMagnifier(productDiv) {
     lens.style.height = s + "px";
   }
 
-  // 計算圖片在容器中的實際顯示區域
   function getDisplayedImageRect() {
     const blockRect = block.getBoundingClientRect();
     const imgRect = img.getBoundingClientRect();
-    const left = imgRect.left - blockRect.left;
-    const top  = imgRect.top  - blockRect.top;
-    return { left, top, width: imgRect.width, height: imgRect.height };
+    return {
+      left: imgRect.left - blockRect.left,
+      top:  imgRect.top  - blockRect.top,
+      width: imgRect.width,
+      height: imgRect.height
+    };
   }
 
-  // 設定鏡片背景（放大效果）
   function setLensBackground(nx, ny) {
     const disp = getDisplayedImageRect();
     const lensRect = lens.getBoundingClientRect();
-    const lensW = lensRect.width;
-    const lensH = lensRect.height;
+    const lensW = lensRect.width, lensH = lensRect.height;
 
     const bgW = disp.width * ZOOM;
     const bgH = disp.height * ZOOM;
     lens.style.backgroundImage = `url("${img.src}")`;
+    lens.style.backgroundRepeat = "no-repeat";
     lens.style.backgroundSize = `${bgW}px ${bgH}px`;
 
     const focusX = nx * bgW;
@@ -229,16 +238,12 @@ function initMagnifier(productDiv) {
     lens.style.backgroundPosition = `${bgPosX}px ${bgPosY}px`;
   }
 
-  // 將鏡片放到區塊內座標 (x,y)
   function placeLens(x, y) {
-    const lensW = lens.offsetWidth;
-    const lensH = lens.offsetHeight;
-    const blockW = block.clientWidth;
-    const blockH = block.clientHeight;
+    const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
+    const blockW = block.clientWidth, blockH = block.clientHeight;
 
     const clampedX = Math.max(0, Math.min(x - lensW / 2, blockW - lensW));
     const clampedY = Math.max(0, Math.min(y - lensH / 2, blockH - lensH));
-
     lens.style.left = clampedX + "px";
     lens.style.top  = clampedY + "px";
 
@@ -247,70 +252,50 @@ function initMagnifier(productDiv) {
     const centerY = clampedY + lensH / 2;
     const nx = Math.max(0, Math.min(1, (centerX - disp.left) / disp.width));
     const ny = Math.max(0, Math.min(1, (centerY - disp.top)  / disp.height));
-
     setLensBackground(nx, ny);
   }
 
-  // 啟用放大鏡
-  function enableMagnifier() {
+  function enable() {
     fitLensSize();
     lens.style.display = "block";
-    activeBlock = block;
+    active = true;
     const rect = block.getBoundingClientRect();
     placeLens(rect.width / 2, rect.height / 2);
     block.addEventListener("mousemove", onMove);
-    block.addEventListener("mouseleave", onLeave);
   }
 
-  // 關閉放大鏡
-  function disableMagnifier() {
+  function disable() {
     lens.style.display = "none";
-    if (activeBlock === block) activeBlock = null;
+    active = false;
     block.removeEventListener("mousemove", onMove);
-    block.removeEventListener("mouseleave", onLeave);
-  }
-
-  function toggleMagnifier(e) {
-    e.stopPropagation();
-    if (lens.style.display === "block") {
-      disableMagnifier();
-    } else {
-      if (activeBlock && activeBlock !== block) {
-        const otherBtn = activeBlock.querySelector(".magnifier-btn");
-        otherBtn && otherBtn.click();
-      }
-      enableMagnifier();
-    }
   }
 
   function onMove(ev) {
-    const blockRect = block.getBoundingClientRect();
-    const x = ev.clientX - blockRect.left;
-    const y = ev.clientY - blockRect.top;
-    placeLens(x, y);
+    const r = block.getBoundingClientRect();
+    placeLens(ev.clientX - r.left, ev.clientY - r.top);
   }
 
-  function onLeave() {
-    // 預設：滑出主圖不關閉，維持最後位置
-    // 可改成 disableMagnifier(); 如果你希望滑出就關閉
-  }
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    active ? disable() : enable();
+  });
 
-  // 綁定事件
-  btn.addEventListener("click", toggleMagnifier);
   document.addEventListener("click", (ev) => {
-    if (!block.contains(ev.target)) disableMagnifier();
+    if (!block.contains(ev.target)) disable();
   });
+
   document.addEventListener("keydown", (ev) => {
-    if (ev.key === "Escape") disableMagnifier();
+    if (ev.key === "Escape") disable();
   });
+
   window.addEventListener("resize", () => {
-    if (lens.style.display === "block") {
-      fitLensSize();
-      const rect = block.getBoundingClientRect();
-      placeLens(rect.width / 2, rect.height / 2);
-    }
+    if (!active) return;
+    fitLensSize();
+    const rect = block.getBoundingClientRect();
+    placeLens(rect.width / 2, rect.height / 2);
   });
 }
+
 
 function createProductCard(productName, variants) {
   const productDiv = document.createElement('div');

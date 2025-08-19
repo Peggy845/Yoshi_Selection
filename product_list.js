@@ -108,7 +108,7 @@ function generateProductHTML(productName, variant, imgList) {
 		    <div class="arrow-block arrow-left" style="${imgList.length > 1 ? '' : 'display:none'}">
 			  <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18"/></svg>
 			</div>
-			<img src="${imgList[0] || ''}" class="product-image-block img" alt="${productName}">
+			<img src="${imgList[0] || ''}" class="main-image" alt="${productName}">
 			<div class="arrow-block arrow-right" style="${imgList.length > 1 ? '' : 'display:none'}">
 			  <svg viewBox="0 0 24 24"><path d="M9 6 L15 12 L9 18"/></svg>
 			</div>
@@ -161,7 +161,7 @@ function generateProductHTML(productName, variant, imgList) {
 }
 
 function initImageNavigation(productDiv, state) {
-  const imgEl = productDiv.querySelector('.product-image-block img');
+  const imgEl = productDiv.querySelector('.main-image');
   const leftBtn = productDiv.querySelector('.arrow-left');
   const rightBtn = productDiv.querySelector('.arrow-right');
 
@@ -185,12 +185,11 @@ function initMagnifier(productDiv) {
   const block = productDiv.querySelector(".product-image-block");
   if (!block) return;
 
-  // 1) 抓主圖與按鈕（不依賴主圖 class 名稱）
-  const img = block.querySelector("img");
-  const btn = block.querySelector(".magnifier-btn");
+  const img = block.querySelector("img");              // 主圖
+  const btn = block.querySelector(".magnifier-btn");   // 按鈕
   if (!img || !btn) return;
 
-  // 2) 若沒有 magnifier-lens，動態建立
+  // 動態建立鏡片
   let lens = block.querySelector(".magnifier-lens");
   if (!lens) {
     lens = document.createElement("div");
@@ -199,124 +198,94 @@ function initMagnifier(productDiv) {
     block.appendChild(lens);
   }
 
-  const ZOOM = 2.5;
+  const ZOOM = 2.5;   // 放大倍率（可調）
   let active = false;
 
+  // 鏡片尺寸：依容器短邊 28%（100~220 之間）
   function fitLensSize() {
-    const rect = block.getBoundingClientRect();
-    const s = Math.round(Math.max(100, Math.min(220, Math.min(rect.width, rect.height) * 0.28)));
+    const r = block.getBoundingClientRect();
+    const s = Math.round(Math.max(100, Math.min(220, Math.min(r.width, r.height) * 0.28)));
     lens.style.width = s + "px";
     lens.style.height = s + "px";
   }
 
-  function getDisplayedImageRect() {
+  // 主計算：用「圖片顯示區域」座標做對位（完美對準 object-fit: contain）
+  function updateByEvent(ev) {
+    const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
     const blockRect = block.getBoundingClientRect();
-    const imgRect = img.getBoundingClientRect();
-    return {
-      left: imgRect.left - blockRect.left,
-      top:  imgRect.top  - blockRect.top,
-      width: imgRect.width,
-      height: imgRect.height
-    };
-  }
+    const imgRect   = img.getBoundingClientRect(); // 圖片實際顯示大小與位置
 
-  function setLensBackground(nx, ny) {
-    const disp = getDisplayedImageRect();
-    const lensRect = lens.getBoundingClientRect();
-    const lensW = lensRect.width, lensH = lensRect.height;
+    // 指標相對 block 的座標
+    let px = ev.clientX - blockRect.left;
+    let py = ev.clientY - blockRect.top;
 
-    const bgW = disp.width * ZOOM;
-    const bgH = disp.height * ZOOM;
-    lens.style.backgroundImage = `url("${img.src}")`;
+    // 先把鏡片放進 block（整塊不出界）
+    let left = Math.max(0, Math.min(px - lensW / 2, blockRect.width  - lensW));
+    let top  = Math.max(0, Math.min(py - lensH / 2, blockRect.height - lensH));
+    lens.style.left = left + "px";
+    lens.style.top  = top  + "px";
+
+    // 鏡片中心點（相對 block）
+    const cx = left + lensW / 2;
+    const cy = top  + lensH / 2;
+
+    // 轉成圖片顯示區域中的 0~1
+    const imgLeftInBlock = imgRect.left - blockRect.left;
+    const imgTopInBlock  = imgRect.top  - blockRect.top;
+
+    const nx = Math.max(0, Math.min(1, (cx - imgLeftInBlock) / imgRect.width));
+    const ny = Math.max(0, Math.min(1, (cy - imgTopInBlock)  / imgRect.height));
+
+    // 背景圖用「圖片顯示尺寸 * ZOOM」，因此與上面座標系一致，不會偏
+    const bgW = imgRect.width  * ZOOM;
+    const bgH = imgRect.height * ZOOM;
+
+    lens.style.backgroundImage  = `url("${img.src}")`;
+    lens.style.backgroundSize   = `${bgW}px ${bgH}px`;
     lens.style.backgroundRepeat = "no-repeat";
-    lens.style.backgroundSize = `${bgW}px ${bgH}px`;
 
+    // 讓鏡片中心對準 (nx, ny)
     const focusX = nx * bgW;
     const focusY = ny * bgH;
-    const bgPosX = -(focusX - lensW / 2);
-    const bgPosY = -(focusY - lensH / 2);
-    lens.style.backgroundPosition = `${bgPosX}px ${bgPosY}px`;
+    lens.style.backgroundPosition = `${-(focusX - lensW/2)}px ${-(focusY - lensH/2)}px`;
   }
-  
-	function placeLens(ev) {
-	  const lensW = lens.offsetWidth;
-	  const lensH = lens.offsetHeight;
 
-	  const imgRect = img.getBoundingClientRect();
-	  const blockRect = block.getBoundingClientRect();
+  function onMove(ev) {
+    if (!active) return;
+    updateByEvent(ev);
+  }
 
-	  // 滑鼠相對於圖片可視範圍的座標
-	  let x = ev.clientX - imgRect.left;
-	  let y = ev.clientY - imgRect.top;
+  function enable(ev) {
+    fitLensSize();
+    lens.style.display = "block";
+    active = true;
 
-	  // 限制在圖片範圍內
-	  if (x < 0) x = 0;
-	  if (y < 0) y = 0;
-	  if (x > imgRect.width) x = imgRect.width;
-	  if (y > imgRect.height) y = imgRect.height;
+    // 立刻用「點擊當下的座標」初始化，避免出現空框
+    if (ev) updateByEvent(ev);
 
-	  // 把 lens 放到 block 中對應位置
-	  const lensLeft = x - lensW / 2 + (imgRect.left - blockRect.left);
-	  const lensTop  = y - lensH / 2 + (imgRect.top - blockRect.top);
-
-	  lens.style.left = `${lensLeft}px`;
-	  lens.style.top  = `${lensTop}px`;
-
-	  // 計算放大比例
-	  const ratioX = img.naturalWidth / imgRect.width;
-	  const ratioY = img.naturalHeight / imgRect.height;
-
-	  // 設定背景位置
-	  lens.style.backgroundImage = `url('${img.src}')`;
-	  lens.style.backgroundRepeat = "no-repeat";
-	  lens.style.backgroundSize = `${img.naturalWidth}px ${img.naturalHeight}px`;
-	  lens.style.backgroundPosition = `-${x * ratioX - lensW / 2}px -${y * ratioY - lensH / 2}px`;
-	}
-
-	// 點擊放大鏡 → 只打開，不再強制對準中心
-function enable() {
-  fitLensSize();
-  lens.style.display = "block";
-  active = true;
-
-  // 一開始就依滑鼠當前位置初始化 → 不會出現空框
-  block.addEventListener("mousemove", onMove);
-  block.addEventListener("mouseleave", disable);
-
-  // 立即更新一次
-  document.addEventListener("mousemove", onMove, { once: true });
-}
+    block.addEventListener("mousemove", onMove);
+    block.addEventListener("mouseleave", disable);
+  }
 
   function disable() {
     lens.style.display = "none";
     active = false;
     block.removeEventListener("mousemove", onMove);
+    block.removeEventListener("mouseleave", disable);
   }
 
-
-	function onMove(ev) {
-	  placeLens(ev);
-	}
-
+  // 切換
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
-    active ? disable() : enable();
+    active ? disable() : enable(e);   // 傳入點擊事件座標
   });
 
-  document.addEventListener("click", (ev) => {
-    if (!block.contains(ev.target)) disable();
-  });
+  // 點外面或 Esc 關閉
+  document.addEventListener("click", (e) => { if (!block.contains(e.target)) disable(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") disable(); });
 
-  document.addEventListener("keydown", (ev) => {
-    if (ev.key === "Escape") disable();
-  });
-
-  window.addEventListener("resize", () => {
-    if (!active) return;
-    fitLensSize();
-    const rect = block.getBoundingClientRect();
-    placeLens(rect.width / 2, rect.height / 2);
-  });
+  // 視窗改變時只調整大小（不再自動置中）
+  window.addEventListener("resize", () => { if (active) fitLensSize(); });
 }
 
 
@@ -462,20 +431,3 @@ async function loadProducts() {
 }
 
 loadProducts();
-
-// ===== 初始化：整個頁面載入完成後執行 =====
-document.addEventListener("DOMContentLoaded", () => {
-  // 設定基準尺寸
-  const baseW = window.innerWidth;
-  const baseH = window.innerHeight;
-  document.documentElement.style.setProperty('--base-w', baseW + 'px');
-  document.documentElement.style.setProperty('--base-h', baseH + 'px');
-
-  // 套用放大鏡功能到所有 product
-  document.querySelectorAll(".product").forEach(productDiv => {
-    initMagnifier(productDiv);
-  });
-
-  // 如果還有 sub-image-block 需要調整，這裡可以呼叫 adjustSubBlocks()
-  // requestAnimationFrame(adjustSubBlocks);
-});

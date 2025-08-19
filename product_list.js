@@ -108,7 +108,7 @@ function generateProductHTML(productName, variant, imgList) {
 		    <div class="arrow-block arrow-left" style="${imgList.length > 1 ? '' : 'display:none'}">
 			  <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18"/></svg>
 			</div>
-			<img src="${imgList[0] || ''}" alt="${productName}">
+			<img src="${imgList[0] || ''}" class="product-image-block img" alt="${productName}">
 			<div class="arrow-block arrow-right" style="${imgList.length > 1 ? '' : 'display:none'}">
 			  <svg viewBox="0 0 24 24"><path d="M9 6 L15 12 L9 18"/></svg>
 			</div>
@@ -380,7 +380,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // 讓每個 product-image-block 都可用放大鏡
   document.querySelectorAll(".product-image-block").forEach(block => {
-    const img = block.querySelector(".main-image");
+    const img = block.querySelector(".product-image-block img");
     const btn = block.querySelector(".magnifier-btn");
     const lens = block.querySelector(".magnifier-lens");
 

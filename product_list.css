@@ -200,7 +200,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .right-col {
   width: 65%;
   display: flex;
-  padding: 10px 12px;
+  padding: 10px 20px;
   flex-direction: column;
   box-sizing: border-box;
   overflow: hidden;
@@ -212,8 +212,8 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .product-option,
 .product-others {
   align-items: center;
-  padding: 5px;
-  font-size: 20px; 
+  padding: 10px;
+  font-size: 40px;
   font-weight: 800;
 }
 
@@ -236,6 +236,62 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .sale-status-block { width: 35%; }
 .product-quantity { width: 35%; }
 .product-cart { width: 30%; }
+
+/* 販售狀態 */
+.sale-status-block {
+  width: 35%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #fffae6;
+  font-weight: 700;
+  color: #6b4f00;
+  border-top: 1px solid #f0e6c0;
+}
+
+/* 數量小區 */
+.quantity-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.qty-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid #ccc;
+  background-color: #fff;
+  cursor: pointer;
+  border-radius: 8px;
+  font-size: 18px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+.quantity-input {
+  width: 56px;
+  height: 34px;
+  text-align: center;      /* 置中顯示數字 */
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  background: #fff;
+}
+.stock-text { margin-left: 8px; color: #666; }
+
+/* 購物車按鈕 */
+.cart-btn {
+  padding: 10px 20px;
+  background-color: #ffa64d;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-weight: 800;
+  border-radius: 10px;
+  transition: background-color .15s ease, transform .05s ease;
+}
+.cart-btn:hover { background-color: #ff9600; }
+.cart-btn:active { transform: scale(0.98); }
+.cart-btn.active { background-color: #ff7f00; }
 
 /* ===== 放大鏡 UI ===== */
 /* 右下角放大鏡按鈕（固定在主圖區塊內，不超出） */

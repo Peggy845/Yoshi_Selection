@@ -202,49 +202,38 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .product-cart { width: 30%; }
 
 /* ===== 放大鏡 UI ===== */
-/* 放大鏡按鈕（右下角） */
+/* 右下角放大鏡按鈕（固定在主圖區塊內，不超出） */
 .magnifier-btn {
   position: absolute;
-  bottom: 10px;
-  right: 10px;
-  width: 42px;
-  height: 42px;
-  background-color: rgba(200,200,200,0.3);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  right: 8px;
+  bottom: 8px;
+  width: 36px;
+  height: 36px;
+  border: 0;
+  border-radius: 10px;
+  background: rgba(255,255,255,0.9);
+  color: #222;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  display: grid;
+  place-items: center;
   cursor: pointer;
-  z-index: 20;
-  backdrop-filter: blur(1px);
-  transition: background-color .2s ease, transform .1s ease;
-}
-.magnifier-btn:hover { background-color: rgba(200,200,200,0.45); }
-.magnifier-btn:active { transform: scale(0.96); }
-
-.magnifier-btn svg {
-  width: 22px;
-  height: 22px;
-  stroke: #222;
-  stroke-width: 2;
-  fill: none;
+  padding: 0;
 }
 
-/* 放大鏡鏡片（跟著滑鼠移動） */
+.magnifier-btn:hover { background: #fff; }
+.magnifier-icon { width: 22px; height: 22px; }
+
+/* 放大鏡視窗（正方形），預設隱藏；不吃滑鼠事件以便追蹤容器的 mousemove */
 .magnifier-lens {
   position: absolute;
-  border: 3px solid #aaa;
-  border-radius: 50%;
-  width: 120px;
-  height: 120px;
-  overflow: hidden;
   display: none;
-  pointer-events: none; /* 避免擋住滑鼠事件 */
-  z-index: 15;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.2);
-  background: #fff;
-}
-.magnifier-lens img {
-  position: absolute;
-  transform-origin: top left;
+  width: 160px;       /* 會在 JS 依容器大小自動調整 */
+  height: 160px;
+  border: 2px solid #222;
+  border-radius: 8px; /* 你要正方形 -> 可以改為 0；這裡保留微圓角更好看 */
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  background-repeat: no-repeat;
+  pointer-events: none;
+  /* 為了辨識放大模式，給使用者提示 */
+  outline: 1px dashed rgba(0,0,0,0.08);
 }

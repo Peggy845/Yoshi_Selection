@@ -164,12 +164,46 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   border: 1px solid black;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* 右欄 */
 .right-col {
   width: 65%;
-  border: 1px solid black;
   display: flex;
+  padding: 10px 12px;
   flex-direction: column;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .product-name,
@@ -177,8 +211,10 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .product-detail,
 .product-option,
 .product-others {
-  border: 1px solid black;
+  align-items: center;
   padding: 5px;
+  font-size: 20px; 
+  font-weight: 800;
 }
 
 /* 原來的 flex 配比，保留 */
@@ -192,7 +228,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 }
 
 .sale-status-block, .product-quantity, .product-cart {
-  border: 1px solid black;
   display: flex;
   align-items: center;
   justify-content: center;

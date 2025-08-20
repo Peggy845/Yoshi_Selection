@@ -242,13 +242,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
     vertical-align: sub;
 }
 
-.product-name-title{
-  font-weight: inherit;
-  display: inline;
-  font-size: inherit;
-  margin: inherit;
-}
-
 .sale-status-block, .product-quantity, .product-cart {
   display: flex;
   align-items: center;   /*垂直對齊方式*/

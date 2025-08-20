@@ -1,3 +1,10 @@
+/* 
+用clamp的好處是會隨螢幕縮放
+大螢幕 (桌機 1920px) → 會吃到接近最大值 (40px, 120px 等)。
+中螢幕 (平板 768px) → 自動調整在 20~30px 左右。
+小螢幕 (手機 360px) → 自動掉到最小值 (16px, 50px 等)，不會過大。
+*/
+
 :root{
   /* 載入時計算的基準值（JS 會覆蓋），此為保險用 fallback */
   --base-w: 100vw;
@@ -212,8 +219,8 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .product-option,
 .product-others {
   align-items: center;
-  padding: 25px 30px;
-  font-size: 40px;
+  padding: clamp(10px, 2vw, 25px) clamp(12px, 2.5vw, 30px); /* padding隨螢幕縮放 */
+  font-size: clamp(16px, 2.5vw, 40px);
   font-weight: 800;
   border: 1px solid black;
 }
@@ -229,9 +236,9 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 }
 
 .product-name{
-	font-size: 40px;
-	font-weight: 700;
-	line-height: 24px;     /*文字行高*/
+	font-size: clamp(18px, 2.5vw, 40px);
+    font-weight: 700;
+    line-height: clamp(20px, 2.5vw, 24px);   /*文字行高*/ 
 	margin: 0;  /* 外邊距 */
 	display: -webkit-box; /* 總之是種排版? */
 	text-overflow: ellipsis;  /*當文字太長時出現... 點點點*/
@@ -273,7 +280,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   gap: 8px;
   white-space: nowrap;   /* 不換行 */
   justify-content: center;
-  font-size: 40px;
+  font-size: clamp(16px, 2.5vw, 40px);
   font-weight: 600;
   color: #374151;
 }
@@ -284,9 +291,9 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   justify-content: center;
   background: #eef2ff;
   border: none;
-  padding: 30px 30px;    /* 大一點好點擊 */
+  padding: clamp(8px, 2vw, 30px) clamp(8px, 2vw, 30px);
   cursor: pointer;
-  font-size: 30px;
+  font-size: clamp(16px, 2.5vw, 30px);
   font-weight: 800;
   border-radius: 8px;
   transition: transform 0.06s ease;
@@ -295,12 +302,12 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .qty-btn:active { transform: scale(0.98); }
 
 .quantity-input {  
-  width: 120px;
-  height: 90px;
+  width: clamp(50px, 8vw, 120px);
+  height: clamp(30px, 6vw, 90px);
   border: 1px solid #d1d5db;
   border-radius: 8px;
   text-align: center;           /* 置中對齊 */
-  font-size: 30px;
+  font-size: clamp(16px, 2.5vw, 30px);
   font-weight: 700;
   -moz-appearance: textfield;
 }
@@ -322,12 +329,12 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .cart-btn {
   width: 100%;
   height: 100%;
-  padding: 10px 20px;
+  padding: clamp(6px, 1.5vw, 10px) clamp(12px, 2.5vw, 20px);
   background-color: #fffae6;   /* 按鈕顏色 */
   color: #000000;  /* 文字顏色 */
   border: none;
   cursor: pointer;
-  font-size: 40px;
+  font-size: clamp(18px, 2.5vw, 40px);
   font-weight: 600;
   border-radius: 10px;
   /* transition: 當元素狀態改變時，樣式變化的過渡效果 */

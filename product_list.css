@@ -212,7 +212,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .product-option,
 .product-others {
   align-items: center;
-  padding: 10px;
+  padding: 25px 30px;
   font-size: 40px;
   font-weight: 800;
   border: 1px solid black;
@@ -229,17 +229,18 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 }
 
 .product-name{
-    display: -webkit-box;
-    text-overflow: ellipsis;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-    font-size: 20px;
-    font-weight: 500;
-    line-height: 24px;
-    margin: 0;
-    overflow: hidden;
-    overflow-wrap: break-word;
-    vertical-align: sub;
+	font-size: 40px;
+	font-weight: 700;
+	line-height: 24px;     /*文字行高*/
+	margin: 0;  /* 外邊距 */
+	display: -webkit-box; /* 總之是種排版? */
+	text-overflow: ellipsis;  /*當文字太長時出現... 點點點*/
+	-webkit-box-orient: vertical; /*讓文字變成兩行*/
+	-webkit-line-clamp: 2;  /* 這是設定問自尾端 .... 點點 要呈現在第幾行*/
+
+	overflow: hidden;
+	overflow-wrap: break-word;  /* 過長的詞就會被拆開換行顯示 */
+	vertical-align: sub;  /*垂直對齊下標位置*/
 }
 
 .sale-status-block, .product-quantity, .product-cart {

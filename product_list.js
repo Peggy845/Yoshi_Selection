@@ -145,7 +145,7 @@ function generateProductHTML(productName, variant, imgList) {
           <div class="sale-status-block">狀態: ${variant['販售狀態'] || ''}</div>
           <div class="product-quantity">
 	        <div class="quantity-block">
-	          <span>數量</span>
+			  <span class="stock-text">數量</span>
 	          <button class="qty-btn" data-type="minus" type="button">−</button>
 	          <input class="quantity-input" type="number" value="1" min="1" max="${variant['庫存'] || 0}" readonly>
 	          <button class="qty-btn" data-type="plus" type="button">＋</button>

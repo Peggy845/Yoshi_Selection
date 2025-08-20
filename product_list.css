@@ -265,14 +265,10 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   color: #374151;
 }
 .qty-btn {
-  /*width: 34px;
-  height: 34px; */
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  
-  
   background: #eef2ff;
   border: none;
   padding: 30px 30px;    /* 大一點好點擊 */
@@ -286,12 +282,12 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .qty-btn:active { transform: scale(0.98); }
 
 .quantity-input {  
-  width: 56px;
-  height: 42px;
+  width: 120px;
+  height: 90px;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   text-align: center;           /* 置中對齊 */
-  font-size: 1.05rem;
+  font-size: 30px;
   font-weight: 700;
   -moz-appearance: textfield;
 }
@@ -299,9 +295,10 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .quantity-input::-webkit-outer-spin-button,
 .quantity-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
+/* 還剩 x 件 */
 .stock-text { 
-  margin-left: 8px; 
-  color: #666; 
+  margin-left: 12px; 
+  margin-right: 12px; 
   max-width: 200px;
   overflow: hidden;
   text-overflow: ellipsis;

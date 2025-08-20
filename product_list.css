@@ -228,6 +228,27 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   display: flex;
 }
 
+.product-name{
+    display: -webkit-box;
+    text-overflow: ellipsis;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+    font-size: 20px;
+    font-weight: 500;
+    line-height: 24px;
+    margin: 0;
+    overflow: hidden;
+    overflow-wrap: break-word;
+    vertical-align: sub;
+}
+
+.product-name-title{
+  font-weight: inherit;
+  display: inline;
+  font-size: inherit;
+  margin: inherit;
+}
+
 .sale-status-block, .product-quantity, .product-cart {
   display: flex;
   align-items: center;   /*垂直對齊方式*/
@@ -247,9 +268,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background-color: #fffae6;
   font-weight: 700;
-  color: #6b4f00;
   border-top: 1px solid #f0e6c0;
 }
 

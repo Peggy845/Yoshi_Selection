@@ -137,7 +137,9 @@ function generateProductHTML(productName, variant, imgList) {
     </div>
 
     <div class="right-col">
-        <div class="product-name">${productName}</div>
+        <div class="product-name">
+		  <h1 class="product-name-title">${productName}</h1>
+		</div>
         <div class="product-price">$ ${variant['價格'] || ''}</div>
         <div class="product-detail">${variant['詳細資訊'] || ''}</div>
         <div class="product-option">選項區</div>

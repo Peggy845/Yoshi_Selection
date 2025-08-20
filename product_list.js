@@ -100,6 +100,173 @@ function buildImageList(variant) {
   return list;
 }
 
+/** 將 right-col 的內容依變體更新（價格、詳情、庫存、狀態、圖片區按鈕顯示） */
+function applyVariantToUI(productRoot, variant, state) {
+
+  productRoot.querySelector('.product-name').textContent = variant['商品名稱'] || '';
+  productRoot.querySelector('.product-price').textContent = `\$ ${variant['價格'] || ''}`;
+  productRoot.querySelector('.product-detail').textContent = variant['詳細資訊'] || '';
+  productRoot.querySelector('.stock-text').textContent = `還剩 ${variant['庫存'] || 0} 件`;
+  productRoot.querySelector('.quantity-input').max = variant['庫存'] || 0;
+
+  const statusEl = productRoot.querySelector('.sale-status-block');
+  statusEl.textContent = `狀態: ${variant['販售狀態'] || ''}`;
+
+  // 圖片
+  const imgList = buildImageList(variant);
+  state.imgList = imgList;
+  state.imgIndex = 0;
+
+  const imgEl = productRoot.querySelector('.product-image-block img');
+  imgEl.src = imgList[0] || '';
+
+  // 箭頭顯示
+  const leftArrow = productRoot.querySelector('.arrow-left');
+  const rightArrow = productRoot.querySelector('.arrow-right');
+  const showArrows = imgList.length > 1;
+  leftArrow.style.display = showArrows ? '' : 'none';
+  rightArrow.style.display = showArrows ? '' : 'none';
+
+  // 放大鏡的 lens 也要更新底圖大小（在滑動時會設定）
+}
+
+/** 生成選項群組（每個 選項-xxx 一行） */
+function renderOptionGroups(optionWrap, optionKeys, optionValues, initialSelection) {
+  optionWrap.innerHTML = '';
+  optionKeys.forEach(k => {
+    const group = document.createElement('div');
+    group.className = 'option-group';
+
+    const title = document.createElement('div');
+    title.className = 'option-title';
+    title.textContent = k.replace('選項-', '');
+    group.appendChild(title);
+
+    const buttons = document.createElement('div');
+    buttons.className = 'option-buttons';
+
+    (optionValues[k] || []).forEach((val, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.type = 'button';
+      btn.dataset.optionKey = k;
+      btn.dataset.optionValue = val;
+      btn.textContent = val;
+      if (!initialSelection[k] && idx === 0) {
+        // 若未指定，預設選第一個
+        initialSelection[k] = val;
+      }
+      if (initialSelection[k] === val) {
+        btn.classList.add('selected');
+      }
+      buttons.appendChild(btn);
+    });
+
+    group.appendChild(buttons);
+    optionWrap.appendChild(group);
+  });
+}
+
+function renderOptionGroupHTML(optionName, values, selectedValue) {
+  const group = document.createElement('div');
+  group.className = 'option-group';
+  const label = document.createElement('span');
+  label.className = 'option-label';
+  label.textContent = optionName;
+  group.appendChild(label);
+
+  values.forEach(value => {
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = value;
+    btn.className = value === selectedValue ? 'active' : '';
+    group.appendChild(btn);
+  });
+
+  return group;
+}
+
+function initOptionSelection(productDiv, state) {
+  const optionWrap = productDiv.querySelector('.product-option');
+
+  // 1. 過濾掉只有一種值的選項
+  const filteredKeys = state.optionKeys.filter(key => {
+    const values = collectOptionValues(state.variants, [key])[key] || [];
+    return values.length > 1; // 只有一種就不顯示
+  });
+
+  if (filteredKeys.length === 0) {
+    optionWrap.innerHTML = ''; // 沒有選項
+    return;
+  }
+
+  // 2. 渲染測試高度
+  optionWrap.innerHTML = '';
+  filteredKeys.forEach(key => {
+    const group = renderOptionGroupHTML(key, collectOptionValues(state.variants, [key])[key], state.selection[key]);
+    optionWrap.appendChild(group);
+  });
+
+  const maxHeight = optionWrap.clientHeight;
+  const allowedHeight = 120; // 假設容器允許的高度(px)
+
+  if (maxHeight > allowedHeight && filteredKeys.length > 1) {
+    // 找最短的選項
+    let shortestKey = filteredKeys[0];
+    let shortestLen = getOptionTotalLength(shortestKey, state.variants);
+
+    filteredKeys.forEach(key => {
+      const len = getOptionTotalLength(key, state.variants);
+      if (len < shortestLen) {
+        shortestKey = key;
+        shortestLen = len;
+      }
+    });
+
+    // 重新排版，把最短Key和下一個Key合併顯示
+    const reordered = mergeTwoOptions(filteredKeys, shortestKey);
+    optionWrap.innerHTML = '';
+    reordered.forEach(entry => {
+      if (Array.isArray(entry)) {
+        // 併排
+        const combinedRow = document.createElement('div');
+        combinedRow.className = 'option-row-combined';
+        entry.forEach(k => {
+          const group = renderOptionGroupHTML(k, collectOptionValues(state.variants, [k])[k], state.selection[k]);
+          combinedRow.appendChild(group);
+        });
+        optionWrap.appendChild(combinedRow);
+      } else {
+        // 單列
+        optionWrap.appendChild(
+          renderOptionGroupHTML(entry, collectOptionValues(state.variants, [entry])[entry], state.selection[entry])
+        );
+      }
+    });
+  }
+}
+
+function initQuantityAndCart(productDiv) {
+  productDiv.addEventListener('click', (e) => {
+    const target = e.target;
+
+    if (target.classList.contains('qty-btn')) {
+      const input = productDiv.querySelector('.quantity-input');
+      const max = parseInt(input.max || '0', 10);
+      let val = parseInt(input.value || '1', 10);
+      val = target.dataset.type === 'plus'
+        ? Math.min(max || Infinity, val + 1)
+        : Math.max(1, val - 1);
+      input.value = val;
+    }
+
+    if (target.classList.contains('cart-btn')) {
+      target.classList.toggle('active');
+      target.textContent = target.classList.contains('active') ? '已加入' : '加入購物車';
+    }
+  });
+}
+
 //新增 HTML 產生器
 function generateProductHTML(productName, variant, imgList) {
   return `
@@ -319,10 +486,8 @@ function createProductCard(productName, variants) {
   // **綁定功能模組**
   initImageNavigation(productDiv, state);
   initMagnifier(productDiv);
-/*
   initOptionSelection(productDiv, state);
   initQuantityAndCart(productDiv, state);
-*/
 
   return productDiv;
 }

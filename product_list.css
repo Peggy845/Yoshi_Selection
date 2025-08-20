@@ -308,17 +308,22 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 /* 購物車按鈕 */
 .cart-btn {
   padding: 10px 20px;
-  background-color: #ffa64d;
+  background-color: #fffae6;   /* 按鈕顏色 */
+  color: #000000;  /* 文字顏色 */
   border: none;
   cursor: pointer;
-  color: #fff;
-  font-weight: 800;
+  font-size: 40px;
+  font-weight: 600;
   border-radius: 10px;
-  transition: background-color .15s ease, transform .05s ease;
+  /* transition: 當元素狀態改變時，樣式變化的過渡效果 */
+  transition: background-color .15s ease, transform .05s ease; /*過渡持續的時間*/
 }
-.cart-btn:hover { background-color: #ff9600; }
-.cart-btn:active { transform: scale(0.98); }
-.cart-btn.active { background-color: #ff7f00; }
+
+/* hoever: 游標移上去的時候會發生的事情*/
+.cart-btn:hover { background-color: #ffb955; } 
+/* active: 點擊左鍵後的效果*/
+.cart-btn:active { transform: scale(0.98); }    /* scale: 讓區塊縮放，大於1代表放大；小於1代表縮小 */
+.cart-btn.active { background-color: #ffb955; } 
 
 /* ===== 放大鏡 UI ===== */
 /* 右下角放大鏡按鈕（固定在主圖區塊內，不超出） */

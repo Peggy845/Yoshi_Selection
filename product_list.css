@@ -215,6 +215,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   padding: 10px;
   font-size: 40px;
   font-weight: 800;
+  border: 1px solid black;
 }
 
 /* 原來的 flex 配比，保留 */
@@ -233,6 +234,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   justify-content: center;  /*水平對齊方式*/
   width: auto;        /* 已經用 % 分配寬度，不要再卡死 */
   height: 100%;       /* 這裡讓三個子元素撐滿父層高度 */
+  border: 1px solid black;
 }
 
 .sale-status-block { width: 35%; }
@@ -256,29 +258,55 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   display: flex;
   align-items: center;
   gap: 8px;
+  white-space: nowrap;   /* 不換行 */
+  justify-content: center;
+  font-size: 40px;
+  font-weight: 600;
+  color: #374151;
 }
 .qty-btn {
-  width: 34px;
-  height: 34px;
-  border: 1px solid #ccc;
-  background-color: #fff;
-  cursor: pointer;
-  border-radius: 8px;
-  font-size: 18px;
+  /*width: 34px;
+  height: 34px; */
   line-height: 1;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-.quantity-input {
-  width: 56px;
-  height: 34px;
-  text-align: center;      /* 置中顯示數字 */
-  border: 1px solid #ccc;
+  
+  
+  background: #eef2ff;
+  border: none;
+  padding: 30px 30px;    /* 大一點好點擊 */
+  cursor: pointer;
+  font-size: 30px;
+  font-weight: 800;
   border-radius: 8px;
-  background: #fff;
+  transition: transform 0.06s ease;
 }
-.stock-text { margin-left: 8px; color: #666; }
+
+.qty-btn:active { transform: scale(0.98); }
+
+.quantity-input {  
+  width: 56px;
+  height: 42px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  text-align: center;           /* 置中對齊 */
+  font-size: 1.05rem;
+  font-weight: 700;
+  -moz-appearance: textfield;
+}
+
+.quantity-input::-webkit-outer-spin-button,
+.quantity-input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
+.stock-text { 
+  margin-left: 8px; 
+  color: #666; 
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
 /* 購物車按鈕 */
 .cart-btn {

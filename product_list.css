@@ -259,9 +259,18 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   border: 1px solid black;
 }
 
+/* 預設大螢幕 (桌機) */
 .sale-status-block { width: 35%; }
 .product-quantity { width: 35%; }
 .product-cart { width: 30%; }
+
+/* 不同螢幕比例需求 => 媒體查詢 (media query) */
+/* 小螢幕 (手機, 768px 以下) */
+@media (max-width: 768px) {
+  .sale-status-block { width: 15%; }
+  .product-quantity { width: 65%; }
+  .product-cart { width: 20%; }
+}
 
 /* 販售狀態 */
 .sale-status-block {
@@ -271,6 +280,15 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   justify-content: center;
   font-weight: 700;
   border-top: 1px solid #f0e6c0;
+}
+
+.product-quantity{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;   /* 防止超出 */
+  min-width: 0;       /* flex item 正確收縮 */
+  /* overflow: hidden; 雖然能蓋掉，但會「把東西裁掉」，最好搭配min-width */
 }
 
 /* 數量小區 */
@@ -283,7 +301,9 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   font-size: clamp(16px, 2.5vw, 40px);
   font-weight: 600;
   color: #374151;
+  overflow: hidden;  /* 防止超出 */
 }
+
 .qty-btn {
   line-height: 1;
   display: inline-flex;

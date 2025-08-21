@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <!-- 設定文件類型為 HTML5 -->
+  <meta charset="UTF-8" /> <!-- 頁面編碼為 UTF-8，支援中文 -->
+  
+  <!-- RWD 必備：讓頁面在手機上按比例縮放 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- 頁面標題（顯示在瀏覽器分頁上） -->
+  <title>Yoshi Selection</title>
+  
+  <!-- 引入外部 CSS 檔案，控制整體樣式 -->
+  <link rel="stylesheet" href="home.css" />
+  
+  <!-- 引入外部 JavaScript 檔案 -->
+  <!-- defer：等 HTML 載入完成後才執行 JS，避免阻塞渲染 -->
+  <script defer src="home.js"></script>
+</head>
+
+<body>
+  
+  <!-- 頁面頂部標題區塊 -->
+  <header class="header">Yoshi Selection</header>
+
+  <!-- 第一層：商品分類區塊 -->
+  <section class="category-section">
+    <div class="category-container" id="main-category-container">
+      
+      <!-- 固定的「關於我」分類 -->
+      <!-- 點擊會呼叫 home.js 中的 showAboutModal() 函式 -->
+      <div class="category-block" onclick="showAboutModal()">
+        <div class="circle-image">
+          <!-- 顯示 logo 圖片 -->
+          <img src="images/Yoshi_Selection_logo.jpg" alt="關於我" />
+        </div>
+        <div class="category-name">關於我</div>
+      </div>
+      
+      <!-- 這裡之後可能會用 JS 動態插入其他分類（由 Google Sheet 資料生成） -->
+    </div>
+  </section>
+
+  <!-- 第二層分類選單容器 -->
+  <!-- 由 JS 動態生成 sub-category-button -->
+  <div id="sub-category-container"></div>
+
+  <!-- 商品細分區塊 -->
+  <!-- 用來放各子分類的商品清單，由 JS 動態載入 -->
+  <section id="product-sections"></section>
+
+  <!-- 「關於我」彈出視窗 -->
+  <!-- class="modal" 和 "modal-content" 會由 CSS 控制顯示/隱藏 -->
+  <div id="about-modal" class="modal">
+    <div class="modal-content">
+      <p>這個之後會補充。</p>
+      <!-- 關閉按鈕，呼叫 closeAboutModal() 隱藏視窗 -->
+      <button onclick="closeAboutModal()">確認</button>
+    </div>
+  </div>
+  
+  <!-- 懸浮購物車按鈕 -->
+  <!-- 固定在螢幕右下角，點擊連到購物車頁面 -->
+  <a href="shopping-cart.html" class="floating-cart-button">
+    <img src="images/cart.png" alt="購物車" />
+  </a>
+
+</body>
+</html>

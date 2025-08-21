@@ -234,47 +234,7 @@ function initOptionSelection(productDiv, state) {
 
     group.appendChild(buttons);
     optionWrap.appendChild(group);
-  };
-/* 
-  const maxHeight = optionWrap.clientHeight;
-  const allowedHeight = 120; // 假設容器允許的高度(px)
-
-  if (maxHeight > allowedHeight && filteredKeys.length > 1) {
-    // 找最短的選項
-    let shortestKey = filteredKeys[0];
-    let shortestLen = getOptionTotalLength(shortestKey, state.variants);
-
-    filteredKeys.forEach(key => {
-      const len = getOptionTotalLength(key, state.variants);
-      if (len < shortestLen) {
-        shortestKey = key;
-        shortestLen = len;
-      }
-    });
-
-    // 重新排版，把最短Key和下一個Key合併顯示
-    const reordered = mergeTwoOptions(filteredKeys, shortestKey);
-    optionWrap.innerHTML = '';
-    reordered.forEach(entry => {
-      if (Array.isArray(entry)) {
-        // 併排
-        const combinedRow = document.createElement('div');
-        combinedRow.className = 'option-row-combined';
-        entry.forEach(k => {
-          const group = renderOptionGroupHTML(k, collectOptionValues(state.variants, [k])[k], state.selection[k]);
-          combinedRow.appendChild(group);
-        });
-        optionWrap.appendChild(combinedRow);
-      } else {
-        // 單列
-        optionWrap.appendChild(
-          renderOptionGroupHTML(entry, collectOptionValues(state.variants, [entry])[entry], state.selection[entry])
-        );
-      }
-    });
-  }
-*/
-
+  });
 }
 
 function initQuantityAndCart(productDiv) {

@@ -97,6 +97,8 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   user-select: none; 
   -webkit-user-drag: none;
   pointer-events: none; /* 讓滑鼠事件落在容器上，追蹤更準 */
+  transition: opacity 0.3s ease;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
 /* 左右箭頭（SVG + 半透明背景） */
@@ -104,19 +106,23 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
-  background-color: rgba(0,0,0,0.35);
+  width: 40px;
+  height: 40px;
+  border: none;
   border-radius: 50%;
+  background: rgba(0, 0, 0, 0.3);
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  transition: background 0.2s ease;
   z-index: 10;
-  transition: background-color .2s ease, transform .1s ease;
-  user-select: none;
 }
-.arrow-block:hover { background-color: rgba(0,0,0,0.5); }
+.arrow-block:hover {
+  background: rgba(0, 0, 0, 0.5);
+}
 .arrow-block:active { transform: translateY(-50%) scale(0.96); }
 
 .arrow-left { left: 10px; }
@@ -132,26 +138,52 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   stroke-linejoin: round;
 }
 
-/* 子圖區塊 */
+.fade-out {
+  opacity: 0;
+}
+.fade-in {
+  opacity: 1;
+}
+
+/* 子圖區塊 (保留原尺寸設定) */
 .sub-image-block {
-  flex: 3; /* 高度比例 30% */
+  flex: 3;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid black;
-  overflow: hidden; /* 保證不會超出 left-col */
+  border: 1px solid #ddd;
+  overflow: hidden;
+  background: #fafafa;
+  padding: 6px 10px;
+  border-radius: 6px;
 }
 
-/* 群組包一層，方便等比例放大 */
+/* 子圖容器 */
 .sub-group {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px; /* 箭頭與圖片間隔 */
-  transform-origin: center center;
+  gap: 6px;
+  transition: transform 0.3s ease;
 }
 
-/* 箭頭與子圖尺寸（固定） */
+/* 子圖 */
+.sub-image {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.sub-image:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 6px rgba(0, 0, 0, 0.3);
+}
+
+/* 子圖箭頭 */
 .sub-arrow {
   width: 28px;
   height: 60px;
@@ -159,19 +191,18 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid black;
-  background: #ddd;
+  border-radius: 4px;
+  background: linear-gradient(135deg, #f2f2f2, #ddd);
+  color: #555;
+  cursor: pointer;
+  user-select: none;
+  font-size: 16px;
+  transition: background 0.2s ease;
 }
 
-.sub-image {
-  width: 60px;
-  height: 60px;
-  flex-shrink: 0;
-  object-fit: cover;
-  border: 1px solid black;
+.sub-arrow:hover {
+  background: linear-gradient(135deg, #e0e0e0, #ccc);
 }
-
-
 
 
 

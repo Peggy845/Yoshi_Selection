@@ -288,6 +288,127 @@ function initImageNavigation(productDiv, state) {
   });
 }
 
+function initProductImageGallery(mainImage, extraImages) {
+  // 解析 Excel 的圖片
+  const images = [mainImage, ...extraImages.split("、")];
+
+  // DOM 元素
+  const mainImgEl = document.querySelector(".main-image");
+  const subGroupEl = document.querySelector(".sub-group");
+  const arrowLeft = document.querySelector(".arrow-left");
+  const arrowRight = document.querySelector(".arrow-right");
+  const subArrowLeft = document.querySelector(".sub-arrow-left");
+  const subArrowRight = document.querySelector(".sub-arrow-right");
+
+  // 狀態
+  let currentMainIndex = 0;
+  let currentSubStart = 0;
+
+  // 初始化
+  function init() {
+    mainImgEl.src = images[currentMainIndex];
+    renderSubImages();
+    bindEvents();
+  }
+
+  // 渲染子圖
+  function renderSubImages() {
+    subGroupEl.innerHTML = "";
+    const visibleImages = images.slice(currentSubStart, currentSubStart + 3);
+
+    visibleImages.forEach((src) => {
+      const img = document.createElement("img");
+      img.src = src;
+      img.classList.add("sub-image");
+      img.alt = "子圖片";
+
+      // 點擊子圖 → 切換主圖
+      img.addEventListener("click", () => {
+        fadeMainImage(src);
+        currentMainIndex = images.indexOf(src);
+      });
+
+      subGroupEl.appendChild(img);
+    });
+
+    // 控制 sub-arrow 顯示
+    const showSubArrows = images.length > 3;
+    subArrowLeft.style.display = showSubArrows ? "flex" : "none";
+    subArrowRight.style.display = showSubArrows ? "flex" : "none";
+
+    subArrowLeft.style.visibility = currentSubStart > 0 ? "visible" : "hidden";
+    subArrowRight.style.visibility =
+      currentSubStart + 3 < images.length ? "visible" : "hidden";
+  }
+
+  // 主圖切換動畫
+  function fadeMainImage(newSrc) {
+    mainImgEl.classList.add("fade-out");
+    setTimeout(() => {
+      mainImgEl.src = newSrc;
+      mainImgEl.classList.remove("fade-out");
+      mainImgEl.classList.add("fade-in");
+      setTimeout(() => mainImgEl.classList.remove("fade-in"), 300);
+    }, 300);
+  }
+
+  // 綁定事件
+  function bindEvents() {
+    // 主圖左右切換
+    arrowLeft.addEventListener("click", () => {
+      currentMainIndex = (currentMainIndex - 1 + images.length) % images.length;
+      fadeMainImage(images[currentMainIndex]);
+    });
+
+    arrowRight.addEventListener("click", () => {
+      currentMainIndex = (currentMainIndex + 1) % images.length;
+      fadeMainImage(images[currentMainIndex]);
+    });
+
+    // 子圖左右切換
+    subArrowLeft.addEventListener("click", () => {
+      if (currentSubStart > 0) {
+        currentSubStart--;
+        renderSubImages();
+      }
+    });
+
+    subArrowRight.addEventListener("click", () => {
+      if (currentSubStart + 3 < images.length) {
+        currentSubStart++;
+        renderSubImages();
+      }
+    });
+
+    // 手勢滑動
+    let startX = 0;
+    mainImgEl.addEventListener("touchstart", (e) => {
+      startX = e.touches[0].clientX;
+    });
+
+    mainImgEl.addEventListener("touchend", (e) => {
+      const endX = e.changedTouches[0].clientX;
+      if (endX - startX > 50) {
+        // 向右滑
+        arrowLeft.click();
+      } else if (startX - endX > 50) {
+        // 向左滑
+        arrowRight.click();
+      }
+    });
+  }
+
+  // 初始化
+  init();
+}
+
+// 呼叫方式
+initProductImageGallery(
+  "images/main-A.jpg",
+  "images/B.jpg、images/C.jpg、images/D.jpg、images/E.jpg"
+);
+
+
 // ===== 放大鏡（局部放大，正方形） =====
 function initMagnifier(productDiv) {
   const block = productDiv.querySelector(".product-image-block");

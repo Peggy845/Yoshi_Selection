@@ -167,14 +167,10 @@ function renderOptionGroups(optionWrap, optionKeys, optionValues, initialSelecti
   });
 }
 
-function renderOptionGroupHTML(optionName, values, selectedValue) {
+function renderOptionGroups(optionWrap, optionKeys, optionValues, initialSelection) {
   const group = document.createElement('div');
   group.className = 'option-group';
-  const title = document.createElement('span');
-  title.className = 'option-title';
-  title.textContent = optionName;
-  group.appendChild(title);
-
+  
   values.forEach(value => {
     const btn = document.createElement('button');
     btn.type = 'button';
@@ -211,7 +207,7 @@ function initOptionSelection(productDiv, state) {
     title.className = 'option-title';
     title.textContent = k.replace('選項-', '');
     group.appendChild(title);
-
+    
     const buttons = document.createElement('div');
     buttons.className = 'option-buttons';
 

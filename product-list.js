@@ -86,11 +86,11 @@ function findVariantBySelection(variants, selection) {
   ) || null;
 }
 
-/** 建立圖片清單（支援 額外圖片 or 額外圖片們，頓號分隔） */
+/** 建立圖片清單（支援 額外圖片，頓號分隔） */
 function buildImageList(variant) {
   const base = 'https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/';
   const mainImg = (variant['商品圖片'] || '').toString().trim();
-  const extraRaw = ((variant['額外圖片們'] ?? variant['額外圖片']) || '').toString().trim();
+  const extraRaw = (variant['額外圖片'] || '').toString().trim();
   const extraImgs = extraRaw && extraRaw !== '無'
     ? extraRaw.split('、').map(s => s.trim()).filter(Boolean)
     : [];
@@ -117,7 +117,7 @@ function applyVariantToUI(productRoot, variant, state) {
   state.imgList = imgList;
   state.imgIndex = 0;
 
-  const imgEl = productRoot.querySelector('.product-image-block img');
+  const imgEl = productRoot.querySelector('.main-image');
   imgEl.src = imgList[0] || '';
 
   // 箭頭顯示
@@ -170,10 +170,10 @@ function renderOptionGroups(optionWrap, optionKeys, optionValues, initialSelecti
 function renderOptionGroupHTML(optionName, values, selectedValue) {
   const group = document.createElement('div');
   group.className = 'option-group';
-  const label = document.createElement('span');
-  label.className = 'option-label';
-  label.textContent = optionName;
-  group.appendChild(label);
+  const title = document.createElement('span');
+  title.className = 'option-title';
+  title.textContent = optionName;
+  group.appendChild(title);
 
   values.forEach(value => {
     const btn = document.createElement('button');
@@ -188,6 +188,7 @@ function renderOptionGroupHTML(optionName, values, selectedValue) {
 
 function initOptionSelection(productDiv, state) {
   const optionWrap = productDiv.querySelector('.product-option');
+  renderOptionGroups(optionWrap, optionKeys, optionValues, state.selection);
 
   // 1. 過濾掉只有一種值的選項
   const filteredKeys = state.optionKeys.filter(key => {
@@ -202,11 +203,39 @@ function initOptionSelection(productDiv, state) {
 
   // 2. 渲染測試高度
   optionWrap.innerHTML = '';
-  filteredKeys.forEach(key => {
-    const group = renderOptionGroupHTML(key, collectOptionValues(state.variants, [key])[key], state.selection[key]);
-    optionWrap.appendChild(group);
-  });
+  optionKeys.forEach(k => {
+    const group = document.createElement('div');
+    group.className = 'option-group';
 
+    const title = document.createElement('div');
+    title.className = 'option-title';
+    title.textContent = k.replace('選項-', '');
+    group.appendChild(title);
+
+    const buttons = document.createElement('div');
+    buttons.className = 'option-buttons';
+
+    (optionValues[k] || []).forEach((val, idx) => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.type = 'button';
+      btn.dataset.optionKey = k;
+      btn.dataset.optionValue = val;
+      btn.textContent = val;
+      if (!initialSelection[k] && idx === 0) {
+        // 若未指定，預設選第一個
+        initialSelection[k] = val;
+      }
+      if (initialSelection[k] === val) {
+        btn.classList.add('selected');
+      }
+      buttons.appendChild(btn);
+    });
+
+    group.appendChild(buttons);
+    optionWrap.appendChild(group);
+  };
+/* 
   const maxHeight = optionWrap.clientHeight;
   const allowedHeight = 120; // 假設容器允許的高度(px)
 
@@ -244,6 +273,8 @@ function initOptionSelection(productDiv, state) {
       }
     });
   }
+*/
+
 }
 
 function initQuantityAndCart(productDiv) {
@@ -463,6 +494,7 @@ function createProductCard(productName, variants) {
   const optionKeys = extractOptionKeys(variants);
   const optionValues = collectOptionValues(variants, optionKeys);
 
+  // 初始選擇 = 第一列對應之選項
   const initialVariant = variants[0];
   const selection = {};
   optionKeys.forEach(k => {
@@ -470,9 +502,8 @@ function createProductCard(productName, variants) {
     if (val) selection[k] = val;
   });
   
-
+  // 初始圖片清單
   const imgListInit = buildImageList(initialVariant);
-
   productDiv.innerHTML = generateProductHTML(productName, initialVariant, imgListInit);
 
   const state = {

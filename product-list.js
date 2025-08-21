@@ -101,8 +101,7 @@ function buildImageList(variant) {
 }
 
 /** 將 right-col 的內容依變體更新（價格、詳情、庫存、狀態、圖片區按鈕顯示） */
-function applyVariantToUI(productRoot, variant, state) {
-
+function applyVariantToUI(productRoot, variant, state) {  
   productRoot.querySelector('.product-name').textContent = variant['商品名稱'] || '';
   productRoot.querySelector('.product-price').textContent = `\$ ${variant['價格'] || ''}`;
   productRoot.querySelector('.product-detail').textContent = variant['詳細資訊'] || '';
@@ -112,28 +111,27 @@ function applyVariantToUI(productRoot, variant, state) {
   const statusEl = productRoot.querySelector('.sale-status-block');
   statusEl.textContent = `狀態: ${variant['販售狀態'] || ''}`;
 
-  // 圖片
+  // 更新圖片
   const imgList = buildImageList(variant);
   state.imgList = imgList;
   state.imgIndex = 0;
+  productRoot.querySelector('.main-image').src = imgList[0] || '';
 
-  const imgEl = productRoot.querySelector('.main-image');
-  imgEl.src = imgList[0] || '';
-
-  // 箭頭顯示
+  // 顯示箭頭
   const leftArrow = productRoot.querySelector('.arrow-left');
   const rightArrow = productRoot.querySelector('.arrow-right');
   const showArrows = imgList.length > 1;
   leftArrow.style.display = showArrows ? '' : 'none';
   rightArrow.style.display = showArrows ? '' : 'none';
-
-  // 放大鏡的 lens 也要更新底圖大小（在滑動時會設定）
 }
 
 /** 生成選項群組（每個 選項-xxx 一行） */
-function renderOptionGroups(optionWrap, optionKeys, optionValues, initialSelection) {
+function renderOptionGroups(optionWrap, optionKeys, optionValues, selection) {
   optionWrap.innerHTML = '';
   optionKeys.forEach(k => {
+    const values = optionValues[k] || [];
+    if (values.length <= 1) return; // 只有一種值就隱藏
+
     const group = document.createElement('div');
     group.className = 'option-group';
 
@@ -145,18 +143,18 @@ function renderOptionGroups(optionWrap, optionKeys, optionValues, initialSelecti
     const buttons = document.createElement('div');
     buttons.className = 'option-buttons';
 
-    (optionValues[k] || []).forEach((val, idx) => {
+    values.forEach((val, idx) => {
       const btn = document.createElement('button');
       btn.className = 'option-btn';
       btn.type = 'button';
       btn.dataset.optionKey = k;
       btn.dataset.optionValue = val;
       btn.textContent = val;
-      if (!initialSelection[k] && idx === 0) {
-        // 若未指定，預設選第一個
-        initialSelection[k] = val;
+
+      if (!selection[k] && idx === 0) {
+        selection[k] = val; // 預設選第一個
       }
-      if (initialSelection[k] === val) {
+      if (selection[k] === val) {
         btn.classList.add('selected');
       }
       buttons.appendChild(btn);
@@ -167,72 +165,31 @@ function renderOptionGroups(optionWrap, optionKeys, optionValues, initialSelecti
   });
 }
 
-function renderOptionGroups(optionWrap, optionKeys, optionValues, initialSelection) {
-  const group = document.createElement('div');
-  group.className = 'option-group';
-  
-  values.forEach(value => {
-    const btn = document.createElement('button');
-    btn.type = 'button';
-    btn.textContent = value;
-    btn.className = value === selectedValue ? 'active' : '';
-    group.appendChild(btn);
-  });
-
-  return group;
-}
-
+/** 初始化選項選擇 */
 function initOptionSelection(productDiv, state) {
   const optionWrap = productDiv.querySelector('.product-option');
-  renderOptionGroups(optionWrap, optionKeys, optionValues, state.selection);
+  renderOptionGroups(optionWrap, state.optionKeys, collectOptionValues(state.variants, state.optionKeys), state.selection);
 
-  // 1. 過濾掉只有一種值的選項
-  const filteredKeys = state.optionKeys.filter(key => {
-    const values = collectOptionValues(state.variants, [key])[key] || [];
-    return values.length > 1; // 只有一種就不顯示
-  });
+  optionWrap.addEventListener('click', (e) => {
+    if (!e.target.classList.contains('option-btn')) return;
+    const btn = e.target;
+    const key = btn.dataset.optionKey;
+    const val = btn.dataset.optionValue;
 
-  if (filteredKeys.length === 0) {
-    optionWrap.innerHTML = ''; // 沒有選項
-    return;
-  }
+    // 更新選擇狀態
+    state.selection[key] = val;
 
-  // 2. 渲染測試高度
-  optionWrap.innerHTML = '';
-  optionKeys.forEach(k => {
-    const group = document.createElement('div');
-    group.className = 'option-group';
+    // 更新按鈕樣式
+    optionWrap.querySelectorAll(`[data-option-key="${key}"]`).forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
 
-    const title = document.createElement('div');
-    title.className = 'option-title';
-    title.textContent = k.replace('選項-', '');
-    group.appendChild(title);
-    
-    const buttons = document.createElement('div');
-    buttons.className = 'option-buttons';
-
-    (optionValues[k] || []).forEach((val, idx) => {
-      const btn = document.createElement('button');
-      btn.className = 'option-btn';
-      btn.type = 'button';
-      btn.dataset.optionKey = k;
-      btn.dataset.optionValue = val;
-      btn.textContent = val;
-      if (!initialSelection[k] && idx === 0) {
-        // 若未指定，預設選第一個
-        initialSelection[k] = val;
-      }
-      if (initialSelection[k] === val) {
-        btn.classList.add('selected');
-      }
-      buttons.appendChild(btn);
-    });
-
-    group.appendChild(buttons);
-    optionWrap.appendChild(group);
+    // 更新對應變體
+    const variant = findVariantBySelection(state.variants, state.selection);
+    if (variant) applyVariantToUI(productDiv, variant, state);
   });
 }
 
+/** 數量控制與購物車 */
 function initQuantityAndCart(productDiv) {
   productDiv.addEventListener('click', (e) => {
     const target = e.target;
@@ -254,19 +211,18 @@ function initQuantityAndCart(productDiv) {
   });
 }
 
-//新增 HTML 產生器
+/** HTML 產生器 */
 function generateProductHTML(productName, variant, imgList) {
   return `
     <div class="left-col">
         <div class="product-image-block">
-		    <div class="arrow-block arrow-left" style="${imgList.length > 1 ? '' : 'display:none'}">
-			  <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18"/></svg>
-			</div>
-			<img src="${imgList[0] || ''}" class="main-image" alt="${productName}">
-			<div class="arrow-block arrow-right" style="${imgList.length > 1 ? '' : 'display:none'}">
-			  <svg viewBox="0 0 24 24"><path d="M9 6 L15 12 L9 18"/></svg>
-			</div>
-			
+          <div class="arrow-block arrow-left" style="${imgList.length > 1 ? '' : 'display:none'}">
+            <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18"/></svg>
+          </div>
+          <img src="${imgList[0] || ''}" class="main-image" alt="${productName}">
+          <div class="arrow-block arrow-right" style="${imgList.length > 1 ? '' : 'display:none'}">
+            <svg viewBox="0 0 24 24"><path d="M9 6 L15 12 L9 18"/></svg>
+          </div>
           <!-- 放大鏡按鈕（右下角） -->
           <button class="magnifier-btn" type="button" aria-label="啟用放大鏡" title="放大鏡">
             <!-- 簡潔漂亮的 SVG 放大鏡 -->
@@ -278,7 +234,6 @@ function generateProductHTML(productName, variant, imgList) {
             </svg>
           </button>
         </div>
-
         <div class="sub-image-block">
           <div class="sub-group">
             <div class="sub-arrow">←</div>
@@ -304,8 +259,7 @@ function generateProductHTML(productName, variant, imgList) {
 	          <input class="quantity-input" type="number" value="1" min="1" max="${variant['庫存'] || 0}" readonly>
 	          <button class="qty-btn" data-type="plus" type="button">＋</button>
 	          <span class="stock-text">還剩 ${variant['庫存'] || 0} 件</span>
-	        </div>
-          </div>
+	        </div>          </div>
           <div class="product-cart">
             <button class="cart-btn" type="button">加入購物車</button>
           </div>
@@ -450,14 +404,14 @@ function createProductCard(productName, variants) {
   const optionKeys = extractOptionKeys(variants);
   const optionValues = collectOptionValues(variants, optionKeys);
 
-  // 初始選擇 = 第一列對應之選項
+ // 初始選擇 = 第一列對應之選項
   const initialVariant = variants[0];
   const selection = {};
   optionKeys.forEach(k => {
     const val = (initialVariant[k] || '').toString().trim();
     if (val) selection[k] = val;
   });
-  
+
   // 初始圖片清單
   const imgListInit = buildImageList(initialVariant);
   productDiv.innerHTML = generateProductHTML(productName, initialVariant, imgListInit);
@@ -536,7 +490,7 @@ async function loadProducts() {
   const filtered = allSheetsData[category].filter(
     row => (row['商品系列'] || '').toString().trim() === (subcategory || '').toString().trim()
   );
-  
+
   const container = document.getElementById('product-list');
   container.innerHTML = '';
   if (!filtered.length) {
@@ -545,14 +499,11 @@ async function loadProducts() {
   }
 
   console.log("共有多少商品", filtered.length);
-  
   const grouped = groupByProductName(filtered);
-
   for (const [productName, variants] of grouped.entries()) {
     const productDiv = createProductCard(productName, variants); // **呼叫模組化方法**
     container.appendChild(productDiv);
   }
-  
     // 全部 append 完，讓瀏覽器先排版一次再量
   requestAnimationFrame(() => {
     window.adjustSubBlocks();

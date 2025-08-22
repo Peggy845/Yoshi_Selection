@@ -163,15 +163,42 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   background: #fafafa;
   border-radius: 6px;
   padding: 6px 8px;
+  flex-direction: column;
+  height: 80px; /* 固定高度 */
+  border-top: 1px solid #eee;
+}
+
+/* sub-group 的 wrapper: 控制 scrollbar */
+.sub-group-wrapper {
+  flex: 9;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: thin;
+  scrollbar-color: #ccc transparent;
+  padding-bottom: 4px;
+}
+
+/* Scrollbar 樣式 (Chrome/Safari/Edge) */
+.sub-group-wrapper::-webkit-scrollbar {
+  height: 6px;
+}
+.sub-group-wrapper::-webkit-scrollbar-track {
+  background: transparent;
+}
+.sub-group-wrapper::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 3px;
+}
+.sub-group-wrapper::-webkit-scrollbar-thumb:hover {
+  background: #888;
 }
 
 /* 群組包一層，方便等比例放大 */
 .sub-group {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px; /* 箭頭與圖片間隔 */
-  transform-origin: center center;
+  gap: 8px;
+  min-width: fit-content;
+  padding-top: 4px;
 }
 
 /* 箭頭與子圖尺寸（固定） */
@@ -196,18 +223,21 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .sub-image {
   width: 60px;
   height: 60px;
-  flex-shrink: 0;
   object-fit: cover;
-  border: 1px solid #e5e7eb;
-  background: #fff;
   border-radius: 6px;
   cursor: pointer;
-  transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+  border: 2px solid transparent;
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
-.sub-image:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
-.sub-image.active-thumb { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,.25); }
-
+.sub-image:hover {
+  transform: scale(1.1);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+}
+.sub-image.active {
+  border-color: #0078ff;
+  box-shadow: 0 0 6px rgba(0,120,255,0.5);
+}
 
 /* 右欄 */
 .product-name,

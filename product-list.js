@@ -1,5 +1,3 @@
-(() => {
-  'use strict';
 
   /** ===== 基本設定 ===== */
   const SHEET_ID = '1KXmggPfKqpg5gZCsUujlpdTcKSFdGJHv4bOux3nc2xo';
@@ -98,17 +96,18 @@
   }
 
   /** 建立圖片陣列：商品圖片(A) + 額外圖片 B、C、D… (頓號分隔) */
-  function buildImageArray(variant) {
-    const main = norm(variant['商品圖片']);
-    const extraRaw = norm(variant['額外圖片']);
-    const extras = extraRaw && extraRaw !== '無'
-      ? extraRaw.split('、').map(s => norm(s)).filter(Boolean)
-      : [];
-    const fullExtras = extras.map(x => IMAGE_BASE + x);
-    const mainUrl = main ? (IMAGE_BASE + main) : '';
-    const all = mainUrl ? [mainUrl, ...fullExtras] : [...fullExtras];
-    return { mainUrl, extras: fullExtras, all };
-  }
+	function buildImageArray(variant) {
+	  const images = [];
+	  const main = norm(variant['商品圖片']);
+	  const extras = norm(variant['額外圖片']);
+
+	  if (main) images.push(IMAGE_BASE + main);
+	  if (extras) {
+		const extraArr = extras.split('、').map(s => IMAGE_BASE + norm(s));
+		images.push(...extraArr);
+	  }
+	  return images;
+	}
 
   /** 將價格/庫存/狀態/詳情更新到 UI（不處理圖片） */
   function applyVariantFields(productRoot, variant) {
@@ -148,15 +147,11 @@
           <div class="magnifier-lens" aria-hidden="true" style="display:none;"></div>
         </div>
 
-        <div class="sub-image-block">
-          <div class="sub-group">
-            <div class="sub-arrow sub-left" aria-label="縮圖往左">←</div>
-            <img src="" alt="子圖片1" class="sub-image">
-            <img src="" alt="子圖片2" class="sub-image">
-            <img src="" alt="子圖片3" class="sub-image">
-            <div class="sub-arrow sub-right" aria-label="縮圖往右">→</div>
-          </div>
-        </div>
+		<div class="sub-image-block">
+		  <div class="sub-group-wrapper">
+			<div class="sub-group"></div>
+		  </div>
+		</div>
       </div>
 
       <div class="right-col">
@@ -296,133 +291,52 @@
     }
   }
 
-  /** ========== 圖片畫廊（方案3：縮圖只顯示額外圖片；主圖固定 A，可用主圖左右箭頭輪播 A+B/C/D） ========== */
-  function fadeMainImage(imgEl, newSrc) {
-    if (!imgEl) return;
-    if (imgEl.src === newSrc) return;
-    imgEl.classList.add('fade-out');
-    imgEl.addEventListener('transitionend', function handler() {
-      imgEl.removeEventListener('transitionend', handler);
-      imgEl.src = newSrc;
-      requestAnimationFrame(() => {
-        imgEl.classList.remove('fade-out');
-        imgEl.classList.add('fade-in');
-        imgEl.addEventListener('transitionend', function handler2() {
-          imgEl.removeEventListener('transitionend', handler2);
-          imgEl.classList.remove('fade-in');
-        });
-      });
-    });
+function renderMainAndThumbs(productDiv, state, hardSet = false) {
+  const mainImgEl = productDiv.querySelector('.main-image');
+  const subGroup = productDiv.querySelector('.sub-group');
+  const wrapper = productDiv.querySelector('.sub-group-wrapper');
+
+  // 清空舊縮圖
+  subGroup.innerHTML = '';
+
+  // 取得圖片列表
+  const variant = state.activeVariant;
+  const imgList = buildImageArray(variant);
+
+  // 設定主圖 (切換角色時 hardSet = true)
+  if (hardSet || !state.mainSrc) {
+    state.mainSrc = imgList[0] || '';
   }
+  mainImgEl.src = state.mainSrc;
 
-  function rebuildGallery(productDiv, state) {
-    // 主圖預設回到 A
-    state.currentMainIndex = 0;           // index in images.all
-    state.thumbOffset = 0;                // extras 的視窗偏移
-    renderMainAndThumbs(productDiv, state, true);
-  }
+  // 動態產生縮圖
+  imgList.forEach(src => {
+    const img = document.createElement('img');
+    img.src = src;
+    img.className = 'sub-image';
+    if (src === state.mainSrc) img.classList.add('active');
 
-  function renderMainAndThumbs(productDiv, state, hardSet = false) {
-    const mainImgEl = productDiv.querySelector('.main-image');
-    const leftMain = productDiv.querySelector('.arrow-left');
-    const rightMain = productDiv.querySelector('.arrow-right');
-
-    const subLeft  = productDiv.querySelector('.sub-arrow.sub-left');
-    const subRight = productDiv.querySelector('.sub-arrow.sub-right');
-    const subImgs  = productDiv.querySelectorAll('.sub-image'); // 3 格
-
-    const images = state.images.all;     // [A, ...extras]
-    const extras = state.images.extras;  // 只縮圖
-    if (!images.length) return;
-
-    // 主圖
-    const mainSrc = images[state.currentMainIndex] || images[0];
-    if (hardSet) {
-      mainImgEl.src = mainSrc;
-    } else {
-      fadeMainImage(mainImgEl, mainSrc);
-    }
-
-    // 主圖箭頭若總數 <= 1 就隱藏
-    const showMainArrows = images.length > 1;
-    leftMain.style.display  = showMainArrows ? '' : 'none';
-    rightMain.style.display = showMainArrows ? '' : 'none';
-
-    // 縮圖（只顯示 extras）
-    const total = extras.length;
-    // 依你要求：若「包含主圖在內」小於 3，隱藏 sub-arrow => 1 (A) + extras < 3
-    const showSubArrows = (1 + total) >= 3; // 小於 3 則隱藏
-    subLeft.style.display  = showSubArrows ? '' : 'none';
-    subRight.style.display = showSubArrows ? '' : 'none';
-
-    // 控制 thumbOffset 範圍（用 clamp，不輪播）
-    const maxOffset = Math.max(0, total - 3);
-    state.thumbOffset = Math.max(0, Math.min(state.thumbOffset, maxOffset));
-
-    for (let i = 0; i < subImgs.length; i++) {
-      const imgEl = subImgs[i];
-      const src = extras[state.thumbOffset + i] || '';
-      imgEl.style.visibility = src ? 'visible' : 'hidden';
-      imgEl.style.pointerEvents = src ? 'auto' : 'none';
-      imgEl.src = src || '';
-      imgEl.onclick = src ? () => {
-        // 縮圖點擊：主圖切到該縮圖（注意：縮圖是 extras，主圖 index = extrasIndex + 1）
-        state.currentMainIndex = (state.images.all.indexOf(src) >= 0)
-          ? state.images.all.indexOf(src)
-          : 0;
-        fadeMainImage(mainImgEl, state.images.all[state.currentMainIndex]);
-      } : null;
-    }
-
-    // 綁定 sub-arrow 事件（避免重複疊加：先取消再綁）
-    subLeft.onclick = null;
-    subRight.onclick = null;
-    subLeft.addEventListener('click', () => {
-      if (state.thumbOffset > 0) {
-        state.thumbOffset -= 1;
-        renderMainAndThumbs(productDiv, state, true);
-      }
-    });
-    subRight.addEventListener('click', () => {
-      if (state.thumbOffset < maxOffset) {
-        state.thumbOffset += 1;
-        renderMainAndThumbs(productDiv, state, true);
-      }
+    img.addEventListener('click', () => {
+      state.mainSrc = src;
+      mainImgEl.src = src;
+      subGroup.querySelectorAll('.sub-image').forEach(el => el.classList.remove('active'));
+      img.classList.add('active');
     });
 
-    // 主圖左右箭頭：在 [A, ...extras] 間輪播
-    leftMain.onclick = null;
-    rightMain.onclick = null;
-    leftMain.addEventListener('click', () => {
-      state.currentMainIndex = (state.currentMainIndex - 1 + images.length) % images.length;
-      fadeMainImage(mainImgEl, images[state.currentMainIndex]);
-    });
-    rightMain.addEventListener('click', () => {
-      state.currentMainIndex = (state.currentMainIndex + 1) % images.length;
-      fadeMainImage(mainImgEl, images[state.currentMainIndex]);
-    });
+    subGroup.appendChild(img);
+  });
 
-    // 觸控滑動（主圖左右切換）
-    let touchX = null;
-    mainImgEl.ontouchstart = (ev) => { touchX = ev.touches[0].clientX; };
-    mainImgEl.ontouchend = (ev) => {
-      if (touchX == null) return;
-      const dx = ev.changedTouches[0].clientX - touchX;
-      touchX = null;
-      const SWIPE = 30; // 門檻
-      if (dx > SWIPE) {
-        state.currentMainIndex = (state.currentMainIndex - 1 + images.length) % images.length;
-        fadeMainImage(mainImgEl, images[state.currentMainIndex]);
-      } else if (dx < -SWIPE) {
-        state.currentMainIndex = (state.currentMainIndex + 1) % images.length;
-        fadeMainImage(mainImgEl, images[state.currentMainIndex]);
-      }
-    };
-  }
+  // 控制 scrollbar 是否出現
+  wrapper.style.overflowX = imgList.length > 4 ? 'auto' : 'hidden';
+
+  // 重置 scrollbar 位置
+  wrapper.scrollLeft = 0;
+}
+
 
   function initGallery(productDiv, state) {
     // 初次
-    rebuildGallery(productDiv, state);
+    renderMainAndThumbs(productDiv, state, true);
   }
 
   /** ===== 放大鏡（局部放大，正方形） ===== */
@@ -621,4 +535,3 @@
   } else {
     loadProducts();
   }
-})();

@@ -185,7 +185,7 @@
       </div>
     `;
   }
-
+  
   /** 初始化選項群組 + 邏輯 */
   function initOptions(productDiv, state) {
     const wrap = productDiv.querySelector('.product-option');
@@ -251,8 +251,11 @@
       applyVariantFields(productDiv, variant);
 
       // 重建圖片（重設為 A 當主圖）
-      state.images = buildImageArray(variant);
-      rebuildGallery(productDiv, state);
+		// 更新 activeVariant
+		state.activeVariant = variant;
+
+		// 直接重渲染主圖與縮圖（主圖回到商品圖片）
+		renderMainAndThumbs(productDiv, state, true);
 
       // 依目前 selection 灰掉不可能的選項
       updateOptionDisabling(productDiv, state);

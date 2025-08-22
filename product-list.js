@@ -98,6 +98,8 @@
   /** 建立圖片陣列：商品圖片(A) + 額外圖片 B、C、D… (頓號分隔) */
 	function buildImageArray(variant) {
 	  const images = [];
+	  if (!variant) return images;  // <- 防呆處理
+	  
 	  const main = norm(variant['商品圖片']);
 	  const extras = norm(variant['額外圖片']);
 
@@ -488,6 +490,8 @@ function renderMainAndThumbs(productDiv, state, hardSet = false) {
     initOptions(productDiv, state);       // 選項互斥 + 灰掉
     applyVariantFields(productDiv, initialVariant); // 文字欄位
     initQuantityAndCart(productDiv);      // 數量/購物車
+
+    console.log(productName, variants);
 
     return productDiv;
   }

@@ -1,9 +1,3 @@
-/* 
-用clamp的好處是會隨螢幕縮放
-大螢幕 (桌機 1920px) → 會吃到接近最大值 (40px, 120px 等)。
-中螢幕 (平板 768px) → 自動調整在 20~30px 左右。
-小螢幕 (手機 360px) → 自動掉到最小值 (16px, 50px 等)，不會過大。
-*/
 
 :root{
   /* 載入時計算的基準值（JS 會覆蓋），此為保險用 fallback */
@@ -215,40 +209,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .sub-image.active-thumb { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,.25); }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 /* 右欄 */
-
-
 .product-name,
 .product-price,
 .product-detail,
@@ -257,7 +218,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   align-items: center;
   padding: clamp(10px, 2vw, 25px) clamp(12px, 2.5vw, 30px); /* padding隨螢幕縮放 */
   font-size: clamp(16px, 2.5vw, 40px);
-  font-weight: 800;
+  font-weight: 700;
   border: 1px solid black;
 }
 
@@ -272,30 +233,31 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 }
 
 .product-name{
-	font-size: clamp(18px, 2.5vw, 40px);
-    font-weight: 700;
-    line-height: clamp(20px, 2.5vw, 24px);   /*文字行高*/ 
-	margin: 0;  /* 外邊距 */
-	display: -webkit-box; /* 總之是種排版? */
-	text-overflow: ellipsis;  /*當文字太長時出現... 點點點*/
-	-webkit-box-orient: vertical; /*讓文字變成兩行*/
-	-webkit-line-clamp: 2;  /* 這是設定問自尾端 .... 點點 要呈現在第幾行*/
-
-	overflow: hidden;
-	overflow-wrap: break-word;  /* 過長的詞就會被拆開換行顯示 */
-	vertical-align: sub;  /*垂直對齊下標位置*/
+  font-size: 20px;
+  font-weight: 700;
+  color: #111827;
+  line-height: clamp(20px, 2.5vw, 24px);   /*文字行高*/ 
+  margin: 0;  /* 外邊距 */
+  display: -webkit-box; /* 總之是種排版? */
+  text-overflow: ellipsis;  /*當文字太長時出現... 點點點*/
+  -webkit-box-orient: vertical; /*讓文字變成兩行*/
+  -webkit-line-clamp: 2;  /* 這是設定問自尾端 .... 點點 要呈現在第幾行*/
+  overflow: hidden;
+  overflow-wrap: break-word;  /* 過長的詞就會被拆開換行顯示 */
+  vertical-align: sub;  /*垂直對齊下標位置*/
 }
 
 .product-price{ 
-  align-items: center; 
-  font-weight: 700; 
-  color: #d26b00; 
+  align-items: center;
+  font-weight: 700;
+  color: #d26b00;
+  font-size: 18px;
 }
 
 .product-detail { 
   overflow-y: auto; 
-  line-height: 1.5; 
-  color: #444; 
+  line-height: 1.6; 
+  color: #4b5563;
 }
 
 .product-option { 
@@ -303,19 +265,21 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   display: flex; 
   flex-direction: column; 
   gap: 10px; 
+  padding-top: 6px;
 }
 
 /* 選項每一行 */
 .option-group {
-  display: flex;
+  display: grid; 
+  grid-template-columns: 64px 1fr; 
+  gap: 8px; 
   align-items: center;
-  gap: 10px;
-  flex-wrap: wrap; /* 空間不夠可換行，但區塊本身高度固定於 product-option 內捲動 */
 }
 .option-title {
-  font-weight: 700;
+  font-weight: 600;
   min-width: 56px;
-  color: #333;
+  color: #6b7280;
+  text-align: right;
 }
 .option-buttons {
   display: flex;
@@ -323,21 +287,18 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   flex-wrap: wrap;
 }
 .option-btn {
-  padding: 6px 12px;
-  border-radius: 16px;
-  border: 1px solid #ddd;
+  padding: 8px 12px;
+  border-radius: 9999px;
+  border: 1px solid #e5e7eb;
   background: #fff;
   cursor: pointer;
   font-size: 14px;
-  transition: all .15s ease;
+  transition: transform .1s ease, box-shadow .15s ease, border-color .15s ease, background .2s ease;
   user-select: none;
 }
-.option-btn:hover { border-color: #bbb; }
-.option-btn.selected {
-  background: #222;
-  color: #fff;
-  border-color: #222;
-}
+.option-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,.06); }
+.option-btn.selected { border-color: #3b82f6; background: #eef6ff; box-shadow: 0 0 0 2px rgba(59,130,246,.15); }
+.option-btn.disabled { color: #9ca3af; border-color: #e5e7eb; background: #f9fafb; cursor: not-allowed; opacity: .6; }
 
 .sale-status-block, .product-quantity, .product-cart {
   display: flex;
@@ -384,9 +345,9 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .quantity-block {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 8px;
   white-space: nowrap;   /* 不換行 */
-  justify-content: center;
   font-size: clamp(16px, 2.5vw, 40px);
   font-weight: 600;
   color: #374151;
@@ -394,31 +355,24 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 }
 
 .qty-btn {
-  line-height: 1;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  background: #eef2ff;
-  border: none;
-  padding: clamp(8px, 2vw, 30px) clamp(8px, 2vw, 30px);
+  width: 32px; 
+  height: 32px; 
+  border-radius: 6px; 
+  border: 1px solid #e5e7eb; 
+  background: #fff; 
   cursor: pointer;
-  font-size: clamp(16px, 2.5vw, 30px);
-  font-weight: 800;
-  border-radius: 8px;
-  transition: transform 0.06s ease;
+  transition: transform .1s ease, box-shadow .15s ease;
 }
-
+.qty-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,.06); }
 .qty-btn:active { transform: scale(0.98); }
 
 .quantity-input {  
-  width: clamp(50px, 8vw, 120px);
-  height: clamp(30px, 6vw, 90px);
-  border: 1px solid #d1d5db;
-  border-radius: 8px;
-  text-align: center;           /* 置中對齊 */
-  font-size: clamp(16px, 2.5vw, 30px);
-  font-weight: 700;
-  -moz-appearance: textfield;
+  width: 56px; 
+  height: 32px; 
+  border: 1px solid #e5e7eb; 
+  border-radius: 6px; 
+  text-align: center; 
+  background: #f9fafb;
 }
 
 .quantity-input::-webkit-outer-spin-button,
@@ -436,25 +390,21 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 
 /* 購物車按鈕 */
 .cart-btn {
-  width: 100%;
-  height: 100%;
-  padding: clamp(6px, 1.5vw, 10px) clamp(12px, 2.5vw, 20px);
-  background-color: #fffae6;   /* 按鈕顏色 */
-  color: #000000;  /* 文字顏色 */
-  border: none;
-  cursor: pointer;
-  font-size: clamp(18px, 2.5vw, 40px);
-  font-weight: 600;
-  border-radius: 10px;
-  /* transition: 當元素狀態改變時，樣式變化的過渡效果 */
-  transition: background-color .15s ease, transform .05s ease; /*過渡持續的時間*/
+    padding: 10px 16px;
+    border-radius: 6px;
+    border: 0;
+    cursor: pointer;
+    background: #10b981;
+    color: #fff;
+    font-weight: 700;
+    transition: transform .1s ease, box-shadow .15s ease, background .2s ease;
 }
 
 /* hoever: 游標移上去的時候會發生的事情*/
-.cart-btn:hover { background-color: #ffb955; } 
+.cart-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(16,185,129,.25); } 
 /* active: 點擊左鍵後的效果*/
 .cart-btn:active { transform: scale(0.98); }    /* scale: 讓區塊縮放，大於1代表放大；小於1代表縮小 */
-.cart-btn.active { background-color: #ffb955; } 
+.cart-btn.active { background: #059669; } 
 
 /* ===== 放大鏡 UI ===== */
 /* 右下角放大鏡按鈕（固定在主圖區塊內，不超出） */
@@ -495,4 +445,16 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   background-position: center;  /* 其餘 background-* 由 JS 設定 */
   background-size: cover;
   z-index: 20;
+}
+
+/* 
+用clamp的好處是會隨螢幕縮放
+大螢幕 (桌機 1920px) → 會吃到接近最大值 (40px, 120px 等)。
+中螢幕 (平板 768px) → 自動調整在 20~30px 左右。
+小螢幕 (手機 360px) → 自動掉到最小值 (16px, 50px 等)，不會過大。
+*/
+/* 小螢幕排版 */
+@media (max-width: 720px) {
+  .product-item { grid-template-columns: 1fr; }
+  .option-group { grid-template-columns: 56px 1fr; }
 }

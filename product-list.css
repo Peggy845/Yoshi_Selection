@@ -60,20 +60,34 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
    但高度改用基於 --base-h 的計算（等同於你原先的 65vh 邏輯） */
 .product-item {
   display: flex;
-  gap: 10px;
+  gap: 20px;
   margin-bottom: 20px;
   background: white;
+  border-radius: 16px;
+  padding: 18px;
+  box-shadow: 0 8px 28px rgba(0,0,0,.08);
   align-items: stretch;             /* 左右欄等高 */
   height: calc(var(--base-h) * 0.65); /* 與你原先 65vh 行為一致（使用載入時的視窗高度） */
   width: calc(100% - 40px);         /* 扣掉 product-list 的左右 padding 20px*2 */
   flex-shrink: 0; /* 禁止縮小 */
 }
 
+.left-col, 
+.right-col { 
+  display: flex; 
+  border: 1px solid black;
+  box-sizing: border-box;
+  flex-direction: column; gap: 12px; 
+  gap: 6px;
+}
+
 .left-col {
   width: 35%;
-  border: 1px solid black;
-  display: flex;
-  flex-direction: column;
+}
+
+.right-col {
+  width: 65%;
+  overflow: hidden;
 }
 
 /* 主圖區塊：加上 position:relative 以放置放大鏡元素 */
@@ -85,38 +99,50 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   justify-content: center;
   border: 1px solid black;
   overflow: hidden; /* 確保圖片不會超出框 */
-  background-color: #f5f7fb;
+   background: #f8f9fb;
   border-bottom: 1px solid #eee;
+  border-radius: 6px;
+  /* min-height: 320px; */
 }
 
 /* 主圖不被 zoom-in、保持完整顯示 */
 .main-image {
   max-width: 100%;
   max-height: 100%;
+  border-radius: 10px;
   object-fit: contain; /* 確保完整顯示圖片，不拉伸不裁切 */
   user-select: none; 
   -webkit-user-drag: none;
   pointer-events: none; /* 讓滑鼠事件落在容器上，追蹤更準 */
+  transition: opacity .25s ease;  /* 淡出 */
 }
+
+.fade-out { opacity: 0; }
+.fade-in { opacity: 1; }
 
 /* 左右箭頭（SVG + 半透明背景） */
 .arrow-block {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  width: 48px;
-  height: 48px;
+  border: 0; 
+  width: 40px;
+  height: 40px;
   background-color: rgba(0,0,0,0.35);
+  color: #fff; 
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  transition: background-color .2s ease, transform .1s ease;
+  transition: background .2s ease, transform .15s ease;
   user-select: none;
 }
-.arrow-block:hover { background-color: rgba(0,0,0,0.5); }
+.arrow-block:hover {
+    background-color: rgba(0, 0, 0, .55);
+    transform: translateY(-50%) scale(1.05);
+}
 .arrow-block:active { transform: translateY(-50%) scale(0.96); }
 
 .arrow-left { left: 10px; }
@@ -138,8 +164,11 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid black;
+  border: 1px solid #e5e7eb;
   overflow: hidden; /* 保證不會超出 left-col */
+  background: #fafafa;
+  border-radius: 6px;
+  padding: 6px 8px;
 }
 
 /* 群組包一層，方便等比例放大 */
@@ -159,17 +188,31 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid black;
-  background: #ddd;
+  border-radius: 6px;
+  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+  color: #4b5563; user-select: none; cursor: pointer;
+  font-weight: 600; font-size: 14px;
+  transition: transform .15s ease, box-shadow .2s ease, opacity .2s ease;
+  box-shadow: 0 2px 8px rgba(0,0,0,.06);
 }
+
+.sub-arrow:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.10); }
+.sub-group .thumbs { display: flex; gap: 8px; }
 
 .sub-image {
   width: 60px;
   height: 60px;
   flex-shrink: 0;
   object-fit: cover;
-  border: 1px solid black;
+  border: 1px solid #e5e7eb;
+  background: #fff;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
 }
+
+.sub-image:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+.sub-image.active-thumb { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,.25); }
 
 
 
@@ -204,14 +247,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 
 
 /* 右欄 */
-.right-col {
-  width: 65%;
-  display: flex;
-  padding: 10px 20px;
-  flex-direction: column;
-  box-sizing: border-box;
-  overflow: hidden;
-}
+
 
 .product-name,
 .product-price,

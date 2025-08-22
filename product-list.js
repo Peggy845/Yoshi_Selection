@@ -470,6 +470,83 @@
     }
   }
 
+	function initProductImageGallery(productEl, productData) {
+	  const mainImgEl = productEl.querySelector('.main-image');
+	  const subGroupEl = productEl.querySelector('.sub-group');
+	  const leftArrow = productEl.querySelector('.sub-arrow.left');
+	  const rightArrow = productEl.querySelector('.sub-arrow.right');
+
+	  let images = []; // 全部圖片：A + 額外圖片
+	  let extraImages = []; // 額外圖片 B、C、D
+	  let currentMainIndex = 0;
+
+	  // 初始化圖片
+	  function initImages() {
+		const main = productData['商品圖片'];
+		extraImages = productData['額外圖片']
+		  ? productData['額外圖片'].split('、').map(i => `images/${i}`)
+		  : [];
+
+		// A + B、C、D
+		images = [main, ...extraImages];
+		currentMainIndex = 0;
+
+		mainImgEl.src = images[currentMainIndex];
+		renderSubImages();
+		updateArrowVisibility();
+	  }
+
+	  // 渲染 sub-images，只放 B、C、D
+	  function renderSubImages() {
+		subGroupEl.innerHTML = '';
+
+		extraImages.forEach((img, idx) => {
+		  const imgEl = document.createElement('img');
+		  imgEl.src = img;
+		  imgEl.classList.add('sub-image');
+		  imgEl.addEventListener('click', () => {
+			currentMainIndex = idx + 1; // 因為 images[0] 是 A
+			mainImgEl.src = images[currentMainIndex];
+		  });
+		  subGroupEl.appendChild(imgEl);
+		});
+	  }
+
+	  // 更新箭頭顯示
+	  function updateArrowVisibility() {
+		const arrows = productEl.querySelectorAll('.sub-arrow');
+		arrows.forEach(arrow => {
+		  arrow.style.display = extraImages.length > 3 ? 'flex' : 'none';
+		});
+	  }
+
+	  // 綁定左右箭頭
+	  function bindArrows() {
+		leftArrow.addEventListener('click', () => {
+		  currentMainIndex = (currentMainIndex - 1 + images.length) % images.length;
+		  mainImgEl.src = images[currentMainIndex];
+		});
+
+		rightArrow.addEventListener('click', () => {
+		  currentMainIndex = (currentMainIndex + 1) % images.length;
+		  mainImgEl.src = images[currentMainIndex];
+		});
+	  }
+
+	  // 當切換 option-group 時重設 main image
+	  function resetForOptionChange(newProductData) {
+		productData = newProductData;
+		initImages();
+	  }
+
+	  // 初始化
+	  initImages();
+	  bindArrows();
+
+	  // 對外暴露 API，給 option-group 使用
+	  return { resetForOptionChange };
+	}
+
   /** 數量與購物車（維持你的邏輯） */
   function initQuantityAndCart(productDiv) {
     productDiv.addEventListener('click', (e) => {

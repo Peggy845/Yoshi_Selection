@@ -14,22 +14,35 @@ html, body {
   margin: 0;
   /* 避免 scrollbar 出現/消失造成版面跳動（Chrome/Edge/Firefox 新版支援） */
   scrollbar-gutter: stable both-edges;
+  overflow-x: scroll; 
+  overflow-y: scroll;
 }
 
 body {
   font-family: "Microsoft JhengHei", Calibri, sans-serif;
   margin: 0;
   padding: 0;
-  overflow: auto; /* 由瀏覽器提供水平/垂直捲動 */
   background: #f5f5f5;
-  overflow-x: scroll; /* 水平 bar 永遠顯示 */
-  overflow-y: scroll; /* 垂直 bar 永遠顯示 */
+  overflow: auto;
+  scrollbar-gutter: stable both-edges; /* 保證有位子給捲軸 */
 }
 
 /* 可選：自訂瀏覽器捲軸外觀（不同 OS 行為可能略異） */
 body::-webkit-scrollbar { width: 12px; height: 12px; }
 body::-webkit-scrollbar-thumb { background-color: rgba(0,0,0,0.4); border-radius: 6px; }
 body::-webkit-scrollbar-track { background-color: #f1f1f1; }
+
+/* 左上角固定元素 */
+.fixed-top-left {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  background: #fff;
+  padding: 8px 16px;
+  border-bottom-right-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,.1);
+}
 
 .subcategory-title {
   text-align: center;
@@ -41,12 +54,15 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 /* 唯一的 product-list：寬度鎖定為載入時的視窗寬度，左右保留少量間距 */
 .product-list {
   width: var(--base-w);
-  height: var(--base-h);
+  min-height: var(--base-h);
   padding: 0 20px; /* 你要的美觀間距，所有 item 因此自然對齊 */
   background: #f5f5f5;
   margin: 0 auto;   /* 置中或對齊 */
     box-sizing: border-box;
   /* 關鍵：不要在這裡加 overflow，避免捲軸長在內層 */
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
 }
 
 
@@ -66,23 +82,8 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   flex-shrink: 0; /* 禁止縮小 */
 }
 
-.left-col, 
-.right-col { 
-  display: flex; 
-  border: 1px solid black;
-  box-sizing: border-box;
-  flex-direction: column; gap: 12px; 
-  gap: 6px;
-}
-
-.left-col {
-  width: 35%;
-}
-
-.right-col {
-  width: 65%;
-  overflow: hidden;
-}
+.left-col { width: 35%; display: flex; flex-direction: column; gap:6px; }
+.right-col { width: 65%; display: flex; flex-direction: column; overflow: hidden; }
 
 /* 主圖區塊：加上 position:relative 以放置放大鏡元素 */
 .product-image-block {
@@ -91,12 +92,11 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid black;
+  border: 1px solid #ddd;
   overflow: hidden; /* 確保圖片不會超出框 */
    background: #f8f9fb;
   border-bottom: 1px solid #eee;
   border-radius: 6px;
-  /* min-height: 320px; */
 }
 
 /* 主圖不被 zoom-in、保持完整顯示 */
@@ -111,51 +111,11 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   transition: opacity .25s ease;  /* 淡出 */
 }
 
-.fade-out { opacity: 0; }
-.fade-in { opacity: 1; }
-
-/* 左右箭頭（SVG + 半透明背景） */
-.arrow-block {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  border: 0; 
-  width: 40px;
-  height: 40px;
-  background-color: rgba(0,0,0,0.35);
-  color: #fff; 
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  z-index: 10;
-  transition: background .2s ease, transform .15s ease;
-  user-select: none;
-}
-.arrow-block:hover {
-    background-color: rgba(0, 0, 0, .55);
-    transform: translateY(-50%) scale(1.05);
-}
-.arrow-block:active { transform: translateY(-50%) scale(0.96); }
-
-.arrow-left { left: 10px; }
-.arrow-right { right: 10px; }
-
-.arrow-block svg {
-  width: 24px;
-  height: 24px;
-  stroke: #fff;
-  stroke-width: 2.2;
-  fill: none;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 /* 子圖區塊 */
 .sub-image-block {
   flex: 3; /* 高度比例 30% */
   display: flex;
+  height: 100px;
   align-items: center;
   justify-content: center;
   border: 1px solid #e5e7eb;
@@ -164,60 +124,33 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   border-radius: 6px;
   padding: 6px 8px;
   flex-direction: column;
-  height: 100px; /* 可依需求調整整個 sub-image-block 高度 */
   border-top: 1px solid #eee;
 }
 
 /* sub-group 的 wrapper: 控制 scrollbar */
 .sub-group-wrapper {
-  flex: 9;
-   overflow-x: auto; /* 滑動顯示多張 sub-image */
+  width: 100%;
+  overflow-x: auto;
   overflow-y: hidden;
   scrollbar-width: thin;
-  scrollbar-color: #ccc transparent;
+  scrollbar-color: #bbb transparent;
   padding-bottom: 4px;
 }
 
 /* Scrollbar 樣式 (Chrome/Safari/Edge) */
-.sub-group-wrapper::-webkit-scrollbar {
-  height: 6px;
-}
-.sub-group-wrapper::-webkit-scrollbar-track {
-  background: transparent;
-}
-.sub-group-wrapper::-webkit-scrollbar-thumb {
-  background: #bbb;
-  border-radius: 3px;
-}
-.sub-group-wrapper::-webkit-scrollbar-thumb:hover {
-  background: #888;
-}
+/* Scrollbar style */
+.sub-group-wrapper::-webkit-scrollbar { height: 6px; }
+.sub-group-wrapper::-webkit-scrollbar-track { background: transparent; }
+.sub-group-wrapper::-webkit-scrollbar-thumb { background: #bbb; border-radius: 3px; }
+.sub-group-wrapper::-webkit-scrollbar-thumb:hover { background: #888; }
 
 /* 群組包一層，方便等比例放大 */
 .sub-group {
   display: flex;
   gap: 5px; /* sub-image 間距 */
   min-width: fit-content;
-  padding-top: 4px;
 }
 
-/* 箭頭與子圖尺寸（固定） */
-.sub-arrow {
-  width: 28px;
-  height: 60px;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-  color: #4b5563; user-select: none; cursor: pointer;
-  font-weight: 600; font-size: 14px;
-  transition: transform .15s ease, box-shadow .2s ease, opacity .2s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,.06);
-}
-
-.sub-arrow:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.10); }
 .sub-group .thumbs { display: flex; gap: 8px; }
 
 .sub-image {
@@ -238,14 +171,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .sub-image.active {
   border-color: #0078ff;
   box-shadow: 0 0 6px rgba(0,120,255,0.5);
-}
-
-.sub-scrollbar {
-  flex: 1;
-  height: 10px; /* scrollbar 高度 */
-  background-color: #f0f0f0;
-  overflow-x: auto;
-  display: none; /* 預設隱藏 */
 }
 
 /* 右欄 */

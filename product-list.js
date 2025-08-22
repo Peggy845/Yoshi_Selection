@@ -134,14 +134,7 @@
     return `
       <div class="left-col">
         <div class="product-image-block">
-          <div class="arrow-block arrow-left" aria-label="上一張" title="上一張">
-            <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
-          </div>
           <img src="${mainUrl}" class="main-image" alt="${productName}">
-          <div class="arrow-block arrow-right" aria-label="下一張" title="下一張">
-            <svg viewBox="0 0 24 24"><path d="M9 6 L15 12 L9 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
-          </div>
-
           <button class="magnifier-btn" type="button" aria-label="啟用放大鏡" title="放大鏡">
             <svg viewBox="0 0 24 24" class="magnifier-icon" aria-hidden="true">
               <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
@@ -157,7 +150,6 @@
 		  <div class="sub-group-wrapper">
 			<div class="sub-group"></div>
 		  </div>
-		  <div class="sub-scrollbar"></div> <!-- 下半部 scroll bar -->
 		</div>
       </div>
 
@@ -619,4 +611,10 @@ document.addEventListener("DOMContentLoaded", () => {
 // 初始化放大鏡：直接對每個 .product-item 綁定
 document.querySelectorAll(".product-item").forEach(productDiv => {
   initMagnifier(productDiv);
+});
+
+// ===== 隨 resize 調整 =====
+window.addEventListener("resize", () => {
+  document.documentElement.style.setProperty('--base-w', window.innerWidth + 'px');
+  document.documentElement.style.setProperty('--base-h', window.innerHeight + 'px');
 });

@@ -293,6 +293,12 @@
     }
   }
 
+/**
+ * 渲染主圖與縮圖
+ * @param {HTMLElement} productDiv - 單一商品區塊
+ * @param {Object} state - 商品狀態
+ * @param {boolean} hardSet - 當切換角色或初始化時，強制重設主圖
+ */
 function renderMainAndThumbs(productDiv, state, hardSet = false) {
   const mainImgEl = productDiv.querySelector('.main-image');
   const subGroup = productDiv.querySelector('.sub-group');
@@ -305,22 +311,34 @@ function renderMainAndThumbs(productDiv, state, hardSet = false) {
   const variant = state.activeVariant;
   const imgList = buildImageArray(variant);
 
-  // 設定主圖 (切換角色時 hardSet = true)
-  if (hardSet || !state.mainSrc) {
-    state.mainSrc = imgList[0] || '';
+  // === 【重點 1】圖片清單防呆 ===
+  if (!imgList || imgList.length === 0) {
+    console.warn('⚠️ 找不到圖片', variant);
+    mainImgEl.src = '';
+    return;
+  }
+
+  // === 【重點 2】主圖永遠預設 A ===
+  // - 初始化時或切換角色時（hardSet=true）
+  // - 不管使用者之前點了哪張縮圖，都回到商品圖片(A)
+  if (hardSet || !state.mainSrc || !imgList.includes(state.mainSrc)) {
+    state.mainSrc = imgList[0];
   }
   mainImgEl.src = state.mainSrc;
 
-  // 動態產生縮圖
+  // === 【重點 3】產生縮圖 ===
   imgList.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
     img.className = 'sub-image';
     if (src === state.mainSrc) img.classList.add('active');
 
+    // 點擊縮圖切換主圖
     img.addEventListener('click', () => {
       state.mainSrc = src;
       mainImgEl.src = src;
+
+      // 更新縮圖選中樣式
       subGroup.querySelectorAll('.sub-image').forEach(el => el.classList.remove('active'));
       img.classList.add('active');
     });
@@ -328,18 +346,34 @@ function renderMainAndThumbs(productDiv, state, hardSet = false) {
     subGroup.appendChild(img);
   });
 
-  // 控制 scrollbar 是否出現
+  // === 【重點 4】scrollbar 顯示邏輯 ===
+  // - 如果總圖片 ≤ 4，不出現 scrollbar
+  // - 如果總圖片 > 4，顯示 scrollbar
   wrapper.style.overflowX = imgList.length > 4 ? 'auto' : 'hidden';
 
-  // 重置 scrollbar 位置
+  // === 【重點 5】scrollbar 回到最左 ===
   wrapper.scrollLeft = 0;
+
+  // 更新 state
+  state.images = imgList;
 }
 
 
-  function initGallery(productDiv, state) {
-    // 初次
-    renderMainAndThumbs(productDiv, state, true);
-  }
+
+	function initGallery(productDiv, state) {
+	  renderMainAndThumbs(productDiv, state, true);
+
+	  const subImgs = productDiv.querySelectorAll('.sub-image');
+	  const mainImg = productDiv.querySelector('.main-image');
+
+	  subImgs.forEach((img, idx) => {
+		img.addEventListener('click', () => {
+		  if (!state.images[idx + 1]) return;
+		  mainImg.src = state.images[idx + 1];
+		  state.mainSrc = state.images[idx + 1];
+		});
+	  });
+	}
 
   /** ===== 放大鏡（局部放大，正方形） ===== */
   function initMagnifier(productDiv) {

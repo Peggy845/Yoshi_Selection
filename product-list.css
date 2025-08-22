@@ -144,6 +144,14 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .sub-group-wrapper::-webkit-scrollbar-thumb { background: #bbb; border-radius: 3px; }
 .sub-group-wrapper::-webkit-scrollbar-thumb:hover { background: #888; }
 
+.sub-scrollbar {
+  flex: 1;
+  height: 10px; /* scrollbar 高度 */
+  background-color: #f0f0f0;
+  overflow-x: auto;
+  display: none; /* 預設隱藏 */
+}
+
 /* 群組包一層，方便等比例放大 */
 .sub-group {
   display: flex;

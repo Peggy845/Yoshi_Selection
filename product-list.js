@@ -150,6 +150,7 @@
 		  <div class="sub-group-wrapper">
 			<div class="sub-group"></div>
 		  </div>
+		  <div class="sub-scrollbar"></div> <!-- 下半部 scroll bar -->
 		</div>
       </div>
 

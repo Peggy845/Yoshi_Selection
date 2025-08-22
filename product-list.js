@@ -98,16 +98,20 @@
   /** 建立圖片陣列：商品圖片(A) + 額外圖片 B、C、D… (頓號分隔) */
 	function buildImageArray(variant) {
 	  const images = [];
-	  if (!variant) return images;  // <- 防呆處理
+	  if (!variant || !variant['商品圖片']) return images; // 防止 undefined
 	  
 	  const main = norm(variant['商品圖片']);
-	  const extras = norm(variant['額外圖片']);
+	  const extras = variant['額外圖片'] ? norm(variant['額外圖片']) : '';
 
+	  // 主圖一定放第一張
 	  if (main) images.push(IMAGE_BASE + main);
+
+	  // 額外圖片
 	  if (extras) {
 		const extraArr = extras.split('、').map(s => IMAGE_BASE + norm(s));
 		images.push(...extraArr);
 	  }
+
 	  return images;
 	}
 
@@ -311,34 +315,31 @@ function renderMainAndThumbs(productDiv, state, hardSet = false) {
   const variant = state.activeVariant;
   const imgList = buildImageArray(variant);
 
-  // === 【重點 1】圖片清單防呆 ===
+  // 如果該角色沒圖，直接隱藏
   if (!imgList || imgList.length === 0) {
     console.warn('⚠️ 找不到圖片', variant);
     mainImgEl.src = '';
+    wrapper.style.overflowX = 'hidden';
     return;
   }
 
-  // === 【重點 2】主圖永遠預設 A ===
-  // - 初始化時或切換角色時（hardSet=true）
-  // - 不管使用者之前點了哪張縮圖，都回到商品圖片(A)
+  // === 主圖邏輯 ===
   if (hardSet || !state.mainSrc || !imgList.includes(state.mainSrc)) {
     state.mainSrc = imgList[0];
   }
   mainImgEl.src = state.mainSrc;
 
-  // === 【重點 3】產生縮圖 ===
+  // === 產生縮圖 ===
   imgList.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
     img.className = 'sub-image';
     if (src === state.mainSrc) img.classList.add('active');
 
-    // 點擊縮圖切換主圖
     img.addEventListener('click', () => {
       state.mainSrc = src;
       mainImgEl.src = src;
 
-      // 更新縮圖選中樣式
       subGroup.querySelectorAll('.sub-image').forEach(el => el.classList.remove('active'));
       img.classList.add('active');
     });
@@ -346,12 +347,8 @@ function renderMainAndThumbs(productDiv, state, hardSet = false) {
     subGroup.appendChild(img);
   });
 
-  // === 【重點 4】scrollbar 顯示邏輯 ===
-  // - 如果總圖片 ≤ 4，不出現 scrollbar
-  // - 如果總圖片 > 4，顯示 scrollbar
+  // === scrollbar 邏輯 ===
   wrapper.style.overflowX = imgList.length > 4 ? 'auto' : 'hidden';
-
-  // === 【重點 5】scrollbar 回到最左 ===
   wrapper.scrollLeft = 0;
 
   // 更新 state
@@ -360,20 +357,17 @@ function renderMainAndThumbs(productDiv, state, hardSet = false) {
 
 
 
-	function initGallery(productDiv, state) {
-	  renderMainAndThumbs(productDiv, state, true);
 
-	  const subImgs = productDiv.querySelectorAll('.sub-image');
-	  const mainImg = productDiv.querySelector('.main-image');
+function initGallery(productDiv, state) {
+  // 確保 activeVariant 一定指向有商品圖片的那筆
+  if (!state.activeVariant || !state.activeVariant['商品圖片']) {
+    const firstValid = state.variants.find(v => v['商品圖片']);
+    if (firstValid) state.activeVariant = firstValid;
+  }
 
-	  subImgs.forEach((img, idx) => {
-		img.addEventListener('click', () => {
-		  if (!state.images[idx + 1]) return;
-		  mainImg.src = state.images[idx + 1];
-		  state.mainSrc = state.images[idx + 1];
-		});
-	  });
-	}
+  // 初始化主圖與縮圖
+  renderMainAndThumbs(productDiv, state, true);
+}
 
   /** ===== 放大鏡（局部放大，正方形） ===== */
   function initMagnifier(productDiv) {

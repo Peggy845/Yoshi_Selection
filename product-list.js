@@ -10,7 +10,6 @@
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get(param);
   }
-
   function norm(v) { return (v ?? '').toString().trim(); }
 
   /** 抓多分頁資料（維持你原本的做法） */
@@ -19,13 +18,12 @@
     for (const name of sheetNames) {
       if (name === '分類圖片') continue;
       const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(name)}&tqx=out:json`;
-
       try {
         const res = await fetch(url);
         if (!res.ok) throw new Error(`無法讀取分頁：${name}`);
         const text = await res.text();
         const json = JSON.parse(text.substring(47, text.length - 2));
-        const cols = json.table.cols.map(col => (col.label || '').trim());
+        const cols = json.table.cols.map(col => norm(col.label));
         const rows = json.table.rows.map(row => {
           const obj = {};
           row.c.forEach((cell, i) => { obj[cols[i]] = cell ? cell.v : ''; });
@@ -49,18 +47,18 @@
       if (!map.has(name)) map.set(name, []);
       map.get(name).push(r);
     });
-    return map;
+    return map; // Map(name -> [row,row,...])
   }
 
   /** 取得所有選項欄位（至少某列不為空） */
   function extractOptionKeys(variants) {
-    const keys = new Set();
+    const set = new Set();
     variants.forEach(v => {
       Object.keys(v).forEach(k => {
-        if (k.startsWith('選項-') && norm(v[k]) !== '') keys.add(k);
+        if (k.startsWith('選項-') && norm(v[k]) !== '') set.add(k);
       });
     });
-    return Array.from(keys);
+    return Array.from(set);
   }
 
   /** 收集每個選項欄位的所有值（依出現順序去重） */
@@ -71,99 +69,92 @@
       values[k] = [];
       variants.forEach(v => {
         const val = norm(v[k]);
-        if (val && !seen.has(val)) {
-          seen.add(val);
-          values[k].push(val);
-        }
+        if (val && !seen.has(val)) { seen.add(val); values[k].push(val); }
       });
     });
-    return values;
+    return values; // { '選項-尺寸': ['22cm','33cm'], ... }
   }
 
   /** 找到完全吻合 selection 的變體；找不到回傳 null */
   function findVariantBySelection(variants, selection) {
-    return variants.find(v =>
-      Object.keys(selection).every(k => norm(v[k]) === selection[k])
-    ) || null;
+    return variants.find(v => Object.keys(selection).every(k => norm(v[k]) === selection[k])) || null;
   }
 
   /** 計算在特定 selection（排除 targetKey）下，targetKey 可用值集合 */
   function calcValidValues(variants, selection, targetKey) {
     const set = new Set();
     variants.forEach(v => {
-      const ok = Object.keys(selection).every(k => {
+      // 其他 key 都要符合 selection（忽略 targetKey）
+      const ok = Object.entries(selection).every(([k, val]) => {
         if (k === targetKey) return true;
-        return selection[k] ? norm(v[k]) === selection[k] : true;
+        return norm(v[k]) === val;
       });
       if (ok) {
-        const val = norm(v[targetKey]);
-        if (val) set.add(val);
+        const tv = norm(v[targetKey]);
+        if (tv) set.add(tv);
       }
     });
     return set;
   }
 
-  /** 建立圖片陣列：商品圖片 + 額外圖片(頓號分隔) */
+  /** 建立圖片陣列：商品圖片(A) + 額外圖片 B、C、D… (頓號分隔) */
   function buildImageArray(variant) {
-    const mainImg = norm(variant['商品圖片']);
+    const main = norm(variant['商品圖片']);
     const extraRaw = norm(variant['額外圖片']);
-    const extras = (extraRaw && extraRaw !== '無')
+    const extras = extraRaw && extraRaw !== '無'
       ? extraRaw.split('、').map(s => norm(s)).filter(Boolean)
       : [];
-    const list = [];
-    if (mainImg) list.push(IMAGE_BASE + mainImg);
-    extras.forEach(x => list.push(IMAGE_BASE + x));
-    // 去重（避免主圖也被寫進額外圖片）
-    const seen = new Set();
-    const dedup = [];
-    list.forEach(src => { if (!seen.has(src)) { seen.add(src); dedup.push(src); } });
-    return dedup;
+    const fullExtras = extras.map(x => IMAGE_BASE + x);
+    const mainUrl = main ? (IMAGE_BASE + main) : '';
+    const all = mainUrl ? [mainUrl, ...fullExtras] : [...fullExtras];
+    return { mainUrl, extras: fullExtras, all };
   }
 
   /** 將價格/庫存/狀態/詳情更新到 UI（不處理圖片） */
   function applyVariantFields(productRoot, variant) {
-    productRoot.querySelector('.product-name').textContent = norm(variant['商品名稱']) || '';
+    productRoot.querySelector('.product-name').textContent  = norm(variant['商品名稱']) || '';
     productRoot.querySelector('.product-price').textContent = `\$ ${norm(variant['價格']) || ''}`;
     productRoot.querySelector('.product-detail').textContent = norm(variant['詳細資訊']) || '';
-    const stock = Number(norm(variant['庫存']) || '0');
-    productRoot.querySelector('.stock-text').textContent = `還剩 ${stock} 件`;
-    productRoot.querySelector('.quantity-input').max = String(stock);
     productRoot.querySelector('.sale-status-block').textContent = `狀態: ${norm(variant['販售狀態']) || ''}`;
+
+    const stock = parseInt(norm(variant['庫存']) || '0', 10);
+    productRoot.querySelectorAll('.stock-text').forEach(el => el.textContent = `還剩 ${isNaN(stock) ? 0 : stock} 件`);
+    const qty = productRoot.querySelector('.quantity-input');
+    if (qty) qty.max = isNaN(stock) ? 0 : stock;
   }
 
-  /** 產生商品卡片 HTML（保留你的結構，內部我加了 sub-arrow-left/right） */
-  function generateProductHTML(productName, variant, imgList) {
-    const showMainArrows = imgList.length > 1;
+  /** 產生商品卡片 HTML（含主圖左右箭頭 + sub 區左右箭頭(3格縮圖) + 放大鏡結構） */
+  function generateProductHTML(productName, variant, img) {
+    const mainUrl = img.mainUrl || '';
     return `
       <div class="left-col">
         <div class="product-image-block">
-          <button class="arrow-block arrow-left" type="button" style="${showMainArrows ? '' : 'display:none'}" aria-label="上一張">
-            <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/></svg>
-          </button>
+          <div class="arrow-block arrow-left" aria-label="上一張" title="上一張">
+            <svg viewBox="0 0 24 24"><path d="M15 6 L9 12 L15 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          </div>
+          <img src="${mainUrl}" class="main-image" alt="${productName}">
+          <div class="arrow-block arrow-right" aria-label="下一張" title="下一張">
+            <svg viewBox="0 0 24 24"><path d="M9 6 L15 12 L9 18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
+          </div>
 
-          <img src="${imgList[0] || ''}" class="main-image" alt="${productName}">
-
-          <button class="arrow-block arrow-right" type="button" style="${showMainArrows ? '' : 'display:none'}" aria-label="下一張">
-            <svg viewBox="0 0 24 24"><path d="M9 6 L15 12 L9 18" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round"/></svg>
-          </button>
-
-          <!-- 放大鏡按鈕（保留） -->
           <button class="magnifier-btn" type="button" aria-label="啟用放大鏡" title="放大鏡">
             <svg viewBox="0 0 24 24" class="magnifier-icon" aria-hidden="true">
               <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
               <line x1="16.5" y1="16.5" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="11" y1="7" x2="11" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <line x1="7" y1="11" x2="15" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
             </svg>
           </button>
-
-          <div class="magnifier-lens" aria-hidden="true"></div>
+          <div class="magnifier-lens" aria-hidden="true" style="display:none;"></div>
         </div>
 
         <div class="sub-image-block">
           <div class="sub-group">
-            <div class="sub-arrow sub-arrow-left">←</div>
-            <!-- 這裡縮圖我會用 JS 動態產生 1~3 張 -->
-            <div class="thumbs"></div>
-            <div class="sub-arrow sub-arrow-right">→</div>
+            <div class="sub-arrow sub-left" aria-label="縮圖往左">←</div>
+            <img src="" alt="子圖片1" class="sub-image">
+            <img src="" alt="子圖片2" class="sub-image">
+            <img src="" alt="子圖片3" class="sub-image">
+            <div class="sub-arrow sub-right" aria-label="縮圖往右">→</div>
           </div>
         </div>
       </div>
@@ -196,20 +187,16 @@
   /** 初始化選項群組 + 邏輯 */
   function initOptions(productDiv, state) {
     const wrap = productDiv.querySelector('.product-option');
-
-    // 僅顯示 values > 1 的選項
-    const optionValues = collectOptionValues(state.variants, state.optionKeys);
-    const effectiveKeys = state.optionKeys.filter(k => (optionValues[k] || []).length > 1);
-
-    // 沒有可選的就清空
-    if (!effectiveKeys.length) {
-      wrap.innerHTML = '';
-      return;
-    }
-
-    // 渲染
     wrap.innerHTML = '';
-    effectiveKeys.forEach(k => {
+
+    // 只顯示「有超過一種值」的選項
+    const displayKeys = state.optionKeys.filter(k => {
+      const uniq = new Set(state.optionValues[k] || []);
+      return uniq.size > 1;
+    });
+    state.displayKeys = displayKeys;
+
+    displayKeys.forEach(k => {
       const group = document.createElement('div');
       group.className = 'option-group';
 
@@ -218,32 +205,24 @@
       title.textContent = k.replace('選項-', '');
       group.appendChild(title);
 
-      const btnBox = document.createElement('div');
-      btnBox.className = 'option-buttons';
-
-      (optionValues[k] || []).forEach((val, idx) => {
+      const btns = document.createElement('div');
+      btns.className = 'option-buttons';
+      (state.optionValues[k] || []).forEach(val => {
         const btn = document.createElement('button');
-        btn.className = 'option-btn';
         btn.type = 'button';
+        btn.className = 'option-btn';
         btn.dataset.optionKey = k;
         btn.dataset.optionValue = val;
         btn.textContent = val;
-
-        // 預設選第一個
-        if (!state.selection[k] && idx === 0) state.selection[k] = val;
         if (state.selection[k] === val) btn.classList.add('selected');
-
-        btnBox.appendChild(btn);
+        btns.appendChild(btn);
       });
 
-      group.appendChild(btnBox);
+      group.appendChild(btns);
       wrap.appendChild(group);
     });
 
-    // 初次禁用不可能組合
-    updateOptionDisabling(productDiv, state);
-
-    // 綁事件（互斥、更新 UI）
+    // 委派事件：互斥選擇 + 更新其他區塊
     wrap.addEventListener('click', (e) => {
       const btn = e.target.closest('.option-btn');
       if (!btn) return;
@@ -252,300 +231,292 @@
       const key = btn.dataset.optionKey;
       const val = btn.dataset.optionValue;
 
-      // 同群互斥
+      // 同一群互斥
       const group = btn.closest('.option-buttons');
       group.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
+
+      // 更新 selection
       state.selection[key] = val;
 
-      // 重新評估禁用狀態，並自動修正不再有效的選取
+      // 若組合無效，強制修正
       autoFixInvalidSelections(productDiv, state);
-      updateOptionDisabling(productDiv, state);
 
-      // 切換變體、更新右側欄位與圖片
-      const newVariant = findVariantBySelection(state.variants, state.selection);
-      if (newVariant) {
-        state.currentVariant = newVariant;
-        applyVariantFields(productDiv, newVariant);
-        rebuildGallery(productDiv, state); // 圖片改為該變體
-      }
+      // 取得當前有效變體
+      const variant = findVariantBySelection(state.variants, state.selection) || state.variants[0];
+
+      // 欄位刷新
+      applyVariantFields(productDiv, variant);
+
+      // 重建圖片（重設為 A 當主圖）
+      state.images = buildImageArray(variant);
+      rebuildGallery(productDiv, state);
+
+      // 依目前 selection 灰掉不可能的選項
+      updateOptionDisabling(productDiv, state);
     });
+
+    // 初次渲染時就做一次 disable
+    updateOptionDisabling(productDiv, state);
   }
 
   /** 灰掉不可能的按鈕 */
   function updateOptionDisabling(productDiv, state) {
-    const wrap = productDiv.querySelector('.product-option');
-    const groups = wrap.querySelectorAll('.option-group');
-
-    groups.forEach(g => {
-      const key = g.querySelector('.option-buttons .option-btn')?.dataset.optionKey;
-      if (!key) return;
-      const valid = calcValidValues(state.variants, state.selection, key);
-
-      g.querySelectorAll('.option-btn').forEach(btn => {
+    state.displayKeys.forEach(k => {
+      const validSet = calcValidValues(state.variants, state.selection, k);
+      productDiv.querySelectorAll(`.option-btn[data-option-key="${CSS.escape(k)}"]`).forEach(btn => {
         const v = btn.dataset.optionValue;
-        const ok = valid.has(v);
-        btn.disabled = !ok;
-        btn.classList.toggle('disabled', !ok);
+        if (validSet.size === 0 || !validSet.has(v)) {
+          btn.classList.add('disabled');
+          btn.disabled = true;
+        } else {
+          btn.classList.remove('disabled');
+          btn.disabled = false;
+        }
       });
     });
   }
 
   /** 若某群目前選擇變無效，改成該群第一個可用值 */
   function autoFixInvalidSelections(productDiv, state) {
-    const wrap = productDiv.querySelector('.product-option');
-    const groups = wrap.querySelectorAll('.option-group');
+    let variant = findVariantBySelection(state.variants, state.selection);
+    if (variant) return;
 
-    groups.forEach(g => {
-      const btns = Array.from(g.querySelectorAll('.option-buttons .option-btn'));
-      if (!btns.length) return;
-      const key = btns[0].dataset.optionKey;
-      const valid = calcValidValues(state.variants, state.selection, key);
+    // 依序檢查每個顯示中的 option-group
+    for (const k of state.displayKeys) {
+      const validSet = calcValidValues(state.variants, state.selection, k);
+      if (!validSet.has(state.selection[k])) {
+        const first = Array.from(validSet)[0];
+        if (first) state.selection[k] = first;
 
-      const currentVal = state.selection[key];
-      if (currentVal && !valid.has(currentVal)) {
-        // 換成第一個可用的
-        const firstValidBtn = btns.find(b => valid.has(b.dataset.optionValue));
-        if (firstValidBtn) {
-          btns.forEach(b => b.classList.remove('selected'));
-          firstValidBtn.classList.add('selected');
-          state.selection[key] = firstValidBtn.dataset.optionValue;
-        }
+        // 同步 UI 按鈕 selected 樣式
+        const btns = productDiv.querySelectorAll(`.option-btn[data-option-key="${CSS.escape(k)}"]`);
+        btns.forEach(b => b.classList.toggle('selected', b.dataset.optionValue === state.selection[k]));
       }
+    }
+  }
+
+  /** ========== 圖片畫廊（方案3：縮圖只顯示額外圖片；主圖固定 A，可用主圖左右箭頭輪播 A+B/C/D） ========== */
+  function fadeMainImage(imgEl, newSrc) {
+    if (!imgEl) return;
+    if (imgEl.src === newSrc) return;
+    imgEl.classList.add('fade-out');
+    imgEl.addEventListener('transitionend', function handler() {
+      imgEl.removeEventListener('transitionend', handler);
+      imgEl.src = newSrc;
+      requestAnimationFrame(() => {
+        imgEl.classList.remove('fade-out');
+        imgEl.classList.add('fade-in');
+        imgEl.addEventListener('transitionend', function handler2() {
+          imgEl.removeEventListener('transitionend', handler2);
+          imgEl.classList.remove('fade-in');
+        });
+      });
     });
   }
 
-  /** ========== 圖片畫廊（方案3：縮圖不與主圖交換） ========== */
-  function fadeMainImage(imgEl, newSrc) {
-    imgEl.classList.add('fade-out');
-    setTimeout(() => {
-      imgEl.src = newSrc || '';
-      imgEl.classList.remove('fade-out');
-      imgEl.classList.add('fade-in');
-      setTimeout(() => imgEl.classList.remove('fade-in'), 250);
-    }, 250);
-  }
-
   function rebuildGallery(productDiv, state) {
-    // 重建圖片陣列與 index
-    state.images = buildImageArray(state.currentVariant);
-    if (!state.images.length) state.images = ['']; // 保底
-    // 若目前 index 超出，歸 0
-    if (state.currentIndex >= state.images.length) state.currentIndex = 0;
-    // 讓 sub 起點包含目前主圖
-    state.subStart = Math.max(0, Math.min(state.currentIndex, Math.max(0, state.images.length - 3)));
+    // 主圖預設回到 A
+    state.currentMainIndex = 0;           // index in images.all
+    state.thumbOffset = 0;                // extras 的視窗偏移
     renderMainAndThumbs(productDiv, state, true);
   }
 
   function renderMainAndThumbs(productDiv, state, hardSet = false) {
+    const mainImgEl = productDiv.querySelector('.main-image');
+    const leftMain = productDiv.querySelector('.arrow-left');
+    const rightMain = productDiv.querySelector('.arrow-right');
+
+    const subLeft  = productDiv.querySelector('.sub-arrow.sub-left');
+    const subRight = productDiv.querySelector('.sub-arrow.sub-right');
+    const subImgs  = productDiv.querySelectorAll('.sub-image'); // 3 格
+
+    const images = state.images.all;     // [A, ...extras]
+    const extras = state.images.extras;  // 只縮圖
+    if (!images.length) return;
+
     // 主圖
-    const imgEl = productDiv.querySelector('.main-image');
-    const leftBtn = productDiv.querySelector('.arrow-left');
-    const rightBtn = productDiv.querySelector('.arrow-right');
-
+    const mainSrc = images[state.currentMainIndex] || images[0];
     if (hardSet) {
-      imgEl.src = state.images[state.currentIndex] || '';
+      mainImgEl.src = mainSrc;
     } else {
-      fadeMainImage(imgEl, state.images[state.currentIndex] || '');
+      fadeMainImage(mainImgEl, mainSrc);
     }
 
-    // 主圖箭頭顯示
-    const showMainArrows = state.images.length > 1;
-    if (leftBtn) leftBtn.style.display = showMainArrows ? '' : 'none';
-    if (rightBtn) rightBtn.style.display = showMainArrows ? '' : 'none';
+    // 主圖箭頭若總數 <= 1 就隱藏
+    const showMainArrows = images.length > 1;
+    leftMain.style.display  = showMainArrows ? '' : 'none';
+    rightMain.style.display = showMainArrows ? '' : 'none';
 
-    // 縮圖（最多三張視窗）
-    const thumbsWrap = productDiv.querySelector('.sub-group .thumbs');
-    const subLeft = productDiv.querySelector('.sub-arrow-left');
-    const subRight = productDiv.querySelector('.sub-arrow-right');
-    thumbsWrap.innerHTML = '';
+    // 縮圖（只顯示 extras）
+    const total = extras.length;
+    // 依你要求：若「包含主圖在內」小於 3，隱藏 sub-arrow => 1 (A) + extras < 3
+    const showSubArrows = (1 + total) >= 3; // 小於 3 則隱藏
+    subLeft.style.display  = showSubArrows ? '' : 'none';
+    subRight.style.display = showSubArrows ? '' : 'none';
 
-    const total = state.images.length;
-    const visible = Math.min(3, total);
-    const start = Math.max(0, Math.min(state.subStart, Math.max(0, total - visible)));
-    state.subStart = start;
+    // 控制 thumbOffset 範圍（用 clamp，不輪播）
+    const maxOffset = Math.max(0, total - 3);
+    state.thumbOffset = Math.max(0, Math.min(state.thumbOffset, maxOffset));
 
-    for (let i = 0; i < visible; i++) {
-      const idx = start + i;
-      const src = state.images[idx];
-      const thumb = document.createElement('img');
-      thumb.className = 'sub-image';
-      thumb.alt = '子圖';
-      thumb.src = src || '';
-      if (idx === state.currentIndex) thumb.classList.add('active-thumb');
-
-      thumb.addEventListener('click', () => {
-        state.currentIndex = idx;
-        renderMainAndThumbs(productDiv, state); // 動畫切主圖
-        // 讓目前主圖落在可視縮圖窗內
-        if (state.currentIndex < state.subStart) {
-          state.subStart = state.currentIndex;
-          renderMainAndThumbs(productDiv, state, true);
-        } else if (state.currentIndex >= state.subStart + visible) {
-          state.subStart = state.currentIndex - visible + 1;
-          renderMainAndThumbs(productDiv, state, true);
-        }
-      });
-
-      thumbsWrap.appendChild(thumb);
+    for (let i = 0; i < subImgs.length; i++) {
+      const imgEl = subImgs[i];
+      const src = extras[state.thumbOffset + i] || '';
+      imgEl.style.visibility = src ? 'visible' : 'hidden';
+      imgEl.style.pointerEvents = src ? 'auto' : 'none';
+      imgEl.src = src || '';
+      imgEl.onclick = src ? () => {
+        // 縮圖點擊：主圖切到該縮圖（注意：縮圖是 extras，主圖 index = extrasIndex + 1）
+        state.currentMainIndex = (state.images.all.indexOf(src) >= 0)
+          ? state.images.all.indexOf(src)
+          : 0;
+        fadeMainImage(mainImgEl, state.images.all[state.currentMainIndex]);
+      } : null;
     }
 
-    // 縮圖箭頭顯示規則：總圖數 < 3 → 隱藏；>=3 → 顯示（邊界時半透明）
-    const showSubArrows = total >= 3;
-    const atLeftMost = state.subStart === 0;
-    const atRightMost = state.subStart + visible >= total;
+    // 綁定 sub-arrow 事件（避免重複疊加：先取消再綁）
+    subLeft.onclick = null;
+    subRight.onclick = null;
+    subLeft.addEventListener('click', () => {
+      if (state.thumbOffset > 0) {
+        state.thumbOffset -= 1;
+        renderMainAndThumbs(productDiv, state, true);
+      }
+    });
+    subRight.addEventListener('click', () => {
+      if (state.thumbOffset < maxOffset) {
+        state.thumbOffset += 1;
+        renderMainAndThumbs(productDiv, state, true);
+      }
+    });
 
-    if (subLeft) {
-      subLeft.style.display = showSubArrows ? 'flex' : 'none';
-      subLeft.style.opacity = atLeftMost ? '0.35' : '1';
-      subLeft.style.pointerEvents = atLeftMost ? 'none' : 'auto';
-    }
-    if (subRight) {
-      subRight.style.display = showSubArrows ? 'flex' : 'none';
-      subRight.style.opacity = atRightMost ? '0.35' : '1';
-      subRight.style.pointerEvents = atRightMost ? 'none' : 'auto';
-    }
+    // 主圖左右箭頭：在 [A, ...extras] 間輪播
+    leftMain.onclick = null;
+    rightMain.onclick = null;
+    leftMain.addEventListener('click', () => {
+      state.currentMainIndex = (state.currentMainIndex - 1 + images.length) % images.length;
+      fadeMainImage(mainImgEl, images[state.currentMainIndex]);
+    });
+    rightMain.addEventListener('click', () => {
+      state.currentMainIndex = (state.currentMainIndex + 1) % images.length;
+      fadeMainImage(mainImgEl, images[state.currentMainIndex]);
+    });
+
+    // 觸控滑動（主圖左右切換）
+    let touchX = null;
+    mainImgEl.ontouchstart = (ev) => { touchX = ev.touches[0].clientX; };
+    mainImgEl.ontouchend = (ev) => {
+      if (touchX == null) return;
+      const dx = ev.changedTouches[0].clientX - touchX;
+      touchX = null;
+      const SWIPE = 30; // 門檻
+      if (dx > SWIPE) {
+        state.currentMainIndex = (state.currentMainIndex - 1 + images.length) % images.length;
+        fadeMainImage(mainImgEl, images[state.currentMainIndex]);
+      } else if (dx < -SWIPE) {
+        state.currentMainIndex = (state.currentMainIndex + 1) % images.length;
+        fadeMainImage(mainImgEl, images[state.currentMainIndex]);
+      }
+    };
   }
 
   function initGallery(productDiv, state) {
-    // 初始資料
-    state.images = buildImageArray(state.currentVariant);
-    state.currentIndex = 0;
-    state.subStart = 0;
-    renderMainAndThumbs(productDiv, state, true);
-
-    // 綁主圖箭頭
-    const leftBtn = productDiv.querySelector('.arrow-left');
-    const rightBtn = productDiv.querySelector('.arrow-right');
-    const imgEl = productDiv.querySelector('.main-image');
-
-    if (leftBtn) {
-      leftBtn.addEventListener('click', () => {
-        const n = state.images.length;
-        state.currentIndex = (state.currentIndex - 1 + n) % n;
-        renderMainAndThumbs(productDiv, state);
-      });
-    }
-    if (rightBtn) {
-      rightBtn.addEventListener('click', () => {
-        const n = state.images.length;
-        state.currentIndex = (state.currentIndex + 1) % n;
-        renderMainAndThumbs(productDiv, state);
-      });
-    }
-
-    // 觸控滑動（主圖）
-    let startX = 0;
-    imgEl.addEventListener('touchstart', (e) => { startX = e.touches[0].clientX; }, { passive: true });
-    imgEl.addEventListener('touchend', (e) => {
-      const endX = e.changedTouches[0].clientX;
-      if (endX - startX > 50) {
-        leftBtn?.click();
-      } else if (startX - endX > 50) {
-        rightBtn?.click();
-      }
-    }, { passive: true });
-
-    // 綁縮圖箭頭
-    const subLeft = productDiv.querySelector('.sub-arrow-left');
-    const subRight = productDiv.querySelector('.sub-arrow-right');
-    if (subLeft) {
-      subLeft.addEventListener('click', () => {
-        if (state.subStart > 0) {
-          state.subStart -= 1;
-          renderMainAndThumbs(productDiv, state, true);
-        }
-      });
-    }
-    if (subRight) {
-      subRight.addEventListener('click', () => {
-        const total = state.images.length;
-        const visible = Math.min(3, total);
-        const maxStart = Math.max(0, total - visible);
-        if (state.subStart < maxStart) {
-          state.subStart += 1;
-          renderMainAndThumbs(productDiv, state, true);
-        }
-      });
-    }
+    // 初次
+    rebuildGallery(productDiv, state);
   }
 
-	function initProductImageGallery(productEl, productData) {
-	  const mainImgEl = productEl.querySelector('.main-image');
-	  const subGroupEl = productEl.querySelector('.sub-group');
-	  const leftArrow = productEl.querySelector('.sub-arrow.left');
-	  const rightArrow = productEl.querySelector('.sub-arrow.right');
+  /** ===== 放大鏡（局部放大，正方形） ===== */
+  function initMagnifier(productDiv) {
+    const block = productDiv.querySelector(".product-image-block");
+    if (!block) return;
 
-	  let images = []; // 全部圖片：A + 額外圖片
-	  let extraImages = []; // 額外圖片 B、C、D
-	  let currentMainIndex = 0;
+    const img = block.querySelector(".main-image");     // 主圖
+    const btn = block.querySelector(".magnifier-btn");  // 按鈕
+    if (!img || !btn) return;
 
-	  // 初始化圖片
-	  function initImages() {
-		const main = productData['商品圖片'];
-		extraImages = productData['額外圖片']
-		  ? productData['額外圖片'].split('、').map(i => `images/${i}`)
-		  : [];
+    // 鏡片
+    let lens = block.querySelector(".magnifier-lens");
+    if (!lens) {
+      lens = document.createElement("div");
+      lens.className = "magnifier-lens";
+      lens.setAttribute("aria-hidden", "true");
+      block.appendChild(lens);
+    }
 
-		// A + B、C、D
-		images = [main, ...extraImages];
-		currentMainIndex = 0;
+    const ZOOM = 2.5;
+    let active = false;
 
-		mainImgEl.src = images[currentMainIndex];
-		renderSubImages();
-		updateArrowVisibility();
-	  }
+    function fitLensSize() {
+      const r = block.getBoundingClientRect();
+      const s = Math.round(Math.max(100, Math.min(220, Math.min(r.width, r.height) * 0.28)));
+      lens.style.width = s + "px";
+      lens.style.height = s + "px";
+    }
 
-	  // 渲染 sub-images，只放 B、C、D
-	  function renderSubImages() {
-		subGroupEl.innerHTML = '';
+    function updateByEvent(ev) {
+      const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
+      const blockRect = block.getBoundingClientRect();
+      const imgRect   = img.getBoundingClientRect();
 
-		extraImages.forEach((img, idx) => {
-		  const imgEl = document.createElement('img');
-		  imgEl.src = img;
-		  imgEl.classList.add('sub-image');
-		  imgEl.addEventListener('click', () => {
-			currentMainIndex = idx + 1; // 因為 images[0] 是 A
-			mainImgEl.src = images[currentMainIndex];
-		  });
-		  subGroupEl.appendChild(imgEl);
-		});
-	  }
+      let px = ev.clientX - blockRect.left;
+      let py = ev.clientY - blockRect.top;
 
-	  // 更新箭頭顯示
-	  function updateArrowVisibility() {
-		const arrows = productEl.querySelectorAll('.sub-arrow');
-		arrows.forEach(arrow => {
-		  arrow.style.display = extraImages.length > 3 ? 'flex' : 'none';
-		});
-	  }
+      let left = Math.max(0, Math.min(px - lensW / 2, blockRect.width  - lensW));
+      let top  = Math.max(0, Math.min(py - lensH / 2, blockRect.height - lensH));
+      lens.style.left = left + "px";
+      lens.style.top  = top  + "px";
 
-	  // 綁定左右箭頭
-	  function bindArrows() {
-		leftArrow.addEventListener('click', () => {
-		  currentMainIndex = (currentMainIndex - 1 + images.length) % images.length;
-		  mainImgEl.src = images[currentMainIndex];
-		});
+      const cx = left + lensW / 2;
+      const cy = top  + lensH / 2;
 
-		rightArrow.addEventListener('click', () => {
-		  currentMainIndex = (currentMainIndex + 1) % images.length;
-		  mainImgEl.src = images[currentMainIndex];
-		});
-	  }
+      const imgLeftInBlock = imgRect.left - blockRect.left;
+      const imgTopInBlock  = imgRect.top  - blockRect.top;
 
-	  // 當切換 option-group 時重設 main image
-	  function resetForOptionChange(newProductData) {
-		productData = newProductData;
-		initImages();
-	  }
+      const nx = Math.max(0, Math.min(1, (cx - imgLeftInBlock) / imgRect.width));
+      const ny = Math.max(0, Math.min(1, (cy - imgTopInBlock)  / imgRect.height));
 
-	  // 初始化
-	  initImages();
-	  bindArrows();
+      const bgW = imgRect.width  * ZOOM;
+      const bgH = imgRect.height * ZOOM;
 
-	  // 對外暴露 API，給 option-group 使用
-	  return { resetForOptionChange };
-	}
+      lens.style.backgroundImage  = `url("${img.src}")`;
+      lens.style.backgroundSize   = `${bgW}px ${bgH}px`;
+      lens.style.backgroundRepeat = "no-repeat";
+
+      const focusX = nx * bgW;
+      const focusY = ny * bgH;
+      lens.style.backgroundPosition = `${-(focusX - lensW/2)}px ${-(focusY - lensH/2)}px`;
+    }
+
+    function onMove(ev) {
+      if (!active) return;
+      updateByEvent(ev);
+    }
+
+    function enable(ev) {
+      fitLensSize();
+      lens.style.display = "block";
+      active = true;
+      if (ev) updateByEvent(ev);
+      block.addEventListener("mousemove", onMove);
+      block.addEventListener("mouseleave", disable);
+    }
+
+    function disable() {
+      lens.style.display = "none";
+      active = false;
+      block.removeEventListener("mousemove", onMove);
+      block.removeEventListener("mouseleave", disable);
+    }
+
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      active ? disable() : enable(e);
+    });
+
+    document.addEventListener("click", (e) => { if (!block.contains(e.target)) disable(); });
+    document.addEventListener("keydown", (e) => { if (e.key === "Escape") disable(); });
+    window.addEventListener("resize", () => { if (active) fitLensSize(); });
+  }
 
   /** 數量與購物車（維持你的邏輯） */
   function initQuantityAndCart(productDiv) {
@@ -559,7 +530,7 @@
         val = target.dataset.type === 'plus'
           ? Math.min(max || Infinity, val + 1)
           : Math.max(1, val - 1);
-        input.value = String(val);
+        input.value = val;
       }
 
       if (target.classList.contains('cart-btn')) {
@@ -571,40 +542,38 @@
 
   /** 建立商品卡片 + 綁定全部功能 */
   function createProductCard(productName, variants) {
+    // 初始選擇：直接用第一個變體，確保有效
+    const optionKeys = extractOptionKeys(variants);
+    const optionValues = collectOptionValues(variants, optionKeys);
+    const initialVariant = variants[0] || {};
+    const selection = {};
+    optionKeys.forEach(k => {
+      const val = norm(initialVariant[k]);
+      if (val) selection[k] = val;
+    });
+
     const productDiv = document.createElement('div');
     productDiv.className = 'product-item';
 
-    const optionKeys = extractOptionKeys(variants);
-    const optionValues = collectOptionValues(variants, optionKeys);
-
-    // 初始選擇 = 第一列的選項值
-    const initialVariant = variants[0];
-    const selection = {};
-    optionKeys.forEach(k => {
-      const v = norm(initialVariant[k]);
-      if (v) selection[k] = v;
-    });
-
-    // 初始圖片清單
-    const imgList = buildImageArray(initialVariant);
-    productDiv.innerHTML = generateProductHTML(productName, initialVariant, imgList);
+    const images = buildImageArray(initialVariant);
+    productDiv.innerHTML = generateProductHTML(productName, initialVariant, images);
 
     const state = {
       variants,
       optionKeys,
       optionValues,
       selection,
-      currentVariant: initialVariant,
-      images: imgList,
-      currentIndex: 0,
-      subStart: 0
+      images,
+      currentMainIndex: 0,
+      thumbOffset: 0
     };
 
-    // 套資料
-    applyVariantFields(productDiv, initialVariant);
-    initOptions(productDiv, state);
-    initGallery(productDiv, state);
-    initQuantityAndCart(productDiv);
+    // 綁功能
+    initGallery(productDiv, state);       // 主圖 + 縮圖（方案3）
+    initMagnifier(productDiv);            // 放大鏡
+    initOptions(productDiv, state);       // 選項互斥 + 灰掉
+    applyVariantFields(productDiv, initialVariant); // 文字欄位
+    initQuantityAndCart(productDiv);      // 數量/購物車
 
     return productDiv;
   }
@@ -623,13 +592,17 @@
       '進擊的巨人'
     ];
 
-    const all = await fetchMultipleSheets(sheetNames);
-    const rows = all[category] || [];
-    const filtered = rows.filter(
+    const allSheetsData = await fetchMultipleSheets(sheetNames);
+    const container = document.getElementById('product-list');
+    if (!allSheetsData[category] || allSheetsData[category].length === 0) {
+      container.innerHTML = '<p>目前沒有這個分類的商品</p>';
+      return;
+    }
+
+    const filtered = allSheetsData[category].filter(
       row => norm(row['商品系列']) === norm(subcategory)
     );
 
-    const container = document.getElementById('product-list');
     container.innerHTML = '';
     if (!filtered.length) {
       container.innerHTML = '<p>目前沒有這個分類的商品</p>';
@@ -638,8 +611,8 @@
 
     const grouped = groupByProductName(filtered);
     for (const [productName, variants] of grouped.entries()) {
-      const card = createProductCard(productName, variants);
-      container.appendChild(card);
+      const productDiv = createProductCard(productName, variants);
+      container.appendChild(productDiv);
     }
   }
 

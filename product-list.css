@@ -60,13 +60,9 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
    但高度改用基於 --base-h 的計算（等同於你原先的 65vh 邏輯） */
 .product-item {
   display: flex;
-  grid-template-columns: minmax(280px, 1fr) 1fr;
-  gap: 20px;
-  padding: 18px;
-  border-radius: 16px;
-  margin-bottom: 24px;
+  gap: 10px;
+  margin-bottom: 20px;
   background: white;
-  box-shadow: 0 8px 28px rgba(0,0,0,.08);
   align-items: stretch;             /* 左右欄等高 */
   height: calc(var(--base-h) * 0.65); /* 與你原先 65vh 行為一致（使用載入時的視窗高度） */
   width: calc(100% - 40px);         /* 扣掉 product-list 的左右 padding 20px*2 */
@@ -75,7 +71,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 
 .left-col {
   width: 35%;
-  gap: 12px;
   border: 1px solid black;
   display: flex;
   flex-direction: column;
@@ -90,91 +85,123 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   justify-content: center;
   border: 1px solid black;
   overflow: hidden; /* 確保圖片不會超出框 */
-  background: #f8f9fb;
-  border-radius: 12px;
+  background-color: #f5f7fb;
   border-bottom: 1px solid #eee;
-  min-height: 320px;
 }
 
 /* 主圖不被 zoom-in、保持完整顯示 */
 .main-image {
   max-width: 100%;
   max-height: 100%;
-  border-radius: 10px;
   object-fit: contain; /* 確保完整顯示圖片，不拉伸不裁切 */
   user-select: none; 
   -webkit-user-drag: none;
   pointer-events: none; /* 讓滑鼠事件落在容器上，追蹤更準 */
-  transition: opacity .25s ease;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
 }
 
-.fade-out { opacity: 0; }
-.fade-in { opacity: 1; }
-
-/* 左右箭頭*/
+/* 左右箭頭（SVG + 半透明背景） */
 .arrow-block {
-  position: absolute; top: 50%; transform: translateY(-50%);
-  width: 40px; height: 40px; border: 0; border-radius: 50%;
-  background: rgba(0,0,0,.35); color: #fff; cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  transition: background .2s ease, transform .15s ease;
-}
-.arrow-block:hover { background: rgba(0,0,0,.55); transform: translateY(-50%) scale(1.05); }
-.arrow-left { left: 10px; }
-.arrow-right { right: 10px; }
-
-/* 子圖區塊 (保留原尺寸設定) */
-.sub-image-block {
-  flex: 3;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 48px;
+  background-color: rgba(0,0,0,0.35);
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 1px solid #e5e7eb;
-  overflow: hidden;
-  background: #fafafa;
-  border-radius: 10px;
-  padding: 6px 8px;
+  cursor: pointer;
+  z-index: 10;
+  transition: background-color .2s ease, transform .1s ease;
+  user-select: none;
+}
+.arrow-block:hover { background-color: rgba(0,0,0,0.5); }
+.arrow-block:active { transform: translateY(-50%) scale(0.96); }
+
+.arrow-left { left: 10px; }
+.arrow-right { right: 10px; }
+
+.arrow-block svg {
+  width: 24px;
+  height: 24px;
+  stroke: #fff;
+  stroke-width: 2.2;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
-/* 子圖容器 */
+/* 子圖區塊 */
+.sub-image-block {
+  flex: 3; /* 高度比例 30% */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid black;
+  overflow: hidden; /* 保證不會超出 left-col */
+}
+
+/* 群組包一層，方便等比例放大 */
 .sub-group {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px; /* 箭頭與圖片間隔 */
+  transform-origin: center center;
 }
 
-.sub-group .thumbs { display: flex; gap: 8px; }
+/* 箭頭與子圖尺寸（固定） */
+.sub-arrow {
+  width: 28px;
+  height: 60px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid black;
+  background: #ddd;
+}
 
-/* 子圖 */
 .sub-image {
   width: 60px;
   height: 60px;
   flex-shrink: 0;
   object-fit: cover;
-  border-radius: 6px; 
-  border: 1px solid #e5e7eb; 
-  background: #fff;
-  cursor: pointer;
-  transition: transform .15s ease, box-shadow .2s ease, border-color .2s ease;
+  border: 1px solid black;
 }
 
-.sub-image:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.08); }
-.sub-image.active-thumb { border-color: #3b82f6; box-shadow: 0 0 0 2px rgba(59,130,246,.25); }
 
-/* 子圖箭頭 */
-.sub-arrow {
-  width: 28px; height: 60px; flex-shrink: 0;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 6px;
-  background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
-  color: #4b5563; user-select: none; cursor: pointer;
-  font-weight: 600; font-size: 14px;
-  transition: transform .15s ease, box-shadow .2s ease, opacity .2s ease;
-  box-shadow: 0 2px 8px rgba(0,0,0,.06);
-}
-.sub-arrow:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,.10); }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /* 右欄 */
 .right-col {
@@ -184,7 +211,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   flex-direction: column;
   box-sizing: border-box;
   overflow: hidden;
-  gap: 12px;
 }
 
 .product-name,
@@ -210,9 +236,8 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 }
 
 .product-name{
-	font-size: 20px;
+	font-size: clamp(18px, 2.5vw, 40px);
     font-weight: 700;
-	color: #111827;
     line-height: clamp(20px, 2.5vw, 24px);   /*文字行高*/ 
 	margin: 0;  /* 外邊距 */
 	display: -webkit-box; /* 總之是種排版? */
@@ -226,42 +251,57 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 }
 
 .product-price{ 
-  font-size: 18px; 
   align-items: center; 
-  font-weight: 600; 
-  color: #ef4444;
+  font-weight: 700; 
+  color: #d26b00; 
 }
 
 .product-detail { 
   overflow-y: auto; 
-  line-height: 1.6; 
-  color: #4b5563;; 
+  line-height: 1.5; 
+  color: #444; 
 }
 
 .product-option { 
-	display: flex; 
-	flex-direction: column; 
-	gap: 10px; 
-	padding-top: 6px; 
+  overflow-y: auto; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 10px; 
 }
 
 /* 選項每一行 */
 .option-group {
-	display: grid; 
-	grid-template-columns: 64px 1fr; 
-	gap: 8px; 
-	align-items: center; 
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap; /* 空間不夠可換行，但區塊本身高度固定於 product-option 內捲動 */
 }
-.option-title { color: #6b7280; font-weight: 600; text-align: right; }
-.option-buttons { display: flex; flex-wrap: wrap; gap: 8px; }
+.option-title {
+  font-weight: 700;
+  min-width: 56px;
+  color: #333;
+}
+.option-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
 .option-btn {
-  padding: 8px 12px; border-radius: 9999px; border: 1px solid #e5e7eb;
-  background: #fff; color: #111827; cursor: pointer;
-  transition: transform .1s ease, box-shadow .15s ease, border-color .15s ease, background .2s ease;
+  padding: 6px 12px;
+  border-radius: 16px;
+  border: 1px solid #ddd;
+  background: #fff;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all .15s ease;
+  user-select: none;
 }
-.option-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,.06); }
-.option-btn.selected { border-color: #3b82f6; background: #eef6ff; box-shadow: 0 0 0 2px rgba(59,130,246,.15); }
-.option-btn.disabled { color: #9ca3af; border-color: #e5e7eb; background: #f9fafb; cursor: not-allowed; opacity: .6; }
+.option-btn:hover { border-color: #bbb; }
+.option-btn.selected {
+  background: #222;
+  color: #fff;
+  border-color: #222;
+}
 
 .sale-status-block, .product-quantity, .product-cart {
   display: flex;
@@ -305,19 +345,44 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 }
 
 /* 數量小區 */
-.quantity-block { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-
-.qty-ctrls { display: inline-flex; align-items: center; gap: 6px; }
-
-.qty-btn {
-  width: 32px; height: 32px; border-radius: 8px; border: 1px solid #e5e7eb; background: #fff; cursor: pointer;
-  transition: transform .1s ease, box-shadow .15s ease;
+.quantity-block {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;   /* 不換行 */
+  justify-content: center;
+  font-size: clamp(16px, 2.5vw, 40px);
+  font-weight: 600;
+  color: #374151;
+  overflow: hidden;  /* 防止超出 */
 }
 
-.qty-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,.06); }
+.qty-btn {
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #eef2ff;
+  border: none;
+  padding: clamp(8px, 2vw, 30px) clamp(8px, 2vw, 30px);
+  cursor: pointer;
+  font-size: clamp(16px, 2.5vw, 30px);
+  font-weight: 800;
+  border-radius: 8px;
+  transition: transform 0.06s ease;
+}
 
-.quantity-input {
-  width: 56px; height: 32px; border: 1px solid #e5e7eb; border-radius: 8px; text-align: center; background: #f9fafb;
+.qty-btn:active { transform: scale(0.98); }
+
+.quantity-input {  
+  width: clamp(50px, 8vw, 120px);
+  height: clamp(30px, 6vw, 90px);
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  text-align: center;           /* 置中對齊 */
+  font-size: clamp(16px, 2.5vw, 30px);
+  font-weight: 700;
+  -moz-appearance: textfield;
 }
 
 .quantity-input::-webkit-outer-spin-button,
@@ -334,16 +399,26 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 }
 
 /* 購物車按鈕 */
-
 .cart-btn {
-  padding: 10px 16px; border-radius: 10px; border: 0; cursor: pointer;
-  background: #10b981; color: #fff; font-weight: 700;
-  transition: transform .1s ease, box-shadow .15s ease, background .2s ease;
+  width: 100%;
+  height: 100%;
+  padding: clamp(6px, 1.5vw, 10px) clamp(12px, 2.5vw, 20px);
+  background-color: #fffae6;   /* 按鈕顏色 */
+  color: #000000;  /* 文字顏色 */
+  border: none;
+  cursor: pointer;
+  font-size: clamp(18px, 2.5vw, 40px);
+  font-weight: 600;
+  border-radius: 10px;
+  /* transition: 當元素狀態改變時，樣式變化的過渡效果 */
+  transition: background-color .15s ease, transform .05s ease; /*過渡持續的時間*/
 }
 
 /* hoever: 游標移上去的時候會發生的事情*/
-.cart-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 16px rgba(16,185,129,.25); }
-.cart-btn.active { background: #059669; }
+.cart-btn:hover { background-color: #ffb955; } 
+/* active: 點擊左鍵後的效果*/
+.cart-btn:active { transform: scale(0.98); }    /* scale: 讓區塊縮放，大於1代表放大；小於1代表縮小 */
+.cart-btn.active { background-color: #ffb955; } 
 
 /* ===== 放大鏡 UI ===== */
 /* 右下角放大鏡按鈕（固定在主圖區塊內，不超出） */
@@ -384,10 +459,4 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   background-position: center;  /* 其餘 background-* 由 JS 設定 */
   background-size: cover;
   z-index: 20;
-}
-
-/* 小螢幕排版 */
-@media (max-width: 720px) {
-  .product-item { grid-template-columns: 1fr; }
-  .option-group { grid-template-columns: 56px 1fr; }
 }

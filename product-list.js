@@ -157,6 +157,7 @@
 		  <div class="sub-group-wrapper">
 			<div class="sub-group"></div>
 		  </div>
+		  <div class="sub-scrollbar"></div> <!-- 下半部 scroll bar -->
 		</div>
       </div>
 
@@ -307,29 +308,30 @@ function renderMainAndThumbs(productDiv, state, hardSet = false) {
   const mainImgEl = productDiv.querySelector('.main-image');
   const subGroup = productDiv.querySelector('.sub-group');
   const wrapper = productDiv.querySelector('.sub-group-wrapper');
+  const scrollbar = productDiv.querySelector('.sub-scrollbar');
 
   // 清空舊縮圖
   subGroup.innerHTML = '';
+  scrollbar.innerHTML = '';
 
-  // 取得圖片列表
   const variant = state.activeVariant;
   const imgList = buildImageArray(variant);
 
-  // 如果該角色沒圖，直接隱藏
   if (!imgList || imgList.length === 0) {
     console.warn('⚠️ 找不到圖片', variant);
     mainImgEl.src = '';
     wrapper.style.overflowX = 'hidden';
+    scrollbar.style.display = 'none';
     return;
   }
 
-  // === 主圖邏輯 ===
+  // 主圖
   if (hardSet || !state.mainSrc || !imgList.includes(state.mainSrc)) {
     state.mainSrc = imgList[0];
   }
   mainImgEl.src = state.mainSrc;
 
-  // === 產生縮圖 ===
+  // 生成 sub-image
   imgList.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
@@ -339,7 +341,6 @@ function renderMainAndThumbs(productDiv, state, hardSet = false) {
     img.addEventListener('click', () => {
       state.mainSrc = src;
       mainImgEl.src = src;
-
       subGroup.querySelectorAll('.sub-image').forEach(el => el.classList.remove('active'));
       img.classList.add('active');
     });
@@ -347,11 +348,20 @@ function renderMainAndThumbs(productDiv, state, hardSet = false) {
     subGroup.appendChild(img);
   });
 
-  // === scrollbar 邏輯 ===
-  wrapper.style.overflowX = imgList.length > 4 ? 'auto' : 'hidden';
-  wrapper.scrollLeft = 0;
+  // scrollbar 顯示邏輯
+  if (imgList.length > 4) {
+    wrapper.style.overflowX = 'scroll';
+    scrollbar.style.display = 'block';
+    // scrollbar 連動 sub-group
+    scrollbar.scrollLeft = 0;
+    scrollbar.addEventListener('scroll', () => {
+      wrapper.scrollLeft = scrollbar.scrollLeft;
+    });
+  } else {
+    wrapper.style.overflowX = 'hidden';
+    scrollbar.style.display = 'none';
+  }
 
-  // 更新 state
   state.images = imgList;
 }
 
@@ -567,3 +577,24 @@ function initGallery(productDiv, state) {
   } else {
     loadProducts();
   }
+
+document.querySelectorAll('.option-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.optionKey;
+    const value = btn.dataset.optionValue;
+    const productDiv = btn.closest('.product-item');
+    const state = productDiv._state;
+
+    // 更新 activeVariant
+    const newVariant = state.variants.find(v => v[key] === value);
+    if (!newVariant) return;
+    state.activeVariant = newVariant;
+
+    // 更新主圖與縮圖
+    renderMainAndThumbs(productDiv, state, true);
+
+    // 更新選中按鈕樣式
+    btn.parentElement.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+  });
+});

@@ -703,3 +703,38 @@ testCartBtn.addEventListener("click", () => {
   console.table(cart);
   alert(`購物車目前有 ${cart.length} 筆商品，請查看 console`);
 });
+
+// 更新購物車徽章
+function updateCartBadge() {
+  const cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+  const totalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
+  const badge = document.getElementById("cart-badge");
+  if (badge) {
+    badge.textContent = totalQty;
+    badge.style.display = totalQty > 0 ? "inline-block" : "none";
+  }
+}
+
+// 初始化按鈕狀態
+function syncCartStatus() {
+  const cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+  const items = document.querySelectorAll(".product-item");
+
+  items.forEach((item) => {
+    const name = item.querySelector(".product-name").textContent.trim();
+    const btn = item.querySelector(".cart-btn");
+
+    const inCart = cart.some((p) => p.name === name);
+    if (inCart) {
+      btn.classList.add("active");
+      btn.textContent = "已加入";
+    } else {
+      btn.classList.remove("active");
+      btn.textContent = "加入購物車";
+    }
+  });
+}
+
+// 初始化
+updateCartBadge();
+syncCartStatus();

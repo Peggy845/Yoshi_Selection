@@ -695,3 +695,26 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 });
+
+// === 測試用：查看 localStorage 內容 ===
+const testCartBtn = document.createElement("button");
+testCartBtn.textContent = "查看購物車資料";
+testCartBtn.style.position = "fixed";
+testCartBtn.style.bottom = "20px";
+testCartBtn.style.left = "20px";
+testCartBtn.style.padding = "10px 15px";
+testCartBtn.style.backgroundColor = "#0078d7";
+testCartBtn.style.color = "white";
+testCartBtn.style.border = "none";
+testCartBtn.style.borderRadius = "5px";
+testCartBtn.style.cursor = "pointer";
+testCartBtn.style.zIndex = "9999";
+
+document.body.appendChild(testCartBtn);
+
+testCartBtn.addEventListener("click", () => {
+  const cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+  console.log("=== 測試購物車資料 ===");
+  console.table(cart);
+  alert(`購物車目前有 ${cart.length} 筆商品，請查看 console`);
+});

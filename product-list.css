@@ -55,14 +55,14 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .product-list {
   width: var(--base-w);
   min-height: var(--base-h);
-  padding: 0 20px; /* 你要的美觀間距，所有 item 因此自然對齊 */
-  background: #f5f5f5;
-  margin: 0 auto;   /* 置中或對齊 */
-    box-sizing: border-box;
-  /* 關鍵：不要在這裡加 overflow，避免捲軸長在內層 */
   display: flex;
   flex-direction: column;
   gap: 20px;
+  padding: 0 20px; /* 你要的美觀間距，所有 item 因此自然對齊 */
+  background: #f5f5f5;
+  margin: 0 auto;   /* 置中或對齊 */
+  box-sizing: border-box;
+  /* 關鍵：不要在這裡加 overflow，避免捲軸長在內層 */
 }
 
 
@@ -71,15 +71,16 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .product-item {
   display: flex;
   gap: 20px;
-  margin-bottom: 20px;
   background: white;
   border-radius: 16px;
   padding: 18px;
   box-shadow: 0 8px 28px rgba(0,0,0,.08);
   align-items: stretch;             /* 左右欄等高 */
-  height: calc(var(--base-h) * 0.65); /* 與你原先 65vh 行為一致（使用載入時的視窗高度） */
-  width: calc(100% - 40px);         /* 扣掉 product-list 的左右 padding 20px*2 */
+  width: 900px;        /* 可依需求調整比例（寬高比固定） */
+  height: 400px;
   flex-shrink: 0; /* 禁止縮小 */
+  overflow: hidden;
+  margin: 0 auto;      /* 置中 */
 }
 
 .left-col { width: 35%; display: flex; flex-direction: column; gap:6px; }

@@ -2,19 +2,23 @@
 <html lang="zh-Hant">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>購物車</title>
   <link rel="stylesheet" href="shopping-cart.css" />
 </head>
 <body>
-  <header class="header">我的購物車</header>
-
-  <main style="padding: 2rem; text-align: center;">
-    <p>這裡是購物車頁面（之後可呈現購物車內容）。</p>
-    <div style="margin-top: 2rem;">
-      <a href="index.html" class="cart-button">繼續購物</a>
-      <a href="checkout.html" class="cart-button">結帳</a>
+  <div class="cart-container">
+    <h1>購物車</h1>
+    <div id="cart-items"></div>
+    <div class="cart-summary">
+      <span>總金額：</span>
+      <span id="cart-total">0</span> 元
     </div>
-  </main>
+    <div class="cart-actions">
+      <button id="back-btn">返回商品頁</button>
+      <button id="checkout-btn">前往結帳</button>
+    </div>
+  </div>
+  <script src="shopping-cart.js"></script>
 </body>
 </html>

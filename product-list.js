@@ -619,3 +619,79 @@ window.addEventListener("resize", () => {
   document.documentElement.style.setProperty('--base-w', window.innerWidth + 'px');
   document.documentElement.style.setProperty('--base-h', window.innerHeight + 'px');
 });
+
+// ===== 購物車功能 =====
+document.addEventListener("DOMContentLoaded", () => {
+  // 取得所有購物車按鈕
+  const cartButtons = document.querySelectorAll(".cart-btn");
+  const floatingCartBtn = document.querySelector(".floating-cart-button");
+
+  // 綁定每個商品的購物車按鈕
+  cartButtons.forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      const productItem = e.target.closest(".product-item");
+
+      // 商品名稱
+      const productName = productItem.querySelector(".product-name").textContent.trim();
+
+      // 商品價格（轉換成數字）
+      const productPriceText = productItem.querySelector(".product-price").textContent.trim();
+      const productPrice = parseInt(productPriceText.replace(/[^\d]/g, ""), 10);
+
+      // 商品圖片
+      const productImage = productItem.querySelector(".main-image").src;
+
+      // 商品數量
+      const quantity = parseInt(productItem.querySelector(".quantity-input").value, 10);
+
+      // 取得選擇的選項
+      const selectedOptions = {};
+      productItem.querySelectorAll(".option-group").forEach((group) => {
+        const title = group.querySelector(".option-title").textContent.trim();
+        const selectedBtn = group.querySelector(".option-btn.selected");
+        if (selectedBtn) {
+          selectedOptions[title] = selectedBtn.dataset.optionValue;
+        }
+      });
+
+      // 組合商品資料
+      const newItem = {
+        name: productName,
+        price: productPrice,
+        image: productImage,
+        quantity,
+        options: selectedOptions,
+      };
+
+      // 讀取 localStorage 的購物車資料
+      let cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+
+      // 如果商品已存在，就更新數量；否則新增
+      const existingIndex = cart.findIndex(
+        (item) =>
+          item.name === newItem.name &&
+          JSON.stringify(item.options) === JSON.stringify(newItem.options)
+      );
+
+      if (existingIndex > -1) {
+        cart[existingIndex].quantity += newItem.quantity;
+      } else {
+        cart.push(newItem);
+      }
+
+      // 存回 localStorage
+      localStorage.setItem("shoppingCart", JSON.stringify(cart));
+
+      // 更新按鈕狀態
+      e.target.textContent = "已加入";
+      e.target.classList.add("active");
+    });
+  });
+
+  // 浮動購物車按鈕 → 跳轉到購物車頁面
+  if (floatingCartBtn) {
+    floatingCartBtn.addEventListener("click", () => {
+      window.location.href = "shopping-cart.html";
+    });
+  }
+});

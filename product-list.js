@@ -621,80 +621,65 @@ window.addEventListener("resize", () => {
 });
 
 // ===== 購物車功能 =====
-document.addEventListener("DOMContentLoaded", () => {
-  // 取得所有購物車按鈕
-  const cartButtons = document.querySelectorAll(".cart-btn");
-  const floatingCartBtn = document.querySelector(".floating-cart-button");
+// === 監聽購物車按鈕，使用事件委派 ===
+document.addEventListener("click", (e) => {
+  if (!e.target.classList.contains("cart-btn")) return;
 
-  // 綁定每個商品的購物車按鈕
-  cartButtons.forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      const productItem = e.target.closest(".product-item");
+  const btn = e.target;
+  const productItem = btn.closest(".product-item");
+  if (!productItem) return;
 
-      // 商品名稱
-      const productName = productItem.querySelector(".product-name").textContent.trim();
+  // 1. 取得商品資訊
+  const name = productItem.querySelector(".product-name").textContent.trim();
+  const priceText = productItem.querySelector(".product-price").textContent.trim();
+  const price = parseInt(priceText.replace(/[^\d]/g, ""), 10);
+  const quantity = parseInt(productItem.querySelector(".quantity-input").value, 10);
+  const image = productItem.querySelector(".main-image").src;
 
-      // 商品價格（轉換成數字）
-      const productPriceText = productItem.querySelector(".product-price").textContent.trim();
-      const productPrice = parseInt(productPriceText.replace(/[^\d]/g, ""), 10);
-
-      // 商品圖片
-      const productImage = productItem.querySelector(".main-image").src;
-
-      // 商品數量
-      const quantity = parseInt(productItem.querySelector(".quantity-input").value, 10);
-
-      // 取得選擇的選項
-      const selectedOptions = {};
-      productItem.querySelectorAll(".option-group").forEach((group) => {
-        const title = group.querySelector(".option-title").textContent.trim();
-        const selectedBtn = group.querySelector(".option-btn.selected");
-        if (selectedBtn) {
-          selectedOptions[title] = selectedBtn.dataset.optionValue;
-        }
-      });
-
-      // 組合商品資料
-      const newItem = {
-        name: productName,
-        price: productPrice,
-        image: productImage,
-        quantity,
-        options: selectedOptions,
-      };
-
-      // 讀取 localStorage 的購物車資料
-      let cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
-
-      // 如果商品已存在，就更新數量；否則新增
-      const existingIndex = cart.findIndex(
-        (item) =>
-          item.name === newItem.name &&
-          JSON.stringify(item.options) === JSON.stringify(newItem.options)
-      );
-
-      if (existingIndex > -1) {
-        cart[existingIndex].quantity += newItem.quantity;
-      } else {
-        cart.push(newItem);
-      }
-
-      // 存回 localStorage
-      localStorage.setItem("shoppingCart", JSON.stringify(cart));
-
-      // 更新按鈕狀態
-      e.target.textContent = "已加入";
-      e.target.classList.add("active");
-    });
+  // 2. 取得選中的選項
+  const options = {};
+  const optionGroups = productItem.querySelectorAll(".option-group");
+  optionGroups.forEach((group) => {
+    const title = group.querySelector(".option-title").textContent.trim();
+    const selectedBtn = group.querySelector(".option-btn.selected");
+    options[title] = selectedBtn ? selectedBtn.dataset.optionValue : null;
   });
 
-  // 浮動購物車按鈕 → 跳轉到購物車頁面
-  if (floatingCartBtn) {
-    floatingCartBtn.addEventListener("click", () => {
-      window.location.href = "shopping-cart.html";
+  // 3. 從 localStorage 取出購物車資料
+  let cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+
+  // 4. 檢查商品是否已存在購物車
+  const existingIndex = cart.findIndex(
+    (item) =>
+      item.name === name &&
+      JSON.stringify(item.options) === JSON.stringify(options)
+  );
+
+  if (existingIndex > -1) {
+    // 如果已存在 → 更新數量
+    cart[existingIndex].quantity += quantity;
+  } else {
+    // 如果是新商品 → 加入購物車
+    cart.push({
+      name,
+      price,
+      image,
+      options,
+      quantity,
     });
   }
+
+  // 5. 存回 localStorage
+  localStorage.setItem("shoppingCart", JSON.stringify(cart));
+
+  console.log(`✅ 已新增 ${name} 到購物車`);
+  console.table(cart);
+
+  // 6. 改變按鈕狀態
+  btn.classList.add("active");
+  btn.textContent = "已加入";
 });
+
 
 // === 測試用：查看 localStorage 內容 ===
 const testCartBtn = document.createElement("button");

@@ -168,3 +168,33 @@ document.addEventListener("DOMContentLoaded", () => {
 
   renderCart();
 });
+
+const backBtn = document.getElementById("back-btn");
+const homeBtn = document.getElementById("home-btn");
+const checkoutBtn = document.getElementById("checkout-btn");
+
+// 返回商品頁
+backBtn.addEventListener("click", () => {
+  const cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+
+  // 找最後一次加入購物車的商品
+  if (cart.length > 0) {
+    const lastItem = cart[cart.length - 1];
+    const main = encodeURIComponent(lastItem.main);
+    const sub = encodeURIComponent(lastItem.sub);
+    window.location.href = `product-list.html?main=${main}&sub=${sub}`;
+  } else {
+    // 如果購物車是空的 → 回首頁
+    window.location.href = "index.html";
+  }
+});
+
+// 回首頁
+homeBtn.addEventListener("click", () => {
+  window.location.href = "index.html";
+});
+
+// 前往結帳
+checkoutBtn.addEventListener("click", () => {
+  window.location.href = "checkout.html";
+});

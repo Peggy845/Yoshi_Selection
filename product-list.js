@@ -4,9 +4,12 @@
   const IMAGE_BASE = 'https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/';
 
   /** ===== 工具 ===== */
-  function getQueryParam(param) {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get(param);
+  function getQueryParam() {
+	  const params = new URLSearchParams(window.location.search);
+	  return {
+		main: params.get("main") || "",
+		sub: params.get("sub") || ""
+	  };
   }
   function norm(v) { return (v ?? '').toString().trim(); }
 
@@ -647,6 +650,7 @@ document.addEventListener("click", (e) => {
 
   // 3. 從 localStorage 取出購物車資料
   let cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+  const { main, sub } = getQueryParams();
 
   // 4. 檢查商品是否已存在購物車
   const existingIndex = cart.findIndex(
@@ -666,12 +670,13 @@ document.addEventListener("click", (e) => {
       image,
       options,
       quantity,
+      main,
+      sub
     });
   }
 
-  // 5. 存回 localStorage
   localStorage.setItem("shoppingCart", JSON.stringify(cart));
-
+  updateCartBadge();
   console.log(`✅ 已新增 ${name} 到購物車`);
   console.table(cart);
 

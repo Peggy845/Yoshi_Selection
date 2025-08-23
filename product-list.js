@@ -4,14 +4,23 @@
   const IMAGE_BASE = 'https://raw.githubusercontent.com/Peggy845/Yoshi_Selection/main/images/';
 
   /** ===== 工具 ===== */
-  function getQueryParam() {
-	  const params = new URLSearchParams(window.location.search);
+// 原本的函式，維持不動
+	function getQueryParam(param) {
+	  const urlParams = new URLSearchParams(window.location.search);
+	  return urlParams.get(param);
+	}
+
+	function norm(v) { 
+	  return (v ?? '').toString().trim(); 
+	}
+	
+	// 專門拿 main & sub
+	function getCategoryParams() {
 	  return {
-		main: params.get("main") || "",
-		sub: params.get("sub") || ""
+		main: norm(getQueryParam("main")),
+		sub: norm(getQueryParam("sub"))
 	  };
-  }
-  function norm(v) { return (v ?? '').toString().trim(); }
+	}
 
   /** 抓多分頁資料（維持你原本的做法） */
   async function fetchMultipleSheets(sheetNames) {
@@ -632,14 +641,12 @@ document.addEventListener("click", (e) => {
   const productItem = btn.closest(".product-item");
   if (!productItem) return;
 
-  // 1. 取得商品資訊
   const name = productItem.querySelector(".product-name").textContent.trim();
   const priceText = productItem.querySelector(".product-price").textContent.trim();
   const price = parseInt(priceText.replace(/[^\d]/g, ""), 10);
   const quantity = parseInt(productItem.querySelector(".quantity-input").value, 10);
   const image = productItem.querySelector(".main-image").src;
 
-  // 2. 取得選中的選項
   const options = {};
   const optionGroups = productItem.querySelectorAll(".option-group");
   optionGroups.forEach((group) => {
@@ -648,11 +655,11 @@ document.addEventListener("click", (e) => {
     options[title] = selectedBtn ? selectedBtn.dataset.optionValue : null;
   });
 
-  // 3. 從 localStorage 取出購物車資料
-  let cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
-  const { main, sub } = getQueryParams();
+  // 拿分類參數
+  const { main, sub } = getCategoryParams();
 
-  // 4. 檢查商品是否已存在購物車
+  let cart = JSON.parse(localStorage.getItem("shoppingCart")) || [];
+
   const existingIndex = cart.findIndex(
     (item) =>
       item.name === name &&
@@ -660,10 +667,8 @@ document.addEventListener("click", (e) => {
   );
 
   if (existingIndex > -1) {
-    // 如果已存在 → 更新數量
     cart[existingIndex].quantity += quantity;
   } else {
-    // 如果是新商品 → 加入購物車
     cart.push({
       name,
       price,

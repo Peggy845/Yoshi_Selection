@@ -108,14 +108,19 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   flex: 0 0 35%;
   display: flex;
   flex-direction: column;
+  gap: 6px;
+  height: 370px;   /* ← 固定 left-col 高度 */
 }
 
 /* left-col 內部上下比例 7:3 */
+/* 主圖 70% */
 .product-image-block {
-  flex: 0 0 70%;
+  height: 70%;
 }
+
+/* 子圖 30% */
 .sub-image-block {
-  flex: 0 0 30%;
+  height: 30%;
 }
 
 /* right-col 固定 65% */
@@ -141,6 +146,8 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 /* 主圖區塊：加上 position:relative 以放置放大鏡元素 */
 .product-image-block {
   flex: 7; /* 高度比例 70% */
+  width: 100%;
+  height: 270px;           /* ← 固定主圖高度 */
   position: relative;
   display: flex;
   align-items: center;

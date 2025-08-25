@@ -75,6 +75,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   border-radius: 16px;
   padding: 18px;
   box-shadow: 0 8px 28px rgba(0,0,0,.08);
+  flex-direction: column;  /* 由上到下排列 */
   align-items: stretch;             /* 左右欄等高 */
   width: 900px;        /* 可依需求調整比例（寬高比固定） */
   height: 400px;
@@ -83,17 +84,40 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   margin: 0 auto;      /* 置中 */
 }
 
-.left-col { width: 35%; display: flex; flex-direction: column; gap:6px; }
-.right-col { width: 65%; display: flex; flex-direction: column; overflow: hidden; }
+/* 上半部左右排版 */
+.top-row {
+  display: flex;
+  flex-direction: row;
+  gap: 20px;
+  flex: 1; /* 讓它佔滿剩下空間 */
+  min-height: 0;
+}
 
+.left-col {
+  width: 35%;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.right-col {
+  width: 65%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* 下半部整欄 */
 .bottom-col {
   display: flex;
   gap: 12px;
   padding: 10px 0;
-  margin-top: 10px;
   border-top: 1px solid #ddd;
   align-items: center;
   justify-content: space-between;
+  width: 100%; /* 關鍵！要全寬 */
+  flex-shrink: 0; /* 不要被壓縮 */
+  background: #fff;
 }
 
 /* 主圖區塊：加上 position:relative 以放置放大鏡元素 */

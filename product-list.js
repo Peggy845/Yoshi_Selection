@@ -144,34 +144,38 @@
   function generateProductHTML(productName, variant, img) {
     const mainUrl = img.mainUrl || '';
     return `
-      <div class="left-col">
-        <div class="product-image-block">
-          <img src="${mainUrl}" class="main-image" alt="${productName}">
-          <button class="magnifier-btn" type="button" aria-label="啟用放大鏡" title="放大鏡">
-            <svg viewBox="0 0 24 24" class="magnifier-icon" aria-hidden="true">
-              <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
-              <line x1="16.5" y1="16.5" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="11" y1="7" x2="11" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <line x1="7" y1="11" x2="15" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </button>
-          <div class="magnifier-lens" aria-hidden="true" style="display:none;"></div>
-        </div>
+	  <div class="top-row">
+		  <div class="left-col">
+			<div class="product-image-block">
+			  <img src="${mainUrl}" class="main-image" alt="${productName}">
+			  <button class="magnifier-btn" type="button" aria-label="啟用放大鏡" title="放大鏡">
+				<svg viewBox="0 0 24 24" class="magnifier-icon" aria-hidden="true">
+				  <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+				  <line x1="16.5" y1="16.5" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+				  <line x1="11" y1="7" x2="11" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+				  <line x1="7" y1="11" x2="15" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+				</svg>
+			  </button>
+			  <div class="magnifier-lens" aria-hidden="true" style="display:none;"></div>
+			</div>
 
-		<div class="sub-image-block">
-		  <div class="sub-group-wrapper">
-			<div class="sub-group"></div>
+			<div class="sub-image-block">
+			  <div class="sub-group-wrapper">
+				<div class="sub-group"></div>
+			  </div>
+			  <div class="sub-scrollbar"></div> <!-- 下半部 scroll bar -->
+			</div>
 		  </div>
-		  <div class="sub-scrollbar"></div> <!-- 下半部 scroll bar -->
-		</div>
-      </div>
+		  
+		  <div class="right-col">
+			<div class="product-name">${productName}</div>
+			<div class="product-price">$ ${norm(variant['價格']) || ''}</div>
+			<div class="product-detail">${norm(variant['詳細資訊']) || ''}</div>
+			<div class="product-option"></div>
+		  </div>
+	  </div>
 
-      <div class="right-col">
-        <div class="product-name">${productName}</div>
-        <div class="product-price">$ ${norm(variant['價格']) || ''}</div>
-        <div class="product-detail">${norm(variant['詳細資訊']) || ''}</div>
-        <div class="product-option"></div>
-      </div>
+
 	  
 	  <div class="bottom-col">
 		<div class="sale-status-block">狀態: ${norm(variant['販售狀態']) || ''}</div>

@@ -176,8 +176,6 @@
 	    </div>
 
 		<div class="bottom-col">
-			<div class="sale-status-block">狀態: ${norm(variant['販售狀態']) || ''}</div>
-			
 			<div class="sale-status-block">
 				<div class="status-top">狀態: ${norm(variant['販售狀態']) || ''}</div>
 				<div class="status-bottom">預估到貨: ${norm(variant['預計配達時間']) || ''}</div>

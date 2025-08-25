@@ -135,14 +135,15 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 /* 下半部整欄 */
 .bottom-col {
   display: flex;
-  gap: 12px;
-  padding: 10px 0;
+  flex-direction: row;
+  align-items: stretch;   /* 讓四個子元素等高 */
+  justify-content: flex-start;
+  gap: 8px;
+  padding: 4px 0;        /* 跟上下外框距離 4px */
   border-top: 1px solid #ddd;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%; /* 關鍵！要全寬 */
-  flex-shrink: 0; /* 不要被壓縮 */
-  background: #fff;
+  background-color: #fff;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* 主圖區塊：加上 position:relative 以放置放大鏡元素 */
@@ -399,6 +400,15 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   width: auto;        /* 已經用 % 分配寬度，不要再卡死 */
   height: 100%;       /* 這裡讓三個子元素撐滿父層高度 */
   border: 1px solid black;
+}
+
+.product-quantity, .product-cart, .check-out-btn  {
+  justify-content: center;  /*文字水平對齊方式*/
+}
+
+.sale-status-block .status-top,
+.sale-status-block .status-bottom {
+  justify-content: flex-start; /* 文字靠左 */
 }
 
 /* 販售狀態 */

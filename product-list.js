@@ -176,10 +176,7 @@
 	    </div>
 
 		<div class="bottom-col">
-			<div class="sale-status-block">
-				<div class="status-top">狀態: ${norm(variant['販售狀態']) || ''}</div>
-				<div class="status-bottom">狀態: ${norm(variant['預計配達時間']) || ''}</div>
-			</div>
+			<div class="sale-status-block">狀態: ${norm(variant['販售狀態']) || ''}</div>
 
 			<div class="product-quantity">
 				<span class="qty-label">數量</span>
@@ -677,39 +674,36 @@ function lockProductHeights() {
 // ===== 初始化：整個頁面載入完成後執行 (控制縮放功能) =====
 // ===== 全域 =====
 document.addEventListener("DOMContentLoaded", () => {
-  // 初始化螢幕基準尺寸
+  // 設定基準尺寸（只在載入時計算一次）
   const baseW = window.innerWidth;
   const baseH = window.innerHeight;
   document.documentElement.style.setProperty('--base-w', baseW + 'px');
   document.documentElement.style.setProperty('--base-h', baseH + 'px');
 
-  // 鎖定高度：product-name, price, detail, option
-  lockProductBlockHeights();
+  // 鎖定所有 product-item 裡的高度
+  lockProductHeights();
 
   // 初始化放大鏡
   document.querySelectorAll(".product-item").forEach(productDiv => {
     initMagnifier(productDiv);
   });
+
+  // 如果 sub-image-block 還需要動態計算高度，可在這裡呼叫
+  // requestAnimationFrame(adjustSubBlocks);
 });
 
-// 鎖定 .product-name, .product-price, .product-detail, .product-option 高度
-function lockProductBlockHeights() {
-  const selectors = [".product-name", ".product-price", ".product-detail", ".product-option"];
-  selectors.forEach(sel => {
-    document.querySelectorAll(sel).forEach(el => {
-      const fixedHeight = el.scrollHeight;
-      el.style.height = fixedHeight + "px";
-      el.style.overflow = "hidden"; // 防止縮放時變形
-    });
-  });
-}
+// ===== 初始化：整個頁面載入完成後執行 (放大鏡功能) =====
+// 初始化放大鏡：直接對每個 .product-item 綁定
+document.querySelectorAll(".product-item").forEach(productDiv => {
+  initMagnifier(productDiv);
+});
 
-// 當 resize 時，不再重新計算高度，只鎖定螢幕基準值
+// ===== 視窗 resize 時，不再重新計算高度 =====
+// 只更新視窗的基準尺寸，避免 layout 被動
 window.addEventListener("resize", () => {
   document.documentElement.style.setProperty('--base-w', window.innerWidth + 'px');
   document.documentElement.style.setProperty('--base-h', window.innerHeight + 'px');
 });
-
 
 // ===== 購物車功能 =====
 // === 監聽購物車按鈕，使用事件委派 ===
@@ -768,6 +762,7 @@ document.addEventListener("click", (e) => {
   btn.classList.add("active");
   btn.textContent = "已加入";
 });
+
 
 // === 測試用：查看 localStorage 內容 ===
 const testCartBtn = document.createElement("button");

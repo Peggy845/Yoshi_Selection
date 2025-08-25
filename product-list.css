@@ -70,40 +70,54 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
    但高度改用基於 --base-h 的計算（等同於你原先的 65vh 邏輯） */
 .product-item {
   display: flex;
+  flex-direction: column;  /* 由上到下排列 */
+  height: 100%; /* 保持固定高度 */
   gap: 20px;
   background: white;
   border-radius: 16px;
   padding: 18px;
   box-shadow: 0 8px 28px rgba(0,0,0,.08);
-  flex-direction: column;  /* 由上到下排列 */
   align-items: stretch;             /* 左右欄等高 */
   width: 900px;        /* 可依需求調整比例（寬高比固定） */
-  height: 400px;
   flex-shrink: 0; /* 禁止縮小 */
   overflow: hidden;
   margin: 0 auto;      /* 置中 */
 }
 
-/* 上半部左右排版 */
-.top-row {
+/* top-col + bottom-col 比例 8:2 */
+.top-col {
+  flex: 0 0 80%;
   display: flex;
-  gap: 20px;
-  width: 100%;
+  gap: 16px;
+}
+
+.bottom-col {
+  flex: 0 0 20%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  gap: 12px;
 }
 
 .left-col {
   flex: 0 0 35%;
   display: flex;
   flex-direction: column;
-  gap: 6px;
 }
 
+/* left-col 內部上下比例 7:3 */
+.product-image-block {
+  flex: 0 0 70%;
+}
+.sub-image-block {
+  flex: 0 0 30%;
+}
+
+/* right-col 固定 65% */
 .right-col {
   flex: 0 0 65%;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
-  gap: 10px;
 }
 
 /* 下半部整欄 */
@@ -221,12 +235,9 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .product-detail,
 .product-option {
   padding: 6px 8px;
-  text-align: left;
-  font-weight: 500;
-  color: #111827;
-  line-height: 1.5;
   overflow-wrap: break-word;
   word-break: break-word;
+  box-sizing: border-box; /* 防止縮放時撐開 */
 }
 
 /* 字體大小設定 */
@@ -235,17 +246,12 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .product-detail,
 .product-option { font-size: 12px; }
 
-/* 高度自適應 + 初次渲染後鎖定 */
+/* 設定高度會由 JS 鎖定，所以 CSS 不處理高度 */
 .product-name,
 .product-price,
-.product-detail {
-  display: flex;
-  align-items: center; /* 垂直置中單行 */
-}
-
-.product-option { 
-  flex: auto;
-  overflow-y: auto;
+.product-detail,
+.product-option {
+  flex: 0 0 auto;
 }
 
 .product-name {
@@ -293,40 +299,41 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   overflow-y: auto;
 }
 
-/* 選項每一行 */
+/* 單行選項群組 */
 .option-group {
   display: grid;
-  grid-template-columns: 72px 1fr; /* 左邊標題固定寬度 */
+  grid-template-columns: 72px 1fr;
   gap: 10px;
   align-items: center;
 }
+
+/* 選項標題 */
 .option-title {
-  font-weight: 600;
   font-size: 12px;
-  color: #4b5563;
-  text-align: left; /* 靠左對齊 */
+  font-weight: 600;
+  text-align: left;
   white-space: nowrap;
 }
+
+/* 選項按鈕容器 */
 .option-buttons {
   display: flex;
-  gap: 6px; /* 按鈕之間距離 */
+  gap: 6px;
   flex-wrap: wrap;
   align-items: center;
 }
+/* 選項按鈕 */
 .option-btn {
-  line-height: 36px; /* 讓文字垂直置中 */
-  width: 80px; /* 固定寬度 */
-  height: 32px; /* 固定高度 */
+  width: 80px;
+  height: 32px;
   font-size: 12px;
-  border-radius: 6px;
   border: 1px solid #e5e7eb;
   background: #fff;
+  border-radius: 6px;
   cursor: pointer;
-  transition: all .15s ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  user-select: none;
 }
 .option-btn:hover {
   transform: translateY(-1px);

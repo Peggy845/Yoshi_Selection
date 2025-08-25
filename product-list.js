@@ -144,58 +144,56 @@
   function generateProductHTML(productName, variant, img) {
     const mainUrl = img.mainUrl || '';
     return `
-	  <div class="top-row">
-		  <div class="left-col">
-			<div class="product-image-block">
-			  <img src="${mainUrl}" class="main-image" alt="${productName}">
-			  <button class="magnifier-btn" type="button" aria-label="啟用放大鏡" title="放大鏡">
-				<svg viewBox="0 0 24 24" class="magnifier-icon" aria-hidden="true">
-				  <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
-				  <line x1="16.5" y1="16.5" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-				  <line x1="11" y1="7" x2="11" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-				  <line x1="7" y1="11" x2="15" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-				</svg>
-			  </button>
-			  <div class="magnifier-lens" aria-hidden="true" style="display:none;"></div>
-			</div>
+		<div class="top-col">
+			<div class="left-col">
+				<div class="product-image-block">
+					<img src="${mainUrl}" class="main-image" alt="${productName}">
+					<button class="magnifier-btn" type="button" aria-label="啟用放大鏡" title="放大鏡">
+						<svg viewBox="0 0 24 24" class="magnifier-icon" aria-hidden="true">
+						<circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="2"/>
+						<line x1="16.5" y1="16.5" x2="22" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+						<line x1="11" y1="7" x2="11" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+						<line x1="7" y1="11" x2="15" y2="11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+						</svg>
+					</button>
+					<div class="magnifier-lens" aria-hidden="true" style="display:none;"></div>
+				</div>
 
-			<div class="sub-image-block">
-			  <div class="sub-group-wrapper">
-				<div class="sub-group"></div>
-			  </div>
-			  <div class="sub-scrollbar"></div> <!-- 下半部 scroll bar -->
+				<div class="sub-image-block">
+					<div class="sub-group-wrapper">
+						<div class="sub-group"></div>
+					</div>
+					<div class="sub-scrollbar"></div> <!-- 下半部 scroll bar -->
+				</div>
 			</div>
-		  </div>
 		  
-		  <div class="right-col">
-			<div class="product-name">${productName}</div>
-			<div class="product-price">$ ${norm(variant['價格']) || ''}</div>
-			<div class="product-detail">${norm(variant['詳細資訊']) || ''}</div>
-			<div class="product-option"></div>
-		  </div>
-	  </div>
+			<div class="right-col">
+				<div class="product-name">${productName}</div>
+				<div class="product-price">$ ${norm(variant['價格']) || ''}</div>
+				<div class="product-detail">${norm(variant['詳細資訊']) || ''}</div>
+				<div class="product-option"></div>
+			</div>
+	    </div>
 
+		<div class="bottom-col">
+			<div class="sale-status-block">狀態: ${norm(variant['販售狀態']) || ''}</div>
 
-	  
-	  <div class="bottom-col">
-		<div class="sale-status-block">狀態: ${norm(variant['販售狀態']) || ''}</div>
+			<div class="product-quantity">
+				<span class="qty-label">數量</span>
+				<button class="qty-btn" data-type="minus" type="button">−</button>
+				<input class="quantity-input" type="number" value="1" min="1" max="${norm(variant['庫存']) || 0}" readonly>
+				<button class="qty-btn" data-type="plus" type="button">＋</button>
+				<span class="stock-text">還剩 ${norm(variant['庫存']) || 0} 件</span>
+			</div>
 
-		<div class="product-quantity">
-		  <span class="qty-label">數量</span>
-		  <button class="qty-btn" data-type="minus" type="button">−</button>
-		  <input class="quantity-input" type="number" value="1" min="1" max="${norm(variant['庫存']) || 0}" readonly>
-		  <button class="qty-btn" data-type="plus" type="button">＋</button>
-		  <span class="stock-text">還剩 ${norm(variant['庫存']) || 0} 件</span>
+			<div class="product-cart">
+			    <button class="cart-btn" type="button">加入購物車</button>
+			</div>
+
+			<div class="check-out-btn">
+			    <button onclick="location.href='checkout.html'">立即結帳</button>
+			</div>
 		</div>
-
-		<div class="product-cart">
-		  <button class="cart-btn" type="button">加入購物車</button>
-		</div>
-
-		<div class="check-out-btn">
-		  <button onclick="location.href='check-out.html'">立即結帳</button>
-		</div>
-	  </div>
     `;
   }
   
@@ -630,16 +628,67 @@ document.querySelectorAll('.option-btn').forEach(btn => {
   });
 });
 
+/**
+ * 鎖定 product-item 內部四大區塊的高度，初次載入後就不會再變
+ */
+function lockProductHeights() {
+  const products = document.querySelectorAll(".product-item");
+
+  products.forEach(product => {
+    // 目標元素
+    const name = product.querySelector(".product-name");
+    const price = product.querySelector(".product-price");
+    const detail = product.querySelector(".product-detail");
+    const option = product.querySelector(".product-option");
+
+    // 如果不存在，跳過
+    if (!name || !price || !detail || !option) return;
+
+    // 取得實際高度
+    const nameH = name.offsetHeight;
+    const priceH = price.offsetHeight;
+    const detailH = detail.offsetHeight;
+    const optionH = option.offsetHeight;
+
+    // 寫死高度（初次載入後不會再變）
+    name.style.height = nameH + "px";
+    price.style.height = priceH + "px";
+    detail.style.height = detailH + "px";
+    option.style.height = optionH + "px";
+
+    // 避免縮放時被 flex 撐開
+    name.style.flex = "0 0 auto";
+    price.style.flex = "0 0 auto";
+    detail.style.flex = "0 0 auto";
+    option.style.flex = "0 0 auto";
+
+    // 強制不隨視窗縮放變形
+    name.style.boxSizing = "border-box";
+    price.style.boxSizing = "border-box";
+    detail.style.boxSizing = "border-box";
+    option.style.boxSizing = "border-box";
+  });
+}
+
 // ===== 全域 =====
 // ===== 初始化：整個頁面載入完成後執行 (控制縮放功能) =====
+// ===== 全域 =====
 document.addEventListener("DOMContentLoaded", () => {
-	// 設定基準尺寸
+  // 設定基準尺寸（只在載入時計算一次）
   const baseW = window.innerWidth;
   const baseH = window.innerHeight;
   document.documentElement.style.setProperty('--base-w', baseW + 'px');
   document.documentElement.style.setProperty('--base-h', baseH + 'px');
-  
-  // 如果還有 sub-image-block 需要調整，這裡可以呼叫 adjustSubBlocks()
+
+  // 鎖定所有 product-item 裡的高度
+  lockProductHeights();
+
+  // 初始化放大鏡
+  document.querySelectorAll(".product-item").forEach(productDiv => {
+    initMagnifier(productDiv);
+  });
+
+  // 如果 sub-image-block 還需要動態計算高度，可在這裡呼叫
   // requestAnimationFrame(adjustSubBlocks);
 });
 
@@ -649,7 +698,8 @@ document.querySelectorAll(".product-item").forEach(productDiv => {
   initMagnifier(productDiv);
 });
 
-// ===== 隨 resize 調整 =====
+// ===== 視窗 resize 時，不再重新計算高度 =====
+// 只更新視窗的基準尺寸，避免 layout 被動
 window.addEventListener("resize", () => {
   document.documentElement.style.setProperty('--base-w', window.innerWidth + 'px');
   document.documentElement.style.setProperty('--base-h', window.innerHeight + 'px');

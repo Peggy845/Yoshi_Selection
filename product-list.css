@@ -104,6 +104,8 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   width: 65%;
   display: flex;
   flex-direction: column;
+  gap: 10px;
+  padding: 0;
   overflow: hidden;
 }
 
@@ -230,11 +232,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 }
 
 /* right-col 四個 block 高度自適應 */
-.right-col {
-  display: flex;
-  flex-direction: column;
-}
-
 /* 原來的 flex 配比，保留 */
 .product-name { flex: 1; }
 .product-price { flex: 1; }
@@ -247,73 +244,104 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   overflow-y: auto;
 }
 
-.product-name{
-  font-size: 20px;
+.product-name {
+  flex: 0 0 50px; /* 固定高度，避免變形 */
+  font-size: 20px; /* a+2 px */
   font-weight: 700;
   color: #111827;
-  line-height: clamp(20px, 2.5vw, 24px);   /*文字行高*/ 
-  margin: 0;  /* 外邊距 */
-  display: -webkit-box; /* 總之是種排版? */
-  text-overflow: ellipsis;  /*當文字太長時出現... 點點點*/
-  -webkit-box-orient: vertical; /*讓文字變成兩行*/
-  -webkit-line-clamp: 2;  /* 這是設定問自尾端 .... 點點 要呈現在第幾行*/
-  overflow: hidden;
-  overflow-wrap: break-word;  /* 過長的詞就會被拆開換行顯示 */
-  vertical-align: sub;  /*垂直對齊下標位置*/
+  display: flex;
+  align-items: center; /* 垂直置中 */
+  text-align: left; /* 靠左對齊 */
+  line-height: 1.4;
+  margin: 0;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
-.product-price{ 
-  align-items: center;
+.product-price {
+  flex: 0 0 40px;
+  font-size: 18px; /* a px */
   font-weight: 700;
   color: #d26b00;
-  font-size: 18px;
+  display: flex;
+  align-items: center;
+  text-align: left;
 }
 
-.product-detail { 
-  overflow-y: auto; 
-  line-height: 1.6; 
+.product-detail {
+  flex: 1;
+  font-size: 18px; /* a px */
   color: #4b5563;
+  line-height: 1.6;
+  overflow-y: auto;
+  display: flex;
+  align-items: center;
+  text-align: left;
 }
 
-.product-option { 
-  overflow-y: auto; 
-  display: flex; 
-  flex-direction: column; 
-  gap: 10px; 
-  padding-top: 6px;
+.product-option {
+  flex: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  overflow-y: auto;
+  font-size: 18px; /* a px */
+  padding: 0;
 }
 
 /* 選項每一行 */
 .option-group {
-  display: grid; 
-  grid-template-columns: 64px 1fr; 
-  gap: 8px; 
+  display: grid;
+  grid-template-columns: 80px 1fr; /* 左標題固定寬度 */
+  gap: 10px;
   align-items: center;
 }
 .option-title {
   font-weight: 600;
-  min-width: 56px;
+  font-size: 16px;
   color: #6b7280;
   text-align: right;
+  white-space: nowrap;
 }
 .option-buttons {
   display: flex;
-  gap: 8px;
+  gap: 10px;
   flex-wrap: wrap;
+  align-items: center;
 }
 .option-btn {
-  padding: 8px 12px;
-  border-radius: 9999px;
+.option-btn {
+  width: 80px; /* 固定寬度，不隨字數變動 */
+  height: 36px; /* 固定高度 */
+  border-radius: 6px;
   border: 1px solid #e5e7eb;
   background: #fff;
   cursor: pointer;
   font-size: 14px;
-  transition: transform .1s ease, box-shadow .15s ease, border-color .15s ease, background .2s ease;
+  font-weight: 500;
+  text-align: center;
+  line-height: 36px; /* 讓文字垂直置中 */
+  transition: all .2s ease;
   user-select: none;
 }
-.option-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 10px rgba(0,0,0,.06); }
-.option-btn.selected { border-color: #3b82f6; background: #eef6ff; box-shadow: 0 0 0 2px rgba(59,130,246,.15); }
-.option-btn.disabled { color: #9ca3af; border-color: #e5e7eb; background: #f9fafb; cursor: not-allowed; opacity: .6; }
+.option-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(0,0,0,.06);
+}
+
+.option-btn.selected {
+  border-color: #3b82f6;
+  background: #eef6ff;
+  box-shadow: 0 0 0 2px rgba(59,130,246,.15);
+}
+
+.option-btn.disabled {
+  color: #9ca3af;
+  border-color: #e5e7eb;
+  background: #f9fafb;
+  cursor: not-allowed;
+  opacity: .6;
+}
 
 .sale-status-block, .product-quantity, .product-cart {
   display: flex;

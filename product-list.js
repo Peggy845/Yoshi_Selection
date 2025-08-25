@@ -389,33 +389,35 @@ function initGallery(productDiv, state) {
 
   /** ===== 放大鏡（局部放大，正方形） ===== */
   function initMagnifier(productDiv) {
-    const block = productDiv.querySelector(".product-image-block");
-    if (!block) return;
+   const block = productDiv.querySelector(".product-image-block");
+  if (!block) return;
 
-    const img = block.querySelector(".main-image");     // 主圖
-    const btn = block.querySelector(".magnifier-btn");  // 按鈕
-    if (!img || !btn) return;
+  const img = block.querySelector("img");              // 主圖
+  const btn = block.querySelector(".magnifier-btn");   // 按鈕
+  if (!img || !btn) return;
 
-    // 鏡片
-    let lens = block.querySelector(".magnifier-lens");
-    if (!lens) {
-      lens = document.createElement("div");
-      lens.className = "magnifier-lens";
-      lens.setAttribute("aria-hidden", "true");
-      block.appendChild(lens);
-    }
+  // 動態建立鏡片
+  let lens = block.querySelector(".magnifier-lens");
+  if (!lens) {
+    lens = document.createElement("div");
+    lens.className = "magnifier-lens";
+    lens.setAttribute("aria-hidden", "true");
+    block.appendChild(lens);
+  }
 
-    const ZOOM = 2.5;
-    let active = false;
+  const ZOOM = 2.5;   // 放大倍率（可調）
+  let active = false;
 
-    function fitLensSize() {
-      const r = block.getBoundingClientRect();
-      const s = Math.round(Math.max(100, Math.min(220, Math.min(r.width, r.height) * 0.28)));
-      lens.style.width = s + "px";
-      lens.style.height = s + "px";
-    }
+  // 鏡片尺寸：依容器短邊 28%（100~220 之間）
+  function fitLensSize() {
+    const r = block.getBoundingClientRect();
+    const s = Math.round(Math.max(100, Math.min(220, Math.min(r.width, r.height) * 0.28)));
+    lens.style.width = s + "px";
+    lens.style.height = s + "px";
+  }
 
-    function updateByEvent(ev) {
+  // 主計算：用「圖片顯示區域」座標做對位（完美對準 object-fit: contain）
+  function updateByEvent(ev) {
     const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
     const blockRect = block.getBoundingClientRect();
     const imgRect   = img.getBoundingClientRect(); // 圖片實際顯示大小與位置
@@ -453,6 +455,7 @@ function initGallery(productDiv, state) {
     const focusX = nx * bgW;
     const focusY = ny * bgH;
     lens.style.backgroundPosition = `${-(focusX - lensW/2)}px ${-(focusY - lensH/2)}px`;
+
     }
 
     function onMove(ev) {
@@ -464,6 +467,8 @@ function initGallery(productDiv, state) {
       fitLensSize();
       lens.style.display = "block";
       active = true;
+	  
+	  // 立刻用「點擊當下的座標」初始化，避免出現空框
       if (ev) updateByEvent(ev);
       block.addEventListener("mousemove", onMove);
       block.addEventListener("mouseleave", disable);
@@ -476,14 +481,18 @@ function initGallery(productDiv, state) {
       block.removeEventListener("mouseleave", disable);
     }
 
+    // 切換
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
-      active ? disable() : enable(e);
+    active ? disable() : enable(e);   // 傳入點擊事件座標
     });
 
+    // 點外面或 Esc 關閉
     document.addEventListener("click", (e) => { if (!block.contains(e.target)) disable(); });
     document.addEventListener("keydown", (e) => { if (e.key === "Escape") disable(); });
-    window.addEventListener("resize", () => { if (active) fitLensSize(); });
+    
+	// 視窗改變時只調整大小（不再自動置中）
+	window.addEventListener("resize", () => { if (active) fitLensSize(); });
   }
 
   /** 數量與購物車（維持你的邏輯） */

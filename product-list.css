@@ -94,9 +94,14 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .bottom-col {
   flex: 0 0 20%;
   display: flex;
-  flex-direction: column;
+  flex-direction: row; /* ← 改為橫向排列 */
+  align-items: center;
   justify-content: flex-start;
   gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid #ddd;
+  width: 100%; /* 跟 top-col 同寬 */
+  background: #fff;
 }
 
 .left-col {
@@ -238,13 +243,14 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   overflow-wrap: break-word;
   word-break: break-word;
   box-sizing: border-box; /* 防止縮放時撐開 */
+  display: block;      /* 避免 flex 拉伸 */
 }
 
 /* 字體大小設定 */
-.product-name { font-size: 14px; font-weight: 700; }
+.product-name { font-size: 20px; font-weight: 700; }
 .product-price,
 .product-detail,
-.product-option { font-size: 12px; }
+.product-option { font-size: 18px; line-height: 1.4;}
 
 /* 設定高度會由 JS 鎖定，所以 CSS 不處理高度 */
 .product-name,
@@ -256,13 +262,11 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 
 .product-name {
   flex: 0 0 50px; /* 固定高度，避免變形 */
-  font-size: 20px; /* a+2 px */
   font-weight: 700;
   color: #111827;
   display: flex;
   align-items: center; /* 垂直置中 */
   text-align: left; /* 靠左對齊 */
-  line-height: 1.4;
   margin: 0;
   overflow-wrap: break-word;
   word-break: break-word;
@@ -270,7 +274,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 
 .product-price {
   flex: 0 0 40px;
-  font-size: 18px; /* a px */
   font-weight: 700;
   color: #d26b00;
   display: flex;
@@ -281,9 +284,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 /* 詳細資訊滾動 */
 .product-detail {
   flex: 1;
-  font-size: 18px; /* a px */
   color: #4b5563;
-  line-height: 1.6;
   overflow-y: auto;
   display: flex;
   align-items: center;
@@ -309,7 +310,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 
 /* 選項標題 */
 .option-title {
-  font-size: 12px;
+  font-size: 16px;
   font-weight: 600;
   text-align: left;
   white-space: nowrap;
@@ -318,15 +319,19 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 /* 選項按鈕容器 */
 .option-buttons {
   display: flex;
-  gap: 6px;
   flex-wrap: wrap;
+  gap: 6px;
   align-items: center;
 }
+
 /* 選項按鈕 */
 .option-btn {
-  width: 80px;
+  min-width: 120px;          /* 預設最小寬度 */
+  max-width: none;           /* 允許加寬 */
+  padding: 6px 12px;
+  white-space: nowrap;       /* 文字不換行 */
   height: 32px;
-  font-size: 12px;
+  font-size: 14px;
   border: 1px solid #e5e7eb;
   background: #fff;
   border-radius: 6px;
@@ -334,6 +339,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
 }
 .option-btn:hover {
   transform: translateY(-1px);
@@ -354,7 +360,13 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   opacity: .6;
 }
 
-.sale-status-block, .product-quantity, .product-cart {
+/* 四個區塊寬度比例 */
+.sale-status-block  { flex: 0 0 15%; text-align: center; }
+.product-quantity   { flex: 0 0 45%; }
+.product-cart       { flex: 0 0 20%; }
+.check-out-btn      { flex: 0 0 20%; }
+
+.sale-status-block, .product-quantity, .product-cart, .check-out-btn  {
   display: flex;
   align-items: center;   /*垂直對齊方式*/
   justify-content: center;  /*水平對齊方式*/

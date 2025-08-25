@@ -91,20 +91,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   gap: 16px;
 }
 
-.bottom-col {
-  flex: 0 0 20%;
-  display: flex;
-  flex-direction: row; /* ← 改為橫向排列 */
-  align-items: stretch;   /* 讓四個子元素等高 */
-  justify-content: flex-start;
-  gap: 8px;
-  padding: 4px 0;        /* 跟上下外框距離 4px */
-  border-top: 1px solid #ddd;
-  background-color: #fff;
-  width: 100%;
-  box-sizing: border-box;
-}
-
 .left-col {
   flex: 0 0 35%;
   display: flex;
@@ -135,15 +121,16 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 /* 下半部整欄 */
 .bottom-col {
   display: flex;
-  flex-direction: row;
-  align-items: stretch;   /* 讓四個子元素等高 */
+  flex-direction: row; /* ← 改為橫向排列 */
+  align-items: stretch; /* 讓四個子元素等高 */
   justify-content: flex-start;
   gap: 8px;
-  padding: 4px 0;        /* 跟上下外框距離 4px */
+  padding: 4px 0;
   border-top: 1px solid #ddd;
   background-color: #fff;
   width: 100%;
   box-sizing: border-box;
+  height: 100px; /* 建議給固定高度，避免內容撐高 */
 }
 
 /* 主圖區塊：加上 position:relative 以放置放大鏡元素 */
@@ -379,12 +366,6 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   opacity: .6;
 }
 
-/* 四個區塊寬度比例 */
-.sale-status-block { flex: 0 0 15%; display: flex; flex-direction: column; }
-.product-quantity   { flex: 0 0 45%; }
-.product-cart       { flex: 0 0 20%; }
-.check-out-btn      { flex: 0 0 20%; }
-
 /* 讓四個區塊本身高度填滿 bottom-col */
 .bottom-col > * {
   display: flex;
@@ -394,50 +375,44 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 }
 
 .sale-status-block, .product-quantity, .product-cart, .check-out-btn  {
-  display: flex;
-  align-items: center;   /*垂直對齊方式*/
-  justify-content: center;  /*水平對齊方式*/
   width: auto;        /* 已經用 % 分配寬度，不要再卡死 */
   height: 100%;       /* 這裡讓三個子元素撐滿父層高度 */
   border: 1px solid black;
 }
 
-.product-quantity, .product-cart, .check-out-btn  {
-  justify-content: center;  /*文字水平對齊方式*/
-}
-
-.sale-status-block .status-top,
-.sale-status-block .status-bottom {
-  justify-content: flex-start; /* 文字靠左 */
-}
-
 /* 販售狀態 */
-.sale-status-block {
-  flex: 1;
-  text-align: center;
-  font-weight: 700;
-  font-size: 16px;
-  gap: 2px; /* 上下間距 2px */
+.sale-status-block { 
+  flex: 0 0 15%; 
+  display: flex;
+  flex-direction: column;
+  gap: 2px; /* 上下間距 */
+  padding: 2px; /* 上下 2px */
+  box-sizing: border-box;
+  border: 1px solid black; /* 開發檢查用 */
 }
 
 /* 上下各占 50%，填滿 sale-status-block */
+/* === 狀態上下兩行 === */
 .sale-status-block .status-top,
 .sale-status-block .status-bottom {
-  flex: 1;
+  flex: 1; /* 各佔一半 */
   display: flex;
-  align-items: center;  /* 垂直置中 */
+  align-items: center;      /* 垂直置中 */
   justify-content: flex-start; /* 文字靠左 */
   font-size: 12px;
   line-height: 1.2;
   color: #374151;
-  white-space: nowrap; /* 不換行 */
+  white-space: nowrap;
 }
 
-.product-quantity {
-  flex: 2;
+.product-quantity   { 
+  flex: 0 0 45%; 
   display: flex;
   align-items: center;
-  gap: 8px;
+  justify-content: center; /*文字水平對齊*/
+  padding: 2px;
+  box-sizing: border-box;
+  border: 1px solid black;
 }
 
 /* 數量小區 */
@@ -502,9 +477,13 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 
 .product-cart,
 .check-out-btn {
-  flex: 1;
+  flex: 0 0 20%;
   display: flex;
-  justify-content: center;
+  align-items: center;
+  justify-content: center; /*文字水平對齊*/
+  padding: 2px;
+  box-sizing: border-box;
+  border: 1px solid black;
 }
 
 /* 購物車按鈕 */

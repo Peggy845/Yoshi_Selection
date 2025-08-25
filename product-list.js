@@ -171,23 +171,27 @@
         <div class="product-price">$ ${norm(variant['價格']) || ''}</div>
         <div class="product-detail">${norm(variant['詳細資訊']) || ''}</div>
         <div class="product-option"></div>
-        <div class="product-others">
-          <div class="sale-status-block">狀態: ${norm(variant['販售狀態']) || ''}</div>
-          <div class="product-quantity">
-            <div class="quantity-block">
-              <span class="stock-text">還剩 ${norm(variant['庫存']) || 0} 件</span>
-              <div class="qty-ctrls">
-                <button class="qty-btn" data-type="minus" type="button">−</button>
-                <input class="quantity-input" type="number" value="1" min="1" max="${norm(variant['庫存']) || 0}" readonly>
-                <button class="qty-btn" data-type="plus" type="button">＋</button>
-              </div>
-            </div>
-          </div>
-          <div class="product-cart">
-            <button class="cart-btn" type="button">加入購物車</button>
-          </div>
-        </div>
       </div>
+	  
+	  <div class="bottom-col">
+		<div class="sale-status-block">狀態: ${norm(variant['販售狀態']) || ''}</div>
+
+		<div class="product-quantity">
+		  <span class="qty-label">數量</span>
+		  <button class="qty-btn" data-type="minus" type="button">−</button>
+		  <input class="quantity-input" type="number" value="1" min="1" max="${norm(variant['庫存']) || 0}" readonly>
+		  <button class="qty-btn" data-type="plus" type="button">＋</button>
+		  <span class="stock-text">還剩 ${norm(variant['庫存']) || 0} 件</span>
+		</div>
+
+		<div class="product-cart">
+		  <button class="cart-btn" type="button">加入購物車</button>
+		</div>
+
+		<div class="check-out-btn">
+		  <button onclick="location.href='check-out.html'">立即結帳</button>
+		</div>
+	  </div>
     `;
   }
   

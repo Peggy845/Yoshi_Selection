@@ -87,26 +87,23 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 /* 上半部左右排版 */
 .top-row {
   display: flex;
-  flex-direction: row;
   gap: 20px;
-  flex: 1; /* 讓它佔滿剩下空間 */
-  min-height: 0;
+  width: 100%;
 }
 
 .left-col {
-  width: 35%;
+  flex: 0 0 35%;
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
 
 .right-col {
-  width: 65%;
+  flex: 0 0 65%;
   display: flex;
   flex-direction: column;
-  gap: 10px;
-  padding: 0;
   overflow: hidden;
+  gap: 10px;
 }
 
 /* 下半部整欄 */
@@ -218,27 +215,34 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   box-shadow: 0 0 6px rgba(0,120,255,0.5);
 }
 
-/* 右欄 */
+/* 四大區塊，統一基礎樣式 */
 .product-name,
 .product-price,
 .product-detail,
-.product-option,
-.product-others {
-  align-items: center;
-  padding: clamp(10px, 2vw, 25px) clamp(12px, 2.5vw, 30px); /* padding隨螢幕縮放 */
-  font-size: clamp(16px, 2.5vw, 40px);
-  font-weight: 700;
-  border: 1px solid black;
+.product-option {
+  padding: 6px 8px;
+  text-align: left;
+  font-weight: 500;
+  color: #111827;
+  line-height: 1.5;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
-/* right-col 四個 block 高度自適應 */
-/* 原來的 flex 配比，保留 */
-.product-name { flex: 1; }
-.product-price { flex: 1; }
-.product-detail { 
-  flex: 1; 
-  overflow-y: auto;
+/* 字體大小設定 */
+.product-name { font-size: 14px; font-weight: 700; }
+.product-price,
+.product-detail,
+.product-option { font-size: 12px; }
+
+/* 高度自適應 + 初次渲染後鎖定 */
+.product-name,
+.product-price,
+.product-detail {
+  display: flex;
+  align-items: center; /* 垂直置中單行 */
 }
+
 .product-option { 
   flex: auto;
   overflow-y: auto;
@@ -268,6 +272,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   text-align: left;
 }
 
+/* 詳細資訊滾動 */
 .product-detail {
   flex: 1;
   font-size: 18px; /* a px */
@@ -279,49 +284,48 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   text-align: left;
 }
 
+/* 選項容器，吃剩餘高度 */
 .product-option {
   flex: auto;
   display: flex;
   flex-direction: column;
   gap: 12px;
   overflow-y: auto;
-  font-size: 18px; /* a px */
-  padding: 0;
 }
 
 /* 選項每一行 */
 .option-group {
   display: grid;
-  grid-template-columns: 80px 1fr; /* 左標題固定寬度 */
+  grid-template-columns: 72px 1fr; /* 左邊標題固定寬度 */
   gap: 10px;
   align-items: center;
 }
 .option-title {
   font-weight: 600;
-  font-size: 16px;
-  color: #6b7280;
-  text-align: right;
+  font-size: 12px;
+  color: #4b5563;
+  text-align: left; /* 靠左對齊 */
   white-space: nowrap;
 }
 .option-buttons {
   display: flex;
-  gap: 10px;
+  gap: 6px; /* 按鈕之間距離 */
   flex-wrap: wrap;
   align-items: center;
 }
 .option-btn {
-.option-btn {
-  width: 80px; /* 固定寬度，不隨字數變動 */
-  height: 36px; /* 固定高度 */
+  line-height: 36px; /* 讓文字垂直置中 */
+  width: 80px; /* 固定寬度 */
+  height: 32px; /* 固定高度 */
+  font-size: 12px;
   border-radius: 6px;
   border: 1px solid #e5e7eb;
   background: #fff;
   cursor: pointer;
-  font-size: 14px;
-  font-weight: 500;
-  text-align: center;
-  line-height: 36px; /* 讓文字垂直置中 */
-  transition: all .2s ease;
+  transition: all .15s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   user-select: none;
 }
 .option-btn:hover {

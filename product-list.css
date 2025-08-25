@@ -72,7 +72,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   display: flex;
   flex-direction: column;  /* 由上到下排列 */
   height: 100%; /* 保持固定高度 */
-  gap: 20px;
+  gap: 8px;
   background: white;
   border-radius: 16px;
   padding: 18px;
@@ -104,10 +104,19 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   background: #fff;
 }
 
+/* 讓四個區塊本身高度填滿 bottom-col */
+.bottom-col > * {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
 .left-col {
   flex: 0 0 35%;
   display: flex;
   flex-direction: column;
+  gap:6px;
 }
 
 /* left-col 內部上下比例 7:3 */
@@ -128,14 +137,16 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 /* 下半部整欄 */
 .bottom-col {
   display: flex;
-  gap: 12px;
-  padding: 10px 0;
+  gap: 8px;
+  padding: 6px 0;
   border-top: 1px solid #ddd;
+  box-sizing: border-box;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   width: 100%; /* 關鍵！要全寬 */
   flex-shrink: 0; /* 不要被壓縮 */
   background: #fff;
+  align-items: stretch;   /* 讓四個子元素等高 */
 }
 
 /* 主圖區塊：加上 position:relative 以放置放大鏡元素 */
@@ -302,26 +313,31 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 
 /* 單行選項群組 */
 .option-group {
-  display: grid;
-  grid-template-columns: 72px 1fr;
-  gap: 10px;
+  display: flex;
+  flex-direction: row;
   align-items: center;
+  width: 100%;
+  gap: 10px; /* 固定間距，不會被擠壓 */
+  overflow: hidden;
 }
 
-/* 選項標題 */
+/* option-title 固定寬度、靠左 */
 .option-title {
+  flex: 0 0 72px; /* 可放下6個12px字元 + 預留空隙 */
   font-size: 16px;
   font-weight: 600;
   text-align: left;
   white-space: nowrap;
 }
 
-/* 選項按鈕容器 */
+/* option-buttons 靠左對齊，出現 scroll bar */
 .option-buttons {
+  flex: 1;
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
+  overflow-x: auto;
 }
 
 /* 選項按鈕 */
@@ -361,7 +377,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 }
 
 /* 四個區塊寬度比例 */
-.sale-status-block  { flex: 0 0 15%; text-align: center; }
+.sale-status-block  { flex: 0 0 15%; text-align: center; display: flex; flex-direction: column;}
 .product-quantity   { flex: 0 0 45%; }
 .product-cart       { flex: 0 0 20%; }
 .check-out-btn      { flex: 0 0 20%; }
@@ -381,6 +397,24 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   text-align: center;
   font-weight: 700;
   font-size: 16px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 0;
+  gap: 2px; /* 上下間距 2px */
+}
+
+/* 上下各占 50%，填滿 sale-status-block */
+.sale-status-block .status-top,
+.sale-status-block .status-bottom {
+  flex: 1;
+  display: flex;
+  align-items: center;  /* 垂直置中 */
+  justify-content: flex-start; /* 文字靠左 */
+  font-size: 12px;
+  line-height: 1.2;
+  color: #374151;
+  white-space: nowrap; /* 不換行 */
 }
 
 .product-quantity {

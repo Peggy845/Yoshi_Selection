@@ -339,13 +339,13 @@ function renderMainAndThumbs(productDiv, state, hardSet = false) {
     return;
   }
 
-  // 主圖
+  // 主圖設定
   if (hardSet || !state.mainSrc || !imgList.includes(state.mainSrc)) {
     state.mainSrc = imgList[0];
   }
   mainImgEl.src = state.mainSrc;
 
-  // 生成 sub-image
+  // 生成縮圖
   imgList.forEach(src => {
     const img = document.createElement('img');
     img.src = src;
@@ -362,11 +362,10 @@ function renderMainAndThumbs(productDiv, state, hardSet = false) {
     subGroup.appendChild(img);
   });
 
-  // scrollbar 顯示邏輯
+  // Scrollbar 顯示邏輯
   if (imgList.length > 4) {
-    wrapper.style.overflowX = 'scroll';
+    wrapper.style.overflowX = 'auto';
     scrollbar.style.display = 'block';
-    // scrollbar 連動 sub-group
     scrollbar.scrollLeft = 0;
     scrollbar.addEventListener('scroll', () => {
       wrapper.scrollLeft = scrollbar.scrollLeft;
@@ -378,9 +377,6 @@ function renderMainAndThumbs(productDiv, state, hardSet = false) {
 
   state.images = imgList;
 }
-
-
-
 
 function initGallery(productDiv, state) {
   // 確保 activeVariant 一定指向有商品圖片的那筆

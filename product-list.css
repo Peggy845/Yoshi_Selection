@@ -110,6 +110,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   flex-direction: column;
   gap: 6px;
   height: 370px;   /* ← 固定 left-col 高度 */
+  min-width: 0; /* 關鍵：禁止被子元素撐寬 */
 }
 
 /* left-col 內部上下比例 7:3 */
@@ -118,7 +119,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   height: 70%;
 }
 
-/* 子圖 30% */
+/* 子圖 30% 固定寬度，不會被 sub-group 撐開 */
 .sub-image-block {
   height: 30%;
 }
@@ -177,7 +178,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   display: flex;
   height: 100px;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   border: 1px solid #e5e7eb;
   overflow: hidden; /* 保證不會超出 left-col */
   background: #fafafa;
@@ -187,7 +188,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   border-top: 1px solid #eee;
 }
 
-/* sub-group 的 wrapper: 控制 scrollbar */
+/* 包裹縮圖的 wrapper，負責滾動 */
 .sub-group-wrapper {
   width: 100%;
   overflow-x: auto;
@@ -195,13 +196,18 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   scrollbar-width: thin;
   scrollbar-color: #bbb transparent;
   padding-bottom: 4px;
+  box-sizing: border-box;
+  flex-shrink: 0; /* ⚠️ 確保 wrapper 不會被擠小 */
 }
 
 /* Scrollbar 樣式 (Chrome/Safari/Edge) */
 /* Scrollbar style */
 .sub-group-wrapper::-webkit-scrollbar { height: 6px; }
 .sub-group-wrapper::-webkit-scrollbar-track { background: transparent; }
-.sub-group-wrapper::-webkit-scrollbar-thumb { background: #bbb; border-radius: 3px; }
+.sub-group-wrapper::-webkit-scrollbar-thumb {
+  background: #bbb;
+  border-radius: 3px;
+}
 .sub-group-wrapper::-webkit-scrollbar-thumb:hover { background: #888; }
 
 .sub-scrollbar {
@@ -212,7 +218,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
   display: none; /* 預設隱藏 */
 }
 
-/* 群組包一層，方便等比例放大 */
+/* sub-group 自身寬度根據內容決定，不會撐開父層 */
 .sub-group {
   display: flex;
   gap: 5px; /* sub-image 間距 */
@@ -224,7 +230,7 @@ body::-webkit-scrollbar-track { background-color: #f1f1f1; }
 .sub-image {
   width: 80px;   /* 固定大小，保持 4 張寬度 */
   height: 80px;
-  flex-shrink: 0; /* 不會因多張而縮小 */
+  flex-shrink: 0; /* 不會因多張而縮小，保持固定寬高*/
   object-fit: cover;
   border-radius: 6px;
   cursor: pointer;

@@ -416,37 +416,43 @@ function initGallery(productDiv, state) {
     }
 
     function updateByEvent(ev) {
-      const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
-      const blockRect = block.getBoundingClientRect();
-      const imgRect   = img.getBoundingClientRect();
+    const lensW = lens.offsetWidth, lensH = lens.offsetHeight;
+    const blockRect = block.getBoundingClientRect();
+    const imgRect   = img.getBoundingClientRect(); // 圖片實際顯示大小與位置
 
-      let px = ev.clientX - blockRect.left;
-      let py = ev.clientY - blockRect.top;
+    // 指標相對 block 的座標
+    let px = ev.clientX - blockRect.left;
+    let py = ev.clientY - blockRect.top;
 
-      let left = Math.max(0, Math.min(px - lensW / 2, blockRect.width  - lensW));
-      let top  = Math.max(0, Math.min(py - lensH / 2, blockRect.height - lensH));
-      lens.style.left = left + "px";
-      lens.style.top  = top  + "px";
+    // 先把鏡片放進 block（整塊不出界）
+    let left = Math.max(0, Math.min(px - lensW / 2, blockRect.width  - lensW));
+    let top  = Math.max(0, Math.min(py - lensH / 2, blockRect.height - lensH));
+    lens.style.left = left + "px";
+    lens.style.top  = top  + "px";
 
-      const cx = left + lensW / 2;
-      const cy = top  + lensH / 2;
+    // 鏡片中心點（相對 block）
+    const cx = left + lensW / 2;
+    const cy = top  + lensH / 2;
 
-      const imgLeftInBlock = imgRect.left - blockRect.left;
-      const imgTopInBlock  = imgRect.top  - blockRect.top;
+    // 轉成圖片顯示區域中的 0~1
+    const imgLeftInBlock = imgRect.left - blockRect.left;
+    const imgTopInBlock  = imgRect.top  - blockRect.top;
 
-      const nx = Math.max(0, Math.min(1, (cx - imgLeftInBlock) / imgRect.width));
-      const ny = Math.max(0, Math.min(1, (cy - imgTopInBlock)  / imgRect.height));
+    const nx = Math.max(0, Math.min(1, (cx - imgLeftInBlock) / imgRect.width));
+    const ny = Math.max(0, Math.min(1, (cy - imgTopInBlock)  / imgRect.height));
 
-      const bgW = imgRect.width  * ZOOM;
-      const bgH = imgRect.height * ZOOM;
+    // 背景圖用「圖片顯示尺寸 * ZOOM」，因此與上面座標系一致，不會偏
+    const bgW = imgRect.width  * ZOOM;
+    const bgH = imgRect.height * ZOOM;
 
-      lens.style.backgroundImage  = `url("${img.src}")`;
-      lens.style.backgroundSize   = `${bgW}px ${bgH}px`;
-      lens.style.backgroundRepeat = "no-repeat";
+    lens.style.backgroundImage  = `url("${img.src}")`;
+    lens.style.backgroundSize   = `${bgW}px ${bgH}px`;
+    lens.style.backgroundRepeat = "no-repeat";
 
-      const focusX = nx * bgW;
-      const focusY = ny * bgH;
-      lens.style.backgroundPosition = `${-(focusX - lensW/2)}px ${-(focusY - lensH/2)}px`;
+    // 讓鏡片中心對準 (nx, ny)
+    const focusX = nx * bgW;
+    const focusY = ny * bgH;
+    lens.style.backgroundPosition = `${-(focusX - lensW/2)}px ${-(focusY - lensH/2)}px`;
     }
 
     function onMove(ev) {

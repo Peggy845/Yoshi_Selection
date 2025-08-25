@@ -363,7 +363,7 @@ function renderMainAndThumbs(productDiv, state, hardSet = false) {
   });
 
   // Scrollbar 顯示邏輯
-  if (imgList.length > 4) {
+  if (imgList.length > 3) {
     wrapper.style.overflowX = 'auto';
     scrollbar.style.display = 'block';
     scrollbar.scrollLeft = 0;
